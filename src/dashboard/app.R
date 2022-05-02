@@ -78,8 +78,8 @@ ui <- fluidPage(
                  plotOutput("graph2")),
         tabPanel("Map", 
                  plotOutput("map")),
-        tabPanel("Table", 
-                 dataTableOutput("table"))
+        #tabPanel("Table", 
+                 #dataTableOutput("table"))
       )
     )
   )
