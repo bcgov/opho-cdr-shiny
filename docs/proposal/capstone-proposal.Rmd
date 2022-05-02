@@ -1,0 +1,23 @@
+---
+title: "BC Chronic Disease Capstone Proposal"
+author: "Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Shengting (Irene) Yan"
+output: html_notebook
+---
+
+## Executive Summary 
+
+
+## Introduction 
+- (Dashboard Team)
+
+- (Modeling Team)
+
+## Data Science Techniques
+- (Dashboard Team)
+
+- (Modeling Team)
+
+## Timeline
+
+
+
