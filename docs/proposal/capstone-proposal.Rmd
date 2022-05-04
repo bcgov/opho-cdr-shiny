@@ -18,11 +18,16 @@ To visualize the spatial and temporal trends of disease prevalence in the provin
 
 
 ## Data Science Techniques
-We will be using R Shiny to build the interactive dashboard, and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. For basic data wrangling we will use the tidyverse   
+We will be using R Shiny to build the interactive dashboard, and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. For data wrangling we will use the tidyverse set of packages to clean the data in preparation for plotting.    
 
 - (Modeling Team)
 
 ## Timeline
 
+``` {r timeline, echo=FALSE, fig.cap="Figure 1. Timeline of Capstone project milestones", out.width = '100%'}
+knitr::include_graphics("images/timeline.png")
+```
+
+## Conclusion
 
 
