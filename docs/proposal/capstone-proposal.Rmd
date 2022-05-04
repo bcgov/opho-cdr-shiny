@@ -1,19 +1,24 @@
 ---
 title: "BC Chronic Disease Capstone Proposal"
 author: "Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Shengting (Irene) Yan"
-output: html_notebook
+output: 
+  html_document:
+    toc : true
 ---
 
 ## Executive Summary 
-
+The Chronic Disease Registry is a data product that captures information about the rate of new and persistent cases of chronic diseases in each CHSA (community health service area), as well as demographic information such as sex and age standardized rates. In this project we aim to create an interactive dashboard that will allow users of all technical expertise to explore and visualize spatiotemporal information of the diseases in the data, and to develop an analysis pipeline that will describe the spatiotemporal trends in the data. This proposal will outline the approach we will take to tackle this problem and achieve the project goals.
 
 ## Introduction 
-- (Dashboard Team)
+Millions of people in BC live with a chronic disease, so it's important to understand and interpret the distribution of disease prevalence throughout the province for a variety of reasons. We may want to know how to best allocate healthcare resources, or to identify if a specific region is experiencing rapid growth of a disease. 
 
-- (Modeling Team)
+To visualize the spatial and temporal trends of disease prevalence in the province, we will build an interactive dashboard that will allow users to compare the incidence rates of various diseases in one specific health region over time, as well as to compare how the incidence and prevalence rates of one disease has varied across several health regions over time. We also plan to create an information page in the dashboard containing descriptions of variables and diseases to increase understability for non-technical users.
+
+(Spatialtemporal Analysis paragraph)
+
 
 ## Data Science Techniques
-- (Dashboard Team)
+We will be using R Shiny to build the interactive dashboard, and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. For basic data wrangling we will use the tidyverse   
 
 - (Modeling Team)
 
