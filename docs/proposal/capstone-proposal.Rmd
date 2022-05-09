@@ -12,7 +12,12 @@ The Chronic Disease Registry is a data product that captures information about t
 ## Introduction 
 Millions of people in BC live with a chronic disease, so it's important to understand and interpret the distribution of disease prevalence throughout the province for a variety of reasons. We may want to know how to best allocate healthcare resources, or to identify if a specific region is experiencing rapid growth of a disease. 
 
-To visualize the spatial and temporal trends of disease prevalence in the province, we will build an interactive dashboard that will allow users to compare the incidence rates of various diseases in one specific health region over time, as well as to compare how the incidence and prevalence rates of one disease has varied across several health regions over time. We also plan to create an information page in the dashboard containing descriptions of variables and diseases to increase understability for non-technical users.
+To visualize the spatial and temporal trends of disease prevalence in the province, we will build an interactive dashboard that will allow users to compare the incidence rates of various diseases in one specific health region over time, as well as to compare how the incidence and prevalence rates of one disease has varied across several health regions over time. We also plan to create an information page in the dashboard containing descriptions of variables and diseases to increase usability for non-technical users. Lastly, we will have a page displaying the data table with filters applied, with the option to download the data as a report. A sketch of the proposed dashboard design is shown below.
+
+``` {r timeline, echo=FALSE, fig.cap="Proposed Dashboard Design", out.width = '100%'}
+knitr::include_graphics("images/dashboard.png")
+```
+
 
 (Spatialtemporal Analysis paragraph)
 
@@ -24,7 +29,7 @@ We will be using R Shiny to build the interactive dashboard, and we will be util
 
 ## Timeline
 
-``` {r timeline, echo=FALSE, fig.cap="Figure 1. Timeline of Capstone project milestones", out.width = '100%'}
+``` {r timeline, echo=FALSE, fig.cap="Timeline of Capstone project milestones", out.width = '100%'}
 knitr::include_graphics("images/timeline.png")
 ```
 
