@@ -28,7 +28,11 @@ knitr::include_graphics("images/dashboard.png")
 ## Data Science Techniques
 We will be using R Shiny to build the interactive dashboard, and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. For data wrangling we will use the tidyverse set of packages to clean the data in preparation for plotting.    
 
-- (Modeling Team)
+### Temporal Modeling
+We will use a Bayesian temporal smoothing model for the inferential analysis of chronic disease incidence and prevalence over time. A Bayesian approach was selected in order to integrate prior knowledge about the disease rates and to generate 95% credible intervals from the posterior distribution. Temporal smoothing is appropriate because we are assuming that the disease incidence and prevalence within a given region will be correlated over time. We propose to use the INLA package for Bayesian analysis for computational efficiency compared to traditional MCMC approaches.
+
+For each disease, we will compare 3 temporal models for each of the 3 disease rates: an autoregressive model with order 1 (AR(1)), a random walk model with order 1 (RW(1)), and a random walk with order 2 (RW(2)). To select our final model, we will use the Deviance Information Criterion (DIC) and the Widely Applicable Information Criterion (WAIC), where a smaller DIC/WAIC indicates a better fit. After the best model is determined for that disease and metric, we will fit that model on all CHSA regions and generate plots with both observed and smoothened disease incidence/prevalence rates for the Shiny app.
+
 
 ## Timeline
 
