@@ -1,9 +1,12 @@
 ---
 title: "BC Chronic Disease Capstone Proposal"
 author: "Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Shengting (Irene) Yan"
+date: May 10, 2022
 output: 
-  html_document:
+  pdf_document:
     toc : true
+    fig_caption : true
+
 ---
 
 ## Executive Summary 
@@ -14,7 +17,7 @@ Millions of people in BC live with a chronic disease, so it's important to under
 
 To visualize the spatial and temporal trends of disease prevalence in the province, we will build an interactive dashboard that will allow users to compare the incidence rates of various diseases in one specific health region over time, as well as to compare how the incidence and prevalence rates of one disease has varied across several health regions over time. We also plan to create an information page in the dashboard containing descriptions of variables and diseases to increase usability for non-technical users. Lastly, we will have a page displaying the data table with filters applied, with the option to download the data as a report. A sketch of the proposed dashboard design is shown below.
 
-``` {r timeline, echo=FALSE, fig.cap="Proposed Dashboard Design", out.width = '100%'}
+``` {r dashboard, echo=FALSE, fig.cap="Proposed Dashboard Design", out.width = '100%'}
 knitr::include_graphics("images/dashboard.png")
 ```
 
