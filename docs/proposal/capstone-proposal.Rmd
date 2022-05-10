@@ -17,14 +17,9 @@ knitr::opts_chunk$set(fig.pos = 'H')
 \newpage
 
 # Executive Summary 
-The Chronic Disease Registry is a data product that captures information about the rate of new and persistent cases of chronic diseases in each CHSA (community health service area),
-as well as demographic information such as sex and age standardized rates.
-The Registry has 3 different types of rates available.
-Incidence Rate is the rate at which new cases occur in a specified population during a specified time period;
-Lifetime Prevalence is the proportion of individuals who have had the condition for at least part of their lives, 
-and Active Healthcare Contact Prevalence are the cases for which a patient seeks healthcare services for relapsing - remitting conditions. 
-In this project we aim to create an interactive dashboard that will allow users of all technical expertise to explore and visualize spatiotemporal information of the diseases rates in the data,
-and to develop an analysis pipeline that will describe the spatiotemporal trends in the data. 
+The Chronic Disease Registry is a data product that captures information about the rate of new and persistent cases of chronic diseases in each CHSA (Community Health Service Area), as well as demographic information such as sex and age standardized rates.
+In this project we aim to create an interactive dashboard that will allow users of all technical expertise to explore and visualize spatiotemporal information of the disease rates in the data,
+and to develop an analysis pipeline that will describe the temporal trends in the data. 
 This proposal will outline the approach we will take to tackle this problem and achieve the project goals.
 
 \newpage
@@ -32,11 +27,17 @@ This proposal will outline the approach we will take to tackle this problem and 
 # Introduction 
 Millions of people in BC live with a chronic disease, so it's important to understand and interpret the distribution of disease prevalence throughout the province for a variety of reasons. 
 We may want to know how to best allocate healthcare resources, or to identify if a specific region is experiencing rapid growth of a disease. 
+The dashboard is a tool that will allow healthcare professionals and eventually the general public to access the disease information and answer these questions.  
+
+The Chronic Disease Registry has 3 different types of rates that we will be incorporating into our data product.
+Incidence Rate is the rate at which new cases occur in a specified population during a specified time period;
+Lifetime Prevalence is the proportion of individuals who have had the condition for at least part of their lives, 
+and Active Healthcare Contact Prevalence are the cases for which a patient seeks healthcare services for relapsing - remitting conditions. 
+For each disease rate metric, the data is stratified by region at multiple tiers. In this project we will focus on the 5 Health Authorities (HA) and the 195 Community Health Service Areas (CHSA).
 
 ## Dashboard
 To visualize the spatial and temporal trends of disease rates in the province, we will build an interactive dashboard that will allow users to compare the  rates of various diseases in one specific health region over time,
-as well as to compare how the rates of one disease has varied across several health regions over time.
-The users will be able to compare between multiple Heath Authorities (HA) or multiple Community Health Service Areas (CHSA).
+as well as to compare how the rates of one disease has varied across several health regions over time. The users will be able to compare between HAs or between CHSAs.
 We also plan to create an information page in the dashboard containing definitions and descriptions of variables and diseases to increase usability for less technical users. 
 Lastly, we will have a page displaying the data table with filters applied, with the option to download the data as a report. A sketch of the proposed dashboard design is shown below in Figure \@ref(fig:dashboard).
 
