@@ -6,8 +6,14 @@ output:
   pdf_document:
     toc : true
     fig_caption : true
-
+    extra_dependencies: ["float"]
+header-includes:
+ \usepackage{float}
 ---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+```
 
 ## Executive Summary 
 The Chronic Disease Registry is a data product that captures information about the rate of new and persistent cases of chronic diseases in each CHSA (community health service area), as well as demographic information such as sex and age standardized rates. In this project we aim to create an interactive dashboard that will allow users of all technical expertise to explore and visualize spatiotemporal information of the diseases in the data, and to develop an analysis pipeline that will describe the spatiotemporal trends in the data. This proposal will outline the approach we will take to tackle this problem and achieve the project goals.
@@ -24,6 +30,7 @@ knitr::include_graphics("images/dashboard.png")
 The Office of BC Provincial Health Officer curates data of ongoing surveillance of 25 Chronic Diseases throughout the whole region (British Columbia province). Currently the dataset has data on Incidence Rate, Prevalence Rates, Geographical and administrative geo-tiers and age-groups. To observe the trend of changes throughout the years of such surveillance data, temporal analysis is the standard choice. We will explore various methods as per nature of data, established evidences, stakeholder discussions and variables of interest. Eventually, the outputs will be incorporated with the primary R Shiny app. 
 
 ## Data Science Techniques
+### Dashboard
 We will be using R Shiny to build the interactive dashboard, and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. For data wrangling we will use the tidyverse set of packages to clean the data in preparation for plotting.    
 
 ### Temporal Modeling
