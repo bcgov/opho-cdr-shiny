@@ -98,8 +98,8 @@ whereas a RW2 model will smooth towards the previous slope and penalize deviatio
 Therefore, a RW2 model will produce a greater smoothing effect than an RW1 model. (@wakefield)
 
 As a baseline, we will compare our Bayesian smoothing models to the 
-frequentist 95% confidence intervals provided in our original dataset.
-If the Bayesian 95% credible intervals produced are overall smaller than the 95% 
+95% confidence intervals created using frequentist approaches provided in our original dataset.
+If the Bayesian 95% credible intervals produced are smaller overall than the 95% 
 confidence intervals, we will select a final model among the RW1/RW2 approaches.
 
 To determine our final model, we will use the Deviance Information Criterion (DIC) 
@@ -108,6 +108,7 @@ where a smaller DIC/WAIC indicates a better fit.
 The final model determined for a given disease and metric will then be fit 
 on all CHSA regions. Time series plots will then be generated with
 both observed and modeled disease incidence/prevalence rates for the Shiny app.
+
 # Timeline
 
 We will form two sub-teams to work in parallel to develop the two final deliverables. 
