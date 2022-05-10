@@ -21,7 +21,7 @@ To visualize the spatial and temporal trends of disease prevalence in the provin
 knitr::include_graphics("images/dashboard.png")
 ```
 
-The Office of BC Provincial Health Officer curates data of ongoing surveillance of 26 Chronic Diseases throughout th whole region (British Columbia province). Currently the dataset has data on Incidence Rate, Prevalence Rates, Geographical and administrative geo-tiers and age-groups. To observe the trand of changes throughout the years of such surveillance data, temporal analysis is the standard choice. We will explore various methods as per nature of data, established evidences, stakeholder discussions and variables of interest. Eventually, the outputs will be incorporated with the primary R Shiny app. 
+The Office of BC Provincial Health Officer curates data of ongoing surveillance of 25 Chronic Diseases throughout the whole region (British Columbia province). Currently the dataset has data on Incidence Rate, Prevalence Rates, Geographical and administrative geo-tiers and age-groups. To observe the trend of changes throughout the years of such surveillance data, temporal analysis is the standard choice. We will explore various methods as per nature of data, established evidences, stakeholder discussions and variables of interest. Eventually, the outputs will be incorporated with the primary R Shiny app. 
 
 ## Data Science Techniques
 We will be using R Shiny to build the interactive dashboard, and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. For data wrangling we will use the tidyverse set of packages to clean the data in preparation for plotting.    
@@ -39,5 +39,4 @@ knitr::include_graphics("images/timeline.png")
 ```
 
 ## Conclusion
-
-
+Each year, the Office of British Columbia Provincial Health Officer tracks persistent and new cases of 25 chronic diseases throughout the whole region. This document has proposed methods to accommodate the possible inquiries about the prevalence of chronic conditions and their spatiotemporal trends from health professionals and non-experts. The proposed methods include: (1) an interactive and informative dashboard using R Shiny for users to visualize the distribution of diseases with filters for measure, disease, sex, and health authority regions, and (2) a data analysis pipeline using the Bayesian temporal smoothing model to infer and display temporal trends of diseases in the dashboard. Two sub-teams will work in parallel to develop the final products for each method in 8 weeks. The project will include a formal presentation on June 16 and a final report on June 29.
