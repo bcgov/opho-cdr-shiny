@@ -21,9 +21,7 @@ To visualize the spatial and temporal trends of disease prevalence in the provin
 knitr::include_graphics("images/dashboard.png")
 ```
 
-
-(Spatialtemporal Analysis paragraph)
-
+The Office of BC Provincial Health Officer curates data of ongoing surveillance of 26 Chronic Diseases throughout th whole region (British Columbia province). Currently the dataset has data on Incidence Rate, Prevalence Rates, Geographical and administrative geo-tiers and age-groups. To observe the trand of changes throughout the years of such surveillance data, temporal analysis is the standard choice. We will explore various methods as per nature of data, established evidences, stakeholder discussions and variables of interest. Eventually, the outputs will be incorporated with the primary R Shiny app. 
 
 ## Data Science Techniques
 We will be using R Shiny to build the interactive dashboard, and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. For data wrangling we will use the tidyverse set of packages to clean the data in preparation for plotting.    
