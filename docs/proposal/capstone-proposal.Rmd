@@ -1,7 +1,7 @@
 ---
 title: "BC Chronic Disease Capstone Proposal"
 author: "Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Shengting (Irene) Yan"
-date: May 10, 2022
+date: May 11, 2022
 output: 
   bookdown::pdf_document2
     # toc : true
@@ -79,33 +79,37 @@ and we will be utilizing the leaflet and ggplot packages to assist in creating v
 For data wrangling we will use the tidyverse set of packages to tidy the data in preparation for plotting.    
 
 ## Temporal Modeling
-We will use a Bayesian temporal smoothing model for the inferential analysis 
+We aim to explore a Bayesian temporal smoothing model for the inferential analysis 
 of chronic disease incidence and prevalence over time. The goal of this model is
 to generate smoothed estimates with smaller intervals for CHSAs with small populations.
 A Bayesian approach was selected in order to integrate prior knowledge 
 about the disease rates and to generate 95% credible intervals from the posterior distribution. 
 We propose to use the INLA package for Bayesian analysis for computational efficiency 
-compared to traditional MCMC approaches. (@gomez-rubio_2021)
+compared to traditional MCMC approaches. (@gomez-rubio_2021) 
 
 Temporal smoothing is appropriate for our data due to the autocorrelation 
 that is observed between disease incidence and prevalence rates
 from sequential time points in a given region.
-For each disease, we will compare 2 temporal smoothing models for each of the 
+For each disease, we will compare 2 models for each of the 
 3 standardized disease rates: a first-order random walk model (RW1) 
 and a second-order random walk model (RW2).
-A RW1 model will smooth towards the previous value and penalize deviations from its neighbour,
-whereas a RW2 model will smooth towards the previous slope and penalize deviations from linearity. 
+A RW1 model will smooth towards the previous value,
+whereas a RW2 model will smooth towards the previous slope. 
 Therefore, a RW2 model will produce a greater smoothing effect than an RW1 model. (@wakefield)
 
-As a baseline, we will compare our Bayesian smoothing models to the 
-95% confidence intervals created using frequentist approaches provided in our original dataset.
-If the Bayesian 95% credible intervals produced are smaller overall than the 95% 
-confidence intervals, we will select a final model among the RW1/RW2 approaches.
+As a baseline model for comparison, we will use the local polynomial regression model (LOESS). 
+The LOESS model is flexible model that acts like a weighted moving average, 
+taking into account neighbouring time points within a given span.
+We will also compare these models to the 95% confidence intervals 
+created using frequentist approaches provided in our original dataset.
+If the Bayesian models demonstrate an improvement compared to the
+95% confidence intervals of the loess approach,
+we will select a final model among the RW1/RW2 approaches.
 
-To determine our final model, we will use the Deviance Information Criterion (DIC) 
+Model selection will be based on the Deviance Information Criterion (DIC) 
 and the Widely Applicable Information Criterion (WAIC), 
 where a smaller DIC/WAIC indicates a better fit. 
-The final model determined for a given disease and metric will then be fit 
+The final model chosen for a given disease and metric will then be fit 
 on all CHSA regions. Time series plots will then be generated with
 both observed and modeled disease incidence/prevalence rates for the Shiny app.
 
