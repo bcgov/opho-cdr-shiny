@@ -1,6 +1,6 @@
 ---
 title: "BC Chronic Disease Capstone Proposal"
-author: "Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Shengting (Irene) Yan"
+author: "Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Irene Yan"
 date: May 11, 2022
 output: 
   bookdown::pdf_document2
@@ -123,16 +123,6 @@ knitr::include_graphics("images/timeline.png")
 ```
 
 # Conclusion
-Each year, the Office of British Columbia Provincial Health Officer tracks 
-persistent and new cases of 25 chronic diseases throughout the whole region. 
-This document has proposed methods to accommodate the possible inquiries 
-about the prevalence of chronic conditions and their spatiotemporal trends from health professionals and non-experts. 
-The proposed methods include: 
-(1) an interactive and informative dashboard using R Shiny 
-for users to visualize the distribution of diseases with filters for measure, disease, sex, and health authority regions, 
-and (2) a data analysis pipeline using the Bayesian temporal smoothing model 
-to infer and display temporal trends of diseases in the dashboard. 
-Two sub-teams will work in parallel to develop the final products for each method in 8 weeks (Figure \@ref(fig:timeline)). 
-The project will include a formal presentation on June 16 and a final report on June 29.
+Each year, the Office of British Columbia Provincial Health Officer summarizes statistics on 25 chronic diseases in the region. This document has proposed methods to accommodate the possible inquiries about the prevalence of chronic conditions and their spatiotemporal trends. The proposed methods include: (1) an interactive and informative R Shiny dashboard for users to visualize the distribution of diseases with filters for measure, disease, sex, and health authority region, and (2) a data analysis pipeline using the Bayesian temporal smoothing model to infer and display temporal trends of diseases on the dashboard. We will develop the final products based on the partner's needs and constant feedback in 8 weeks (Figure \@ref(fig:timeline)). The project will include a formal presentation on June 16 and a final report on June 29.  We hope the dashboard can better inform Ministers, public officials, and non-expert users on public health issues and chronic diseases.
 
 # References
