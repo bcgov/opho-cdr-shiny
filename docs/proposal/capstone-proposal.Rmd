@@ -1,12 +1,9 @@
 ---
 title: "BC Chronic Disease Capstone Proposal"
 author: "Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Irene Yan"
-date: May 11, 2022
+date: "May 13, 2022"
 output: 
   bookdown::pdf_document2
-    # toc : true
-    # fig_caption : true
-    # extra_dependencies: ["float"]
 header-includes:
  \usepackage{float}
 bibliography: capstone-proposal.bib
@@ -55,7 +52,7 @@ Lastly, we will have a page displaying the data table with filters applied,
 with the option to download the data as a report.
 A sketch of the proposed dashboard design is shown below in Figure \@ref(fig:dashboard).
 
-``` {r dashboard, echo=FALSE, fig.cap="Proposed Dashboard Design Layout. The dashboard will consist of 4 tabs: a disease-specific tab, a region-specific tab, an information tab, and a download tab.", out.width = '100%'}
+``` {r dashboard, echo=FALSE, fig.cap="Proposed Dashboard Design Layout. The dashboard will consist of 4 tabs: a disease-specific tab, a region-specific tab, an information tab, and a download tab. The left panel in the image shows the disease-specific tab with map animation and temporal graphs. The right panel in the image shows the region-specific tab with temporal graphs for multiple diseases.", out.width = '100%'}
 knitr::include_graphics("images/dashboard.png")
 ```
 
@@ -75,8 +72,9 @@ The tools and techniques for each aspect of the project are described in this se
 
 ## Dashboard
 We will be using R Shiny to build the framework of the interactive dashboard, 
-and we will be utilizing the leaflet and ggplot packages to assist in creating visually appealing graphs and maps. 
-For data wrangling we will use the tidyverse set of packages to tidy the data in preparation for plotting.    
+and we will be utilizing the leaflet and ggplot packages to assist in generating visually appealing graphs and maps. 
+For data wrangling we will use the tidyverse set of packages to tidy the data in preparation for plotting.
+We  will also be performing descriptive statistical analysis to create informative and explanatory graphs within the dashboard.
 
 ## Temporal Modeling
 We aim to explore a Bayesian temporal smoothing model for the inferential analysis 
