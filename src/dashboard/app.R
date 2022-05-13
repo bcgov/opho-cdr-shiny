@@ -60,7 +60,10 @@ ui <-fluidPage(
   
   navbarPage("Chronic Disease Dashboard",
       tabPanel("Information", 
-               helpText("info about dashboard")),
+               h2("Welcome to Chronic Disease Dashboard"),
+               h4("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
+               helpText(HTML("info about dashboard <br/>Instructions and descriptions of tabs, <br/>rate definitions,
+                        note about fiscal year  "))),
       tabPanel("By Disease",
                sidebarLayout(
                sidebarPanel(
