@@ -61,7 +61,7 @@ The Office of BC Provincial Health Officer curates data of ongoing surveillance 
 throughout the whole region (British Columbia province). 
 Currently the dataset has data on Incidence Rate, Prevalence Rates, Geographical and administrative geo-tiers and age-groups. 
 To observe the trend of changes throughout the years of such surveillance data, 
-temporal analysis is the standard choicec (@wang2020modelling). 
+temporal analysis is the standard choice (@wang2020modelling). 
 We will explore various methods as per nature of data, established evidences, stakeholder discussions and variables of interest. 
 Eventually, the outputs will be incorporated with the primary R Shiny app. 
 
