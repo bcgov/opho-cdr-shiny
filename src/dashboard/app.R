@@ -1,7 +1,8 @@
 # Load packages ----
 library(shiny)
 library(tidyverse)
-
+library(leaflet)
+library(rgdal)
 
 # Load data ----
 inc_rate_df <- data.frame()
@@ -44,15 +45,20 @@ life_prev_df <- life_prev_df |>
   mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL,4,7)))|>
   select(-FISC_YR_LABEL)
 
+
+chsa_spdf <- readOGR(
+  dsn = paste0(getwd(),"/geo_data/chsa_2018"),
+  layer ="CHSA_2018",
+  verbose = FALSE
+  ) |>
+  spTransform( CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+
 # Source helper functions -----
 
 
 
 # User interface ----
-# ui <- fluidPage(
-#   titlePanel("Chronic Disease Dashboard"),
-#   mainPanel(
-#     tabsetPanel(
 
 ui <-fluidPage(
   
@@ -67,6 +73,7 @@ ui <-fluidPage(
       tabPanel("By Disease",
                sidebarLayout(
                sidebarPanel(
+                 width = 3,
                  h2("Filters"),
                  hr(style = "border-top: 1px solid #000000"),
                  
@@ -81,6 +88,11 @@ ui <-fluidPage(
                  
                  uiOutput("disease_d"),
                  
+                 radioButtons("health_bound",
+                              label= "Select Geography",
+                              choices = c("Health Authorities","Community Health Service Areas"),
+                              selected="Health Authorities"),
+                 
                  selectInput("region_d", 
                              label = "Select Community Health Service Area(s)",
                              choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
@@ -91,15 +103,27 @@ ui <-fluidPage(
                              label = "Select Year Range",
                              min = 2001, max = 2020, value = c(2001, 2020)),
                  
-                 radioButtons("gender_d", 
-                              label = ("Select Gender"),
-                              choices = c("Male","Female","Both"), 
-                              selected = "Both"),
+                 # div(style="display:inline-block",
+                     radioButtons("gender_d", 
+                                  label = ("Select Gender"),
+                                  choices = c("Male","Female","Both"), 
+                                  selected = "Both"),
+                 
                ),
                mainPanel(
-               verbatimTextOutput("summary"),
-               plotOutput("graph1"))
+                 width = 9,
+                 # fluidRow(
+                 #   column (12 , div(verbatimTextOutput("summary")))
+                 # ),
+                 fluidRow(
+                   column(6, leafletOutput("map",height = 700)),
+                   column(6, 
+                          fluidRow(column(12,plotOutput("disease_graph1",height=350))),
+                          fluidRow(column(12,plotOutput("disease_graph2",height=350))),
+                          ))
+                 )
                )),
+      
       tabPanel("By Region",
                sidebarLayout(
                  sidebarPanel(
@@ -242,9 +266,11 @@ server <- function(input, output) {
   output$disease_d <- renderUI({
     selectInput("disease_d", 
                 label = "Select Disease",
-                choices = append("All",unique(datasetInput_d()$DISEASE)),
+                # choices = append("All",unique(datasetInput_d()$DISEASE)),
+                choices = unique(datasetInput_d()$DISEASE),
                 multiple = FALSE,
-                selected = "All")
+                # selected = "All"
+                )
   })
   
   output$disease_r <- renderUI({
@@ -266,7 +292,8 @@ server <- function(input, output) {
   filter_df_d <- reactive({
     datasetInput_d() |> 
       filter ((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)) &
-              (if ("All" %in% input$disease_d)TRUE else (DISEASE %in% input$disease_d)) &
+              # (if ("All" %in% input$disease_d)TRUE else (DISEASE %in% input$disease_d)) &
+              (DISEASE %in% input$disease_d) &
               (YEAR %in% seq(from=min(input$year_range_d),to=max(input$year_range_d))) &
               (if (input$gender_d =='Both') TRUE else (CLNT_GENDER_LABEL ==input$gender_d)))
   })
@@ -289,13 +316,21 @@ server <- function(input, output) {
   
   output$summary <- renderText({paste0("Some summary info \nselected disease(s):", list(input$disease_d) )})
   
-  output$graph1 <- renderPlot({
+  output$disease_graph1 <- renderPlot({
     filter_df_d()|>
       ggplot(aes_string(y="DISEASE",x= rateInput_d()))+
       geom_bar(stat='summary',fun=mean)+
       labs(x=rateInput_d(),
            y="Disease",
            title = paste0("Average ", input$dataset_d))
+  })
+  output$disease_graph2 <- renderPlot({
+    filter_df_d()|>
+      ggplot(aes_string(y=rateInput_d(),x="YEAR"))+
+      geom_line(stat='summary',fun=mean)+
+      labs(y=rateInput_d(),
+           x="Year",
+           title = paste0("Average ", input$dataset_d,"Over Time"))
   })
   
   output$graph2 <- renderPlot({
@@ -319,7 +354,37 @@ server <- function(input, output) {
   
   output$data_table <- renderDataTable(filter_df_data())
   
-  output$map <- renderPlot({})
+  output$map <- renderLeaflet({
+    new_spdf<-merge(chsa_spdf,filter_df_d(),by.x="CHSA_CD",by.y="HEALTH_BOUND_CODE")
+    
+    mybins <- c(0,4,8,12,Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data$CRUDE_RATE_PER_1000, na.color="transparent", bins=mybins)
+    
+    mytext <- paste(
+      "CHSA: ", new_spdf@data$CHSA_Name,"<br/>", 
+      "HA: ", new_spdf@data$HA_Name, "<br/>", 
+      "CRUDE_RATE_PER_1000: ", new_spdf@data$CRUDE_RATE_PER_1000, 
+      sep="") %>%
+      lapply(htmltools::HTML)
+    m<-leaflet(spdf) %>% 
+      setView( lat=45, lng=-123.1 , zoom=4.5) %>%
+      addPolygons( 
+        fillColor = ~mypalette(new_spdf@data$CRUDE_RATE_PER_1000), 
+        stroke=TRUE, 
+        fillOpacity = 0.9, 
+        color="gray", 
+        weight=0.3,
+        label = mytext,
+        labelOptions = labelOptions( 
+          style = list("font-weight" = "normal", padding = "3px 8px"), 
+          textsize = "13px", 
+          direction = "auto"
+        )
+      ) %>%
+      addLegend( pal=mypalette, values=~new_spdf@data$CRUDE_RATE_PER_1000, opacity=0.9, title = input$dataset_d, position = "bottomleft" )
+    m
+    
+  })
   
   
 }

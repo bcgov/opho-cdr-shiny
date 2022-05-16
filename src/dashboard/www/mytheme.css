@@ -7,3 +7,6 @@
 .navbar-default .navbar-brand { font-size: 38px; 
                                 #background-color: #e81a1a ;} 
 
+#map {
+    background: white;
+}
