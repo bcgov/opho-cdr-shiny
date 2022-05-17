@@ -64,9 +64,9 @@ ui <-fluidPage(
   
   includeCSS("www/mytheme.css"),
   
-  navbarPage("Chronic Disease Dashboard",
+  navbarPage("BC Chronic Disease Dashboard",
       tabPanel("Information", 
-               h2("Welcome to Chronic Disease Dashboard"),
+               h2("Welcome to the BC Chronic Disease Dashboard"),
                h4("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
                helpText(HTML("info about dashboard <br/>Instructions and descriptions of tabs, <br/>rate definitions,
                         note about fiscal year  "))),
@@ -93,21 +93,24 @@ ui <-fluidPage(
                               choices = c("Health Authorities","Community Health Service Areas"),
                               selected="Health Authorities"),
                  
-                 selectInput("region_d", 
-                             label = "Select Community Health Service Area(s)",
-                             choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                             multiple = TRUE,
-                             selected = "All"),
+                 uiOutput("region_d"),
                  
-                 sliderInput("year_range_d", 
-                             label = "Select Year Range",
-                             min = 2001, max = 2020, value = c(2001, 2020)),
+                 # selectInput("region_d", 
+                 #             label = "Select Community Health Service Area(s)",
+                 #             choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
+                 #             multiple = TRUE,
+                 #             selected = "All"),
                  
-                 # div(style="display:inline-block",
-                     radioButtons("gender_d", 
-                                  label = ("Select Gender"),
-                                  choices = c("Male","Female","Both"), 
-                                  selected = "Both"),
+                 selectInput("year_d", 
+                             label = "Select Year",
+                             choices = c(seq(2001,2020))
+                             ),
+
+                 radioButtons("gender_d", 
+                              label = ("Select Gender"),
+                              choices = c("Male","Female","Both"), 
+                              selected = "Both",
+                              inline=TRUE),
                  
                ),
                mainPanel(
@@ -263,6 +266,14 @@ server <- function(input, output) {
            "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
   })
   
+  output$region_d <- renderUI({
+    selectInput("region_d",
+                label = "Select Health Region(s)",
+                choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
+                multiple = TRUE,
+                selected = "All")
+  })
+  
   output$disease_d <- renderUI({
     selectInput("disease_d", 
                 label = "Select Disease",
@@ -294,7 +305,7 @@ server <- function(input, output) {
       filter ((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)) &
               # (if ("All" %in% input$disease_d)TRUE else (DISEASE %in% input$disease_d)) &
               (DISEASE %in% input$disease_d) &
-              (YEAR %in% seq(from=min(input$year_range_d),to=max(input$year_range_d))) &
+              # (YEAR %in% seq(from=min(input$year_range_d),to=max(input$year_range_d))) &
               (if (input$gender_d =='Both') TRUE else (CLNT_GENDER_LABEL ==input$gender_d)))
   })
   
@@ -318,6 +329,7 @@ server <- function(input, output) {
   
   output$disease_graph1 <- renderPlot({
     filter_df_d()|>
+      filter(YEAR == input$year_d) |>
       ggplot(aes_string(y="DISEASE",x= rateInput_d()))+
       geom_bar(stat='summary',fun=mean)+
       labs(x=rateInput_d(),
@@ -355,7 +367,7 @@ server <- function(input, output) {
   output$data_table <- renderDataTable(filter_df_data())
   
   output$map <- renderLeaflet({
-    new_spdf<-merge(chsa_spdf,filter_df_d(),by.x="CHSA_CD",by.y="HEALTH_BOUND_CODE")
+    new_spdf<-merge(chsa_spdf,filter(filter_df_d(),(YEAR == input$year_d)),by.x="CHSA_CD",by.y="HEALTH_BOUND_CODE")
     
     mybins <- c(0,4,8,12,Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data$CRUDE_RATE_PER_1000, na.color="transparent", bins=mybins)
@@ -366,8 +378,8 @@ server <- function(input, output) {
       "CRUDE_RATE_PER_1000: ", new_spdf@data$CRUDE_RATE_PER_1000, 
       sep="") %>%
       lapply(htmltools::HTML)
-    m<-leaflet(spdf) %>% 
-      setView( lat=45, lng=-123.1 , zoom=4.5) %>%
+    m<-leaflet(new_spdf) %>% 
+      setView( lat=55, lng=-123.1 , zoom=4.5) %>%
       addPolygons( 
         fillColor = ~mypalette(new_spdf@data$CRUDE_RATE_PER_1000), 
         stroke=TRUE, 
