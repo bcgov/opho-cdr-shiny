@@ -3,6 +3,8 @@ library(shiny)
 library(tidyverse)
 library(leaflet)
 library(rgdal)
+library(shinythemes)
+library(plotly)
 
 
 # Source helper functions -----
@@ -12,7 +14,7 @@ source('global.R', local = T) #load in data
 # User interface ----
 
 ui <-fluidPage(
-  
+  theme = shinytheme("sandstone"),
   includeCSS("www/mytheme.css"), #add custom styling
   
   navbarPage("BC Chronic Disease Dashboard",
@@ -42,34 +44,34 @@ ui <-fluidPage(
                                disease(s), health region(s), year range, and gender. There is also an option for the user to
                                download the selected data.<br/><br/>
                              </ul>
-                             The definitions of the rate types of provided below.
+                             The definitions of the rate types are provided below.
                              <ul>
-                             <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
-                             specified population during a specified time period. 
-                             It is calculated as the number of new cases in the population at-risk in a 
-                             specified period of time divided by the person-time at risk or the number of persons at risk 
-                             (i.e., mid-year population in a reporting year minus previous year's prevalent cases) in the same period. 
-                             <br/><br/>
-                             <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
-                             (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
-                             <li><b>Lifetime Prevalence</b>: proportion of individuals who have had the condition for at least part of 
-                             their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
-                             who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
-                             a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
-                             carried forward to count as a case every year thereafter until the person's death, their migration out of BC,
-                             or the absence of follow-up. 
-                             <br/><br/>
-                             <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
-                             in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
-                             <li><b>Active Healthcare Contact (HSC) Prevalence</b>: For relapsing-remitting diseases, the BCCDR measures 
-                             active healthcare contact prevalence. Cases are counted if they previously met case definition criteria 
-                             for a disease, continued to live and receive healthcare services for the disease again in BC during a
-                             later reporting period. That is, cases are counted for a reporting period if the patient seek healthcare 
-                             services for relapsing-remitting conditions again after the fiscal year when they were ascertained as a case. 
-                             <br/><br/>
-                             <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
-                             healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
-                             </p></li>
+                               <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
+                               specified population during a specified time period. 
+                               It is calculated as the number of new cases in the population at-risk in a 
+                               specified period of time divided by the person-time at risk or the number of persons at risk 
+                               (i.e., mid-year population in a reporting year minus previous year's prevalent cases) in the same period. 
+                               <br/><br/>
+                               <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
+                               (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
+                               <li><b>Lifetime Prevalence</b>: proportion of individuals who have had the condition for at least part of 
+                               their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
+                               who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
+                               a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
+                               carried forward to count as a case every year thereafter until the person's death, their migration out of BC,
+                               or the absence of follow-up. 
+                               <br/><br/>
+                               <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
+                               in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
+                               <li><b>Active Healthcare Contact (HSC) Prevalence</b>: For relapsing-remitting diseases, the BCCDR measures 
+                               active healthcare contact prevalence. Cases are counted if they previously met case definition criteria 
+                               for a disease, continued to live and receive healthcare services for the disease again in BC during a
+                               later reporting period. That is, cases are counted for a reporting period if the patient seek healthcare 
+                               services for relapsing-remitting conditions again after the fiscal year when they were ascertained as a case. 
+                               <br/><br/>
+                               <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
+                               healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
+                               </p></li>
                              </ul>
                         note about fiscal year  "))),
       
@@ -127,8 +129,8 @@ ui <-fluidPage(
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)),
                    column(6, 
-                          fluidRow(column(12,plotOutput("disease_graph1",height=350))),
-                          fluidRow(column(12,plotOutput("disease_graph2",height=350))),
+                          fluidRow(column(12,plotlyOutput("disease_graph1",height=350))),
+                          fluidRow(column(12,plotlyOutput("disease_graph2",height=350))),
                           ))
                  )
                )),
@@ -352,22 +354,24 @@ server <- function(input, output) {
   
   output$summary <- renderText({paste0("Some summary info \nselected disease(s):", list(input$disease_d) )})
   
-  output$disease_graph1 <- renderPlot({
-    filter_df_d()|>
+  output$disease_graph1 <- renderPlotly({
+    p<-filter_df_d()|>
       filter(YEAR == input$year_d) |>
-      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d()))+
+      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
       geom_bar(stat='summary',fun=mean)+
       labs(x="Health Region",
            y=rateInput_d(),
            title = paste0("Average ", input$dataset_d))
+    ggplotly(p)
   })
-  output$disease_graph2 <- renderPlot({
-    filter_df_d()|>
+  output$disease_graph2 <- renderPlotly({
+   p2<- filter_df_d()|>
       ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+
       geom_line(stat='summary',fun=mean)+
       labs(y=rateInput_d(),
            x="Year",
            title = paste0("Average ", input$dataset_d,"Over Time"))
+   ggplotly(p2)
   })
   
   output$graph2 <- renderPlot({

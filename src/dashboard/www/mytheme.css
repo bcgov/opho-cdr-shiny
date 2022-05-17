@@ -1,11 +1,13 @@
-
 .navbar .navbar-nav {float: left; 
-                     # color: #ff3368; 
+                     #color: #003366; 
                      font-size: 14px; 
-                     # background-color: #FFFF00 ; } 
-.navbar .navbar-header {float: left; } 
+                     #background-color: #003366 ; } 
+.navbar .navbar-header {float: left;
+                        #color: #003366} 
 .navbar-default .navbar-brand { font-size: 38px; 
-                                #background-color: #e81a1a ;} 
+                                #background-color: #003366 ;} 
+
+
 
 #map {
     background: white;
