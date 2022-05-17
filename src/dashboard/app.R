@@ -4,6 +4,7 @@ library(tidyverse)
 library(leaflet)
 library(rgdal)
 library(shinythemes)
+library(plotly)
 
 
 # Source helper functions -----
@@ -128,8 +129,8 @@ ui <-fluidPage(
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)),
                    column(6, 
-                          fluidRow(column(12,plotOutput("disease_graph1",height=350))),
-                          fluidRow(column(12,plotOutput("disease_graph2",height=350))),
+                          fluidRow(column(12,plotlyOutput("disease_graph1",height=350))),
+                          fluidRow(column(12,plotlyOutput("disease_graph2",height=350))),
                           ))
                  )
                )),
@@ -339,22 +340,24 @@ server <- function(input, output) {
   
   output$summary <- renderText({paste0("Some summary info \nselected disease(s):", list(input$disease_d) )})
   
-  output$disease_graph1 <- renderPlot({
-    filter_df_d()|>
+  output$disease_graph1 <- renderPlotly({
+    p<-filter_df_d()|>
       filter(YEAR == input$year_d) |>
       ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d()))+
       geom_bar(stat='summary',fun=mean)+
       labs(x="Health Region",
            y=rateInput_d(),
            title = paste0("Average ", input$dataset_d))
+    ggplotly(p)
   })
-  output$disease_graph2 <- renderPlot({
-    filter_df_d()|>
+  output$disease_graph2 <- renderPlotly({
+   p2<- filter_df_d()|>
       ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+
       geom_line(stat='summary',fun=mean)+
       labs(y=rateInput_d(),
            x="Year",
            title = paste0("Average ", input$dataset_d,"Over Time"))
+   ggplotly(p2)
   })
   
   output$graph2 <- renderPlot({
