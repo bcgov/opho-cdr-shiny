@@ -142,6 +142,12 @@ ui <-fluidPage(
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
                    
+                   radioButtons("health_bound_r",
+                                label= "Select Geography",
+                                choices = c("Health Authorities","Community Health Service Areas"),
+                                selected="Health Authorities"),
+                   
+                   uiOutput("region_r"),
                    selectInput("dataset_r", 
                                label = "Select Rate Type",
                                choices = c("Crude Incidence Rate",
@@ -152,18 +158,6 @@ ui <-fluidPage(
                                            "Age Standardized HSC Prevalence")),
                    
                    uiOutput("disease_r"),
-                   
-                   radioButtons("health_bound_r",
-                                label= "Select Geography",
-                                choices = c("Health Authorities","Community Health Service Areas"),
-                                selected="Health Authorities"),
-                   
-                   uiOutput("region_r"),
-                   # selectInput("region_r", 
-                   #             label = "Select Community Health Service Area(s)",
-                   #             choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                   #             multiple = FALSE,
-                   #             selected = "All"),
                    
                    sliderInput("year_range_r", 
                                label = "Select Year Range",
@@ -295,10 +289,10 @@ server <- function(input, output) {
   
   output$region_r <- renderUI({
     selectInput("region_r",
-                label = "Select Health Region(s)",
+                label = "Select Health Region",
                 choices = (if(input$health_bound_r == "Health Authorities")  c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern")
                            else unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                multiple = TRUE)
+                multiple = FALSE)
   })
   
   output$disease_d <- renderUI({
@@ -313,7 +307,7 @@ server <- function(input, output) {
   
   output$disease_r <- renderUI({
     selectInput("disease_r", 
-                label = "Select Disease",
+                label = "Select Disease(s)",
                 choices = append("All",unique(datasetInput_r()$DISEASE)),
                 multiple = TRUE,
                 selected = "All")
@@ -338,10 +332,10 @@ server <- function(input, output) {
   
   filter_df_r <- reactive({
     datasetInput_r() |> 
-      filter ((if ("All" %in% input$region_r) TRUE else (HEALTH_BOUND_NAME %in% input$region_r)) &
-                (if ("All" %in% input$disease_r)TRUE else (DISEASE %in% input$disease_r)) &
+      filter ((HEALTH_BOUND_NAME %in% input$region_r) &
+                (if ("All" %in% input$disease_r) TRUE else (DISEASE %in% input$disease_r)) &
                 (YEAR %in% seq(from=min(input$year_range_r),to=max(input$year_range_r))) &
-                (if (input$gender_r =='Both') TRUE else (CLNT_GENDER_LABEL ==input$gender_r)))
+                (if (input$gender_r == 'Both') TRUE else (CLNT_GENDER_LABEL == input$gender_r)))
   })
   
   filter_df_data <- reactive({
