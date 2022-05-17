@@ -343,7 +343,7 @@ server <- function(input, output) {
   output$disease_graph1 <- renderPlotly({
     p<-filter_df_d()|>
       filter(YEAR == input$year_d) |>
-      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d()))+
+      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
       geom_bar(stat='summary',fun=mean)+
       labs(x="Health Region",
            y=rateInput_d(),
