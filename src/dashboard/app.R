@@ -269,7 +269,8 @@ server <- function(input, output) {
   output$region_d <- renderUI({
     selectInput("region_d",
                 label = "Select Health Region(s)",
-                choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
+                choices = (if(input$health_bound == "Health Authorities")  c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern")
+                           else c(append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)))),
                 multiple = TRUE,
                 selected = "All")
   })
@@ -330,15 +331,15 @@ server <- function(input, output) {
   output$disease_graph1 <- renderPlot({
     filter_df_d()|>
       filter(YEAR == input$year_d) |>
-      ggplot(aes_string(y="DISEASE",x= rateInput_d()))+
+      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d()))+
       geom_bar(stat='summary',fun=mean)+
-      labs(x=rateInput_d(),
-           y="Disease",
+      labs(x="Health Region",
+           y=rateInput_d(),
            title = paste0("Average ", input$dataset_d))
   })
   output$disease_graph2 <- renderPlot({
     filter_df_d()|>
-      ggplot(aes_string(y=rateInput_d(),x="YEAR"))+
+      ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+
       geom_line(stat='summary',fun=mean)+
       labs(y=rateInput_d(),
            x="Year",
