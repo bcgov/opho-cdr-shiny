@@ -4,74 +4,80 @@ library(tidyverse)
 library(leaflet)
 library(rgdal)
 
-# Load data ----
-inc_rate_df <- data.frame()
-hsc_prev_df <- data.frame()
-life_prev_df <- data.frame()
-
-for (dir in list.dirs("data")[-1]){
-  for (file in list.files(dir)){
-    new_df <- read_csv(paste0(dir,"/",file),
-                       col_select = c("DISEASE",
-                                      "FISC_YR_LABEL",
-                                      "CLNT_GENDER_LABEL",
-                                      "HEALTH_BOUNDARIES",
-                                      "CRUDE_RATE_PER_1000",
-                                      "STD_RATE_PER_1000"))|>
-      drop_na(CRUDE_RATE_PER_1000)
-    if (dir == "data/IncidenceRate"){
-      inc_rate_df <- rbind(inc_rate_df,new_df)
-    }else if (dir == "data/HSCPrevalence"){
-      hsc_prev_df <- rbind(hsc_prev_df,new_df)
-    }else if (dir == "data/LifePrevalence"){
-      life_prev_df <- rbind(life_prev_df,new_df)
-    }
-  }
-}
-
-
-inc_rate_df <- inc_rate_df |>
-  separate(HEALTH_BOUNDARIES,c("HEALTH_BOUND_CODE","HEALTH_BOUND_NAME")," ", extra = "merge")|>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL,4,7)))|>
-  select(-FISC_YR_LABEL)
-
-hsc_prev_df <- hsc_prev_df |>
-  separate(HEALTH_BOUNDARIES,c("HEALTH_BOUND_CODE","HEALTH_BOUND_NAME")," ", extra = "merge")|>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL,4,7)))|>
-  select(-FISC_YR_LABEL)
-
-life_prev_df <- life_prev_df |>
-  separate(HEALTH_BOUNDARIES,c("HEALTH_BOUND_CODE","HEALTH_BOUND_NAME")," ", extra = "merge")|>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL,4,7)))|>
-  select(-FISC_YR_LABEL)
-
-
-chsa_spdf <- readOGR(
-  dsn = paste0(getwd(),"/geo_data/chsa_2018"),
-  layer ="CHSA_2018",
-  verbose = FALSE
-  ) |>
-  spTransform( CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
 
 # Source helper functions -----
-
+source('global.R', local = T) #load in data
 
 
 # User interface ----
 
 ui <-fluidPage(
   
-  includeCSS("www/mytheme.css"),
+  includeCSS("www/mytheme.css"), #add custom styling
   
   navbarPage("BC Chronic Disease Dashboard",
+      
+      #Info Tab
       tabPanel("Information", 
                h2("Welcome to the BC Chronic Disease Dashboard"),
-               h4("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
-               helpText(HTML("info about dashboard <br/>Instructions and descriptions of tabs, <br/>rate definitions,
+               h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
+               helpText(HTML("<br/><br/>
+                             This dashboard facilitates the exploration and visualization of spatial and temporal
+                             trends of 25 different chronic diseases across the Province of British Columbia. The data 
+                             is sourced from the Chronic Disease Registry (BCCDR).
+                             <br/><br/>
+                             The three tabs in the dashboard and their respective features are described below.<br/>
+                             <ul>
+                               <li><b>By Disease</b></li>
+                               This tab allows for the trend comparisons of one disease over several Health Authorities(HA)  
+                               or Community Health Service Areas (CHSA). In this tab the user should select a rate type, 
+                               a disease, geography type, year, and gender. The user can also optionally specify 
+                               multiple HAs or CHSAs. <br/><br/>
+                               <li><b>By Region</b></li>
+                               This tab allows for the trend comparisons of several diseases in one particular HA or CHSA.
+                               In this tab the user should select a rate type, disease(s) of interest, geography type,
+                               year, and gender. <br/><br/>
+                               <li><b>Data</b></li>
+                               This tab retrieves all data specified by the user. In this tab the user should select a rate type,
+                               disease(s), health region(s), year range, and gender. There is also an option for the user to
+                               download the selected data.<br/><br/>
+                             </ul>
+                             The definitions of the rate types of provided below.
+                             <ul>
+                             <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
+                             specified population during a specified time period. 
+                             It is calculated as the number of new cases in the population at-risk in a 
+                             specified period of time divided by the person-time at risk or the number of persons at risk 
+                             (i.e., mid-year population in a reporting year minus previous year's prevalent cases) in the same period. 
+                             <br/><br/>
+                             <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
+                             (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
+                             <li><b>Lifetime Prevalence</b>: proportion of individuals who have had the condition for at least part of 
+                             their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
+                             who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
+                             a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
+                             carried forward to count as a case every year thereafter until the person's death, their migration out of BC,
+                             or the absence of follow-up. 
+                             <br/><br/>
+                             <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
+                             in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
+                             <li><b>Active Healthcare Contact (HSC) Prevalence</b>: For relapsing-remitting diseases, the BCCDR measures 
+                             active healthcare contact prevalence. Cases are counted if they previously met case definition criteria 
+                             for a disease, continued to live and receive healthcare services for the disease again in BC during a
+                             later reporting period. That is, cases are counted for a reporting period if the patient seek healthcare 
+                             services for relapsing-remitting conditions again after the fiscal year when they were ascertained as a case. 
+                             <br/><br/>
+                             <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
+                             healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
+                             </p></li>
+                             </ul>
                         note about fiscal year  "))),
+      
+      #By Disease Tab
       tabPanel("By Disease",
                sidebarLayout(
+                 
+              # Filters
                sidebarPanel(
                  width = 3,
                  h2("Filters"),
@@ -127,6 +133,7 @@ ui <-fluidPage(
                  )
                )),
       
+      #By Region Tab
       tabPanel("By Region",
                sidebarLayout(
                  sidebarPanel(
@@ -168,9 +175,12 @@ ui <-fluidPage(
                  mainPanel(
                    plotOutput("graph2"))
                )),
-
+      
+      #Data Tab
       tabPanel("Data",
                sidebarLayout(
+                 
+                 #Filters
                  sidebarPanel(
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
