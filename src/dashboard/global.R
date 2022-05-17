@@ -10,8 +10,9 @@ for (dir in list.dirs("data")[-1]){
                                       "CLNT_GENDER_LABEL",
                                       "HEALTH_BOUNDARIES",
                                       "CRUDE_RATE_PER_1000",
-                                      "STD_RATE_PER_1000"))|>
-      drop_na(CRUDE_RATE_PER_1000)
+                                      "STD_RATE_PER_1000"),
+                       show_col_types = FALSE)|>
+      drop_na(CRUDE_RATE_PER_1000);
     if (dir == "data/IncidenceRate"){
       inc_rate_df <- rbind(inc_rate_df,new_df)
     }else if (dir == "data/HSCPrevalence"){
