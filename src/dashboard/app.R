@@ -144,11 +144,17 @@ ui <-fluidPage(
                    
                    uiOutput("disease_r"),
                    
-                   selectInput("region_r", 
-                               label = "Select Community Health Service Area(s)",
-                               choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                               multiple = FALSE,
-                               selected = "All"),
+                   radioButtons("health_bound_r",
+                                label= "Select Geography",
+                                choices = c("Health Authorities","Community Health Service Areas"),
+                                selected="Health Authorities"),
+                   
+                   uiOutput("region_r"),
+                   # selectInput("region_r", 
+                   #             label = "Select Community Health Service Area(s)",
+                   #             choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
+                   #             multiple = FALSE,
+                   #             selected = "All"),
                    
                    sliderInput("year_range_r", 
                                label = "Select Year Range",
@@ -275,6 +281,14 @@ server <- function(input, output) {
                 selected = "All")
   })
   
+  output$region_r <- renderUI({
+    selectInput("region_r",
+                label = "Select Health Region(s)",
+                choices = (if(input$health_bound_r == "Health Authorities")  c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern")
+                           else unique(inc_rate_df$HEALTH_BOUND_NAME)),
+                multiple = TRUE)
+  })
+  
   output$disease_d <- renderUI({
     selectInput("disease_d", 
                 label = "Select Disease",
@@ -291,7 +305,7 @@ server <- function(input, output) {
                 choices = append("All",unique(datasetInput_r()$DISEASE)),
                 multiple = TRUE,
                 selected = "All")
-  })
+  }) 
   
   output$disease_data <- renderUI({
     selectInput("disease_data", 
