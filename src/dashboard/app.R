@@ -360,7 +360,9 @@ server <- function(input, output) {
       geom_bar(stat='summary',fun=mean)+
       labs(x="Health Region",
            y=rateInput_d(),
-           title = paste0(input$dataset_d, " Per Region in ",input$year_d))
+           title = paste0(input$dataset_d, " Per Region in ",input$year_d))+
+      theme(legend.position="none",
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
     ggplotly(p)
   })
   
@@ -414,7 +416,7 @@ server <- function(input, output) {
       lapply(htmltools::HTML)
     
     m<-leaflet(new_spdf) %>% 
-      setView( lat=55, lng=-130 , zoom=4.5) %>%
+      setView( lat=55, lng=-127 , zoom=4.5) %>%
       addPolygons( 
         fillColor = ~mypalette(new_spdf@data[[rateInput_d()]]), 
         stroke=TRUE, 
