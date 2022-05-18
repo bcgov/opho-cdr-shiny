@@ -149,7 +149,7 @@ ui <- fluidPage(
                      selected = "Health Authorities"
                    ),
                    
-                   uiOutput("region_r"),
+                   uiOutput("region_tab_region_selected"),
                    
                    selectInput(
                      "dataset_r",
@@ -167,7 +167,7 @@ ui <- fluidPage(
                    uiOutput("disease_r"),
                    
                    sliderInput(
-                     "year_range_r",
+                     "region_tab_year_range_selected",
                      label = "Select Year Range",
                      min = 2001,
                      max = 2020,
@@ -312,13 +312,25 @@ server <- function(input, output) {
                 selected = "All")
   })
   
-  output$region_r <- renderUI({
-    selectInput("region_r",
-                label = "Select Health Region",
-                choices = (if(input$health_bound_r == "Health Authorities")  c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern")
-                           else unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                multiple = FALSE,
-                selected = "Interior")
+  output$region_tab_region_selected <- renderUI({
+    selectInput(
+      "region_tab_region_selected",
+      label = "Select Health Region",
+      choices = (
+        if (input$health_bound_r == "Health Authorities")
+          c(
+            "Interior",
+            "Fraser",
+            "Vancouver Coastal",
+            "Vancouver Island",
+            "Northern"
+          )
+        else
+          unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME)
+      ),
+      multiple = FALSE,
+      selected = "Interior"
+    )
   })
   
   output$disease_d <- renderUI({
@@ -355,11 +367,24 @@ server <- function(input, output) {
   })
   
   region_tab_filtered_data <- reactive({
-    datasetInput_r() |> 
-      filter ((HEALTH_BOUND_NAME %in% input$region_r) &
-                (if ("All" %in% input$disease_r) TRUE else (DISEASE %in% input$disease_r)) &
-                (YEAR %in% seq(from=min(input$year_range_r),to=max(input$year_range_r))) &
-                (if (input$gender_r == 'Both') TRUE else (CLNT_GENDER_LABEL == input$gender_r)))
+    datasetInput_r() |>
+      filter ((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
+                (if ("All" %in% input$disease_r)
+                  TRUE
+                 else
+                   (DISEASE %in% input$disease_r)
+                ) &
+                (
+                  YEAR %in% seq(
+                    from  =  min(input$region_tab_year_range_selected),
+                    to  =  max(input$region_tab_year_range_selected)
+                  )
+                ) &
+                (if (input$gender_r == 'Both')
+                  TRUE
+                 else
+                   (CLNT_GENDER_LABEL == input$gender_r)
+                ))
   })
   
   filter_df_data <- reactive({
