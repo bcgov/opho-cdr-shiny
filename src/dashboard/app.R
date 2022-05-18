@@ -13,7 +13,7 @@ source('global.R', local = T) #load in data
 
 # User interface ----
 
-ui <-fluidPage(
+ui <- fluidPage(
   theme = shinytheme("sandstone"),
   includeCSS("www/mytheme.css"), #add custom styling
   
@@ -169,7 +169,14 @@ ui <-fluidPage(
                                 selected = "Both"),
                  ),
                  mainPanel(
-                   plotOutput("graph2"))
+                   fluidRow(
+                     column(6,
+                            plotOutput("region_tab_line_chart"),
+                     ),
+                     column(6,
+                            plotOutput("region_tab_pie_chart")
+                     )
+                   ))
                )),
       
       #Data Tab
@@ -308,15 +315,15 @@ server <- function(input, output) {
   output$disease_r <- renderUI({
     selectInput("disease_r", 
                 label = "Select Disease(s)",
-                choices = append("All",unique(datasetInput_r()$DISEASE)),
+                choices = unique(datasetInput_r()$DISEASE),
                 multiple = TRUE,
-                selected = "All")
+                selected = unique(datasetInput_r()$DISEASE)[1])
   }) 
   
   output$disease_data <- renderUI({
     selectInput("disease_data", 
                 label = "Select Disease",
-                choices = append("All",unique(datasetInput_data()$DISEASE)),
+                choices = append("All", unique(datasetInput_data()$DISEASE)),
                 multiple = TRUE,
                 selected = "All")
   })
@@ -368,14 +375,28 @@ server <- function(input, output) {
    ggplotly(p2)
   })
   
-  output$graph2 <- renderPlot({
-    filter_df_r()|>
-      ggplot(aes_string(y=rateInput_r(),x= "YEAR",color="DISEASE"))+
-      geom_line(stat='summary',fun=mean)+
-      labs(y=rateInput_r(),
-           x="Year",
-           legend ="Disease",
-           title = paste0("Average ", input$dataset_r," Over Time"))
+  output$region_tab_line_chart <- renderPlot({
+    filter_df_r() |>
+      ggplot(aes_string(y = rateInput_r(), x = "YEAR", color = "DISEASE")) +
+      geom_line(stat = 'summary', fun = mean) +
+      labs(
+        y = rateInput_r(),
+        x = "Year",
+        legend = "Disease",
+        title = paste0(input$dataset_r, " Over Time")
+      )
+  })
+  
+  output$region_tab_pie_chart <- renderPlot({
+    filter_df_r() |> 
+      ggplot(aes_string(x= "2", y = rateInput_r(), fill = "DISEASE")) +
+      geom_bar(stat = "identity") +
+      coord_polar("y", start = 0) +
+      labs(
+        y = rateInput_r(),
+        legend = "Disease",
+        title = paste0("Distribution of Diseases by ", input$dataset_r)
+      )
   })
   
   output$download_data <- downloadHandler(
