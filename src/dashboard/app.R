@@ -85,16 +85,11 @@ ui <- fluidPage(
                  h2("Filters"),
                  hr(style = "border-top: 1px solid #000000"),
                  
-                 selectInput("dataset_d", 
-                             label = "Select Rate Type",
-                             choices = c("Crude Incidence Rate",
-                                         "Age Standardized Incidence Rate",
-                                         "Crude Life Prevalence",
-                                         "Age Standardized Life Prevalence",
-                                         "Crude HSC Prevalence",
-                                         "Age Standardized HSC Prevalence")),
+                 selectInput("disease_d",
+                             label= "Select Disease",
+                             choices = sort(unique(inc_rate_df$DISEASE))),
                  
-                 uiOutput("disease_d"),
+                 uiOutput("dataset_d"),
                  
                  radioButtons("health_bound_d",
                               label= "Select Geography",
@@ -242,28 +237,11 @@ ui <- fluidPage(
 # Server logic ----
 server <- function(input, output) {
   
+  
+  #By Disease Tab 
+  
   datasetInput_d <- reactive({
     switch(input$dataset_d,
-           "Crude Incidence Rate" = inc_rate_df,
-           "Age Standardized Incidence Rate" = inc_rate_df,
-           "Crude Life Prevalence" = life_prev_df,
-           "Age Standardized Life Prevalence" = life_prev_df,
-           "Crude HSC Prevalence" = hsc_prev_df,
-           "Age Standardized HSC Prevalence" = hsc_prev_df)
-  })
-  
-  datasetInput_r <- reactive({
-    switch(input$dataset_r,
-           "Crude Incidence Rate" = inc_rate_df,
-           "Age Standardized Incidence Rate" = inc_rate_df,
-           "Crude Life Prevalence" = life_prev_df,
-           "Age Standardized Life Prevalence" = life_prev_df,
-           "Crude HSC Prevalence" = hsc_prev_df,
-           "Age Standardized HSC Prevalence" = hsc_prev_df)
-  })
-  
-  datasetInput_data <- reactive({
-    switch(input$dataset_data,
            "Crude Incidence Rate" = inc_rate_df,
            "Age Standardized Incidence Rate" = inc_rate_df,
            "Crude Life Prevalence" = life_prev_df,
@@ -282,34 +260,8 @@ server <- function(input, output) {
            "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
   })
   
-  rateInput_r <- reactive({
-    switch(input$dataset_r,
-           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
-           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
-           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
-  })
-  
-  rateInput_data <- reactive({
-    switch(input$dataset_data,
-           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
-           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
-           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
-  })
-  
   healthboundInput_d <- reactive ({
     switch(input$health_bound_d,
-           "Health Authorities" = "HA",
-           "Community Health Service Areas" = "CHSA")
-  })
-  
-  healthboundInput_data <- reactive ({
-    switch(input$health_bound_data,
            "Health Authorities" = "HA",
            "Community Health Service Areas" = "CHSA")
   })
@@ -326,16 +278,106 @@ server <- function(input, output) {
                 selected = "All")
   })
   
-  output$region_data <- renderUI({
-    selectInput("region_data",
-                label = "Select Health Region(s)",
-                choices = (
-                  if(input$health_bound_data == "Health Authorities") 
-                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
-                  else 
-                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))),
-                multiple = TRUE,
-                selected = "All")
+  output$dataset_d <- renderUI({
+    selectInput("disease_d", 
+                label = "Select Disease",
+                choices = unique(datasetInput_d()$DISEASE),
+                multiple = FALSE,
+    )
+  })
+  
+  filter_df_d <- reactive({
+    datasetInput_d() |> 
+      filter ((GEOGRAPHY == healthboundInput_d())&
+                # (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)) &
+                (DISEASE == input$disease_d) &
+                (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
+      )
+  })
+  
+  output$disease_graph_bar <- renderPlotly({
+    p<-filter_df_d()|>
+      filter((YEAR == input$year_d)&
+               (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
+      geom_bar(stat='summary',fun=mean)+
+      labs(x="Health Region",
+           y=rateInput_d(),
+           title = paste0(input$dataset_d, " Per Region in ",input$year_d))+
+      theme(legend.position="none",
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+    ggplotly(p)
+  })
+  
+  output$disease_graph_line <- renderPlotly({
+    p2<- filter_df_d()|>
+      filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
+      ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+
+      geom_line(stat='summary',fun=mean)+
+      labs(y=rateInput_d(),
+           x="Year",
+           title = paste0(input$dataset_d," Over Time"))
+    ggplotly(p2)
+  })
+  
+  output$map <- renderLeaflet({
+    new_spdf<-(if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
+      merge(filter(filter_df_d(),(YEAR == input$year_d)),
+            by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
+            by.y="HEALTH_BOUND_CODE")
+    
+    mybins <- c(0,4,8,12,Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
+    
+    mytext <- paste(
+      "CHSA: ", new_spdf@data$CHSA_Name,"<br/>", 
+      "HA: ", new_spdf@data$HA_Name, "<br/>", 
+      paste0(input$dataset_d,":"), new_spdf@data[[rateInput_d()]], 
+      sep="") |>
+      lapply(htmltools::HTML)
+    
+    m<-leaflet(new_spdf) %>% 
+      setView( lat=55, lng=-127 , zoom=4.5) %>%
+      addPolygons( 
+        fillColor = ~mypalette(new_spdf@data[[rateInput_d()]]), 
+        stroke=TRUE, 
+        fillOpacity = 0.9, 
+        color="gray", 
+        weight=0.3,
+        label = mytext,
+        labelOptions = labelOptions( 
+          style = list("font-weight" = "normal", padding = "3px 8px"), 
+          textsize = "13px", 
+          direction = "auto"
+        )
+      ) |>
+      addLegend( pal=mypalette, values=~new_spdf@data[[rateInput_d()]], opacity=0.9, 
+                 title = input$dataset_d, position = "bottomleft" )
+    m
+    
+  })
+  
+  
+  # By Region Tab
+  
+  datasetInput_r <- reactive({
+    switch(input$dataset_r,
+           "Crude Incidence Rate" = inc_rate_df,
+           "Age Standardized Incidence Rate" = inc_rate_df,
+           "Crude Life Prevalence" = life_prev_df,
+           "Age Standardized Life Prevalence" = life_prev_df,
+           "Crude HSC Prevalence" = hsc_prev_df,
+           "Age Standardized HSC Prevalence" = hsc_prev_df)
+  })
+  
+  rateInput_r <- reactive({
+    switch(input$dataset_r,
+           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
+           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
+           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
+           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
+           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
+           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
   })
   
   output$region_tab_region_selected <- renderUI({
@@ -359,13 +401,6 @@ server <- function(input, output) {
     )
   })
   
-  output$disease_d <- renderUI({
-    selectInput("disease_d", 
-                label = "Select Disease",
-                choices = unique(datasetInput_d()$DISEASE),
-                multiple = FALSE,
-                )
-  })
   
   output$disease_r <- renderUI({
     selectInput("disease_r", 
@@ -374,23 +409,6 @@ server <- function(input, output) {
                 multiple = TRUE,
                 selected = unique(datasetInput_r()$DISEASE)[1])
   }) 
-  
-  output$disease_data <- renderUI({
-    selectInput("disease_data", 
-                label = "Select Disease",
-                choices = append("All", unique(datasetInput_data()$DISEASE)),
-                multiple = TRUE,
-                selected = "All")
-  })
-  
-  filter_df_d <- reactive({
-    datasetInput_d() |> 
-      filter ((GEOGRAPHY == healthboundInput_d())&
-              # (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)) &
-              (DISEASE == input$disease_d) &
-              (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
-              )
-  })
   
   region_tab_filtered_data <- reactive({
     datasetInput_r() |>
@@ -411,43 +429,6 @@ server <- function(input, output) {
                  else
                    (CLNT_GENDER_LABEL == input$gender_r)
                 ))
-  })
-  
-  filter_df_data <- reactive({
-    datasetInput_data() |> 
-      filter (
-        (GEOGRAPHY == healthboundInput_data()) & 
-        (if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
-        (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
-        (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
-        (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
-    select(-HEALTH_BOUND_CODE)
-  })
-  
-
-  output$disease_graph_bar <- renderPlotly({
-    p<-filter_df_d()|>
-      filter((YEAR == input$year_d)&
-             (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
-      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
-      geom_bar(stat='summary',fun=mean)+
-      labs(x="Health Region",
-           y=rateInput_d(),
-           title = paste0(input$dataset_d, " Per Region in ",input$year_d))+
-      theme(legend.position="none",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-    ggplotly(p)
-  })
-  
-  output$disease_graph_line <- renderPlotly({
-   p2<- filter_df_d()|>
-     filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
-      ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+
-      geom_line(stat='summary',fun=mean)+
-      labs(y=rateInput_d(),
-           x="Year",
-           title = paste0(input$dataset_d," Over Time"))
-   ggplotly(p2)
   })
   
   output$region_tab_line_chart <- renderPlot({
@@ -487,6 +468,67 @@ server <- function(input, output) {
       )
   })
   
+  
+  # Data Tab
+  datasetInput_data <- reactive({
+    switch(input$dataset_data,
+           "Crude Incidence Rate" = inc_rate_df,
+           "Age Standardized Incidence Rate" = inc_rate_df,
+           "Crude Life Prevalence" = life_prev_df,
+           "Age Standardized Life Prevalence" = life_prev_df,
+           "Crude HSC Prevalence" = hsc_prev_df,
+           "Age Standardized HSC Prevalence" = hsc_prev_df)
+  })
+  
+  rateInput_data <- reactive({
+    switch(input$dataset_data,
+           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
+           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
+           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
+           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
+           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
+           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
+  })
+  
+  healthboundInput_data <- reactive ({
+    switch(input$health_bound_data,
+           "Health Authorities" = "HA",
+           "Community Health Service Areas" = "CHSA")
+  })
+  
+
+  output$region_data <- renderUI({
+    selectInput("region_data",
+                label = "Select Health Region(s)",
+                choices = (
+                  if(input$health_bound_data == "Health Authorities") 
+                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
+                  else 
+                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))),
+                multiple = TRUE,
+                selected = "All")
+  })
+  
+  output$disease_data <- renderUI({
+    selectInput("disease_data", 
+                label = "Select Disease",
+                choices = append("All", unique(datasetInput_data()$DISEASE)),
+                multiple = TRUE,
+                selected = "All")
+  })
+  
+  filter_df_data <- reactive({
+    datasetInput_data() |> 
+      filter (
+        (GEOGRAPHY == healthboundInput_data()) & 
+        (if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
+        (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
+        (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
+        (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
+    select(-HEALTH_BOUND_CODE)
+  })
+  
+
   output$download_data <- downloadHandler(
     filename = function() {
       paste("data-", Sys.Date(), ".csv", sep="")
@@ -499,42 +541,7 @@ server <- function(input, output) {
   output$data_table <- renderDataTable(filter_df_data())
   
   
-  output$map <- renderLeaflet({
-    new_spdf<-(if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
-      merge(filter(filter_df_d(),(YEAR == input$year_d)),
-            by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
-            by.y="HEALTH_BOUND_CODE")
-    
-    mybins <- c(0,4,8,12,Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
-    
-    mytext <- paste(
-      "CHSA: ", new_spdf@data$CHSA_Name,"<br/>", 
-      "HA: ", new_spdf@data$HA_Name, "<br/>", 
-      paste0(input$dataset_d,":"), new_spdf@data[[rateInput_d()]], 
-      sep="") |>
-      lapply(htmltools::HTML)
-    
-    m<-leaflet(new_spdf) %>% 
-      setView( lat=55, lng=-127 , zoom=4.5) %>%
-      addPolygons( 
-        fillColor = ~mypalette(new_spdf@data[[rateInput_d()]]), 
-        stroke=TRUE, 
-        fillOpacity = 0.9, 
-        color="gray", 
-        weight=0.3,
-        label = mytext,
-        labelOptions = labelOptions( 
-          style = list("font-weight" = "normal", padding = "3px 8px"), 
-          textsize = "13px", 
-          direction = "auto"
-        )
-      ) |>
-      addLegend( pal=mypalette, values=~new_spdf@data[[rateInput_d()]], opacity=0.9, 
-                 title = input$dataset_d, position = "bottomleft" )
-    m
-    
-  })
+  
   
   
 }
