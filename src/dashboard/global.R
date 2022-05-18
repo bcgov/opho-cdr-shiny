@@ -1,3 +1,5 @@
+# This file creates and wrangles the global data frames that are 
+# going to be used in app.R
 
 # Create 3 dataframes 
 inc_rate_df <- data.frame()
@@ -12,7 +14,6 @@ for (dir in list.dirs("data")[-1]){
       drop_na(CRUDE_RATE_PER_1000);
     if (dir == "data/IncidenceRate"){
       inc_rate_df <- rbind(inc_rate_df,new_df)
-    }else if (dir == "data/HSCPrevalence"){
       hsc_prev_df <- rbind(hsc_prev_df,new_df)
     }else if (dir == "data/LifePrevalence"){
       life_prev_df <- rbind(life_prev_df,new_df)
