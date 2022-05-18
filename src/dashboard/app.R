@@ -304,10 +304,8 @@ server <- function(input, output) {
   output$disease_d <- renderUI({
     selectInput("disease_d", 
                 label = "Select Disease",
-                # choices = append("All",unique(datasetInput_d()$DISEASE)),
                 choices = unique(datasetInput_d()$DISEASE),
                 multiple = FALSE,
-                # selected = "All"
                 )
   })
   
@@ -330,9 +328,8 @@ server <- function(input, output) {
   filter_df_d <- reactive({
     datasetInput_d() |> 
       filter ((GEOGRAPHY == healthboundInput_d())&
-              (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)) &
+              # (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)) &
               (DISEASE == input$disease_d) &
-              # (if (input$gender_d =='All') TRUE else (CLNT_GENDER_LABEL ==input$gender_d))
               (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
               )
   })
@@ -357,17 +354,19 @@ server <- function(input, output) {
   
   output$disease_graph1 <- renderPlotly({
     p<-filter_df_d()|>
-      filter(YEAR == input$year_d) |>
+      filter((YEAR == input$year_d)&
+             (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
       ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
       geom_bar(stat='summary',fun=mean)+
       labs(x="Health Region",
            y=rateInput_d(),
-           title = paste0(input$dataset_d, "Per Region"))
+           title = paste0(input$dataset_d, " Per Region in ",input$year_d))
     ggplotly(p)
   })
   
   output$disease_graph2 <- renderPlotly({
    p2<- filter_df_d()|>
+     filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
       ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+
       geom_line(stat='summary',fun=mean)+
       labs(y=rateInput_d(),
@@ -398,7 +397,6 @@ server <- function(input, output) {
   output$data_table <- renderDataTable(filter_df_data())
   
   
-  
   output$map <- renderLeaflet({
     new_spdf<-(if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
       merge(filter(filter_df_d(),(YEAR == input$year_d)),
@@ -406,19 +404,19 @@ server <- function(input, output) {
             by.y="HEALTH_BOUND_CODE")
     
     mybins <- c(0,4,8,12,Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data$CRUDE_RATE_PER_1000, na.color="transparent", bins=mybins)
+    mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
       "CHSA: ", new_spdf@data$CHSA_Name,"<br/>", 
       "HA: ", new_spdf@data$HA_Name, "<br/>", 
-      "CRUDE_RATE_PER_1000: ", new_spdf@data$CRUDE_RATE_PER_1000, 
+      paste0(input$dataset_d,":"), new_spdf@data[[rateInput_d()]], 
       sep="") |>
       lapply(htmltools::HTML)
     
     m<-leaflet(new_spdf) %>% 
-      setView( lat=55, lng=-123.1 , zoom=4.5) %>%
+      setView( lat=55, lng=-130 , zoom=4.5) %>%
       addPolygons( 
-        fillColor = ~mypalette(new_spdf@data$CRUDE_RATE_PER_1000), 
+        fillColor = ~mypalette(new_spdf@data[[rateInput_d()]]), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
         color="gray", 
@@ -430,7 +428,8 @@ server <- function(input, output) {
           direction = "auto"
         )
       ) |>
-      addLegend( pal=mypalette, values=~new_spdf@data$CRUDE_RATE_PER_1000, opacity=0.9, title = input$dataset_d, position = "bottomleft" )
+      addLegend( pal=mypalette, values=~new_spdf@data[[rateInput_d()]], opacity=0.9, 
+                 title = input$dataset_d, position = "bottomleft" )
     m
     
   })
