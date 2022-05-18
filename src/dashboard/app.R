@@ -415,10 +415,13 @@ server <- function(input, output) {
   
   filter_df_data <- reactive({
     datasetInput_data() |> 
-      filter ((if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
-                (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
-                (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
-                (if (input$gender_data =='Both') TRUE else (CLNT_GENDER_LABEL ==input$gender_data)))
+      filter (
+        (GEOGRAPHY == healthboundInput_data()) & 
+        (if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
+        (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
+        (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
+        (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
+    select(-HEALTH_BOUND_CODE)
   })
   
 

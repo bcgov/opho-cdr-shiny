@@ -69,7 +69,7 @@ hsc_prev_df <- hsc_prev_df |>
            " ",
            extra = "merge") |>
   mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-         ISEASE = str_replace_all(DISEASE,disease_dict)) |>
+         DISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))|>
   filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
@@ -80,7 +80,7 @@ life_prev_df <- life_prev_df |>
            " ",
            extra = "merge") |>
   mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-         ISEASE = str_replace_all(DISEASE,disease_dict)) |>
+         DISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))|>
   filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
