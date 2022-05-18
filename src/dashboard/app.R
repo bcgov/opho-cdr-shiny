@@ -102,20 +102,14 @@ ui <- fluidPage(
                               selected="Health Authorities"),
                  
                  uiOutput("region_d"),
-                 
-                 # selectInput("region_d", 
-                 #             label = "Select Community Health Service Area(s)",
-                 #             choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                 #             multiple = TRUE,
-                 #             selected = "All"),
-                 
+              
                  selectInput("year_d", 
-                             label = "Select Year",
+                             label = "Select Fiscal Year",
                              choices = c(seq(2001,2020))
                              ),
 
                  radioButtons("gender_d", 
-                              label = ("Select Gender"),
+                              label = ("Select Sex"),
                               choices = c("Male","Female","Total"), 
                               selected = "Total",
                               inline=TRUE),
@@ -123,14 +117,11 @@ ui <- fluidPage(
                ),
                mainPanel(
                  width = 9,
-                 # fluidRow(
-                 #   column (12 , div(verbatimTextOutput("summary")))
-                 # ),
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph1",height=350))),
-                          fluidRow(column(12,plotlyOutput("disease_graph2",height=350))),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350))),
+                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=350))),
                           ))
                  )
                )),
@@ -139,6 +130,7 @@ ui <- fluidPage(
       tabPanel("By Region",
                sidebarLayout(
                  sidebarPanel(
+                   width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
                    
@@ -177,18 +169,21 @@ ui <- fluidPage(
                    
                    radioButtons(
                      "gender_r",
-                     label = ("Select Gender"),
-                     choices = c("Male", "Female", "Both"),
-                     selected = "Both"
+                     label = ("Select Sex"),
+                     choices = c("Male", "Female", "Total"),
+                     selected = "Total",
+                     inline = TRUE
                    ),
                  ),
                  
-                 mainPanel(fluidRow(plotOutput(
+                 mainPanel(
+                   width = 9,
+                   fluidRow(plotOutput(
                    "region_tab_line_chart"
-                 )),
-                 fluidRow(plotOutput(
-                   "region_tab_pie_chart"
-                 )))
+                   )),
+                   fluidRow(plotOutput(
+                     "region_tab_pie_chart"
+                   )))
                )), 
       
       #Data Tab
@@ -197,6 +192,7 @@ ui <- fluidPage(
                  
                  #Filters
                  sidebarPanel(
+                   width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
                    
@@ -222,11 +218,13 @@ ui <- fluidPage(
                                min = 2001, max = 2020, value = c(2001, 2020)),
                    
                    radioButtons("gender_data", 
-                                label = ("Select Gender"),
-                                choices = c("Male","Female","Both"), 
-                                selected = "Both"),
+                                label = ("Select Sex"),
+                                choices = c("Male","Female","Total"), 
+                                selected = "Total",
+                                inline = TRUE),
                  ),
                  mainPanel(
+                   width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    dataTableOutput("data_table"))
                ))
@@ -395,9 +393,8 @@ server <- function(input, output) {
                 (if (input$gender_data =='Both') TRUE else (CLNT_GENDER_LABEL ==input$gender_data)))
   })
   
-  # output$summary <- renderText({paste0("Some summary info \nselected disease(s):", list(input$disease_d) )})
-  
-  output$disease_graph1 <- renderPlotly({
+
+  output$disease_graph_bar <- renderPlotly({
     p<-filter_df_d()|>
       filter((YEAR == input$year_d)&
              (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
@@ -411,7 +408,7 @@ server <- function(input, output) {
     ggplotly(p)
   })
   
-  output$disease_graph2 <- renderPlotly({
+  output$disease_graph_line <- renderPlotly({
    p2<- filter_df_d()|>
      filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
       ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+

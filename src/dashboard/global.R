@@ -11,6 +11,7 @@ life_prev_df <- data.frame()
 for (dir in list.dirs("data")[-1]) {
   for (file in list.files(dir)) {
     new_df <- read_csv(paste0(dir, "/", file),
+                       col_select = (-"STDPOP"),
                        show_col_types = FALSE) |>
       drop_na(CRUDE_RATE_PER_1000)
     
@@ -93,6 +94,7 @@ chsa_spdf <- readOGR(
   verbose = FALSE
 ) |>
   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
 
 # Read the shapefiles for the Health Authorities (HA) level
 ha_spdf <- readOGR(
