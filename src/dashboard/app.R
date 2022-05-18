@@ -136,38 +136,53 @@ ui <- fluidPage(
                )),
       
       #By Region Tab
-      tabPanel("By Region",
-               sidebarLayout(
-                 sidebarPanel(
-                   h2("Filters"),
-                   hr(style = "border-top: 1px solid #000000"),
-                   
-                   radioButtons("health_bound_r",
-                                label= "Select Geography",
-                                choices = c("Health Authorities","Community Health Service Areas"),
-                                selected="Health Authorities"),
-                   
-                   uiOutput("region_r"),
-                   selectInput("dataset_r", 
-                               label = "Select Rate Type",
-                               choices = c("Crude Incidence Rate",
-                                           "Age Standardized Incidence Rate",
-                                           "Crude Life Prevalence",
-                                           "Age Standardized Life Prevalence",
-                                           "Crude HSC Prevalence",
-                                           "Age Standardized HSC Prevalence")),
-                   
-                   uiOutput("disease_r"),
-                   
-                   sliderInput("year_range_r", 
-                               label = "Select Year Range",
-                               min = 2001, max = 2020, value = c(2001, 2020)),
-                   
-                   radioButtons("gender_r", 
-                                label = ("Select Gender"),
-                                choices = c("Male","Female","Both"), 
-                                selected = "Both"),
-                 ),
+      tabPanel(
+        "By Region",
+        sidebarLayout(
+          sidebarPanel(
+            h2("Filters"),
+            hr(style = "border-top: 1px solid #000000"),
+            
+            radioButtons(
+              "health_bound_r",
+              label = "Select Geography",
+              choices = c("Health Authorities", "Community Health Service Areas"),
+              selected = "Health Authorities"
+            ),
+            
+            uiOutput("region_r"),
+            selectInput(
+              "dataset_r",
+              label = "Select Rate Type",
+              choices = c(
+                "Crude Incidence Rate",
+                "Age Standardized Incidence Rate",
+                "Crude Life Prevalence",
+                "Age Standardized Life Prevalence",
+                "Crude HSC Prevalence",
+                "Age Standardized HSC Prevalence"
+              )
+            ),
+            
+            uiOutput("disease_r"),
+            
+            sliderInput(
+              "year_range_r",
+              label = "Select Year Range",
+              min = 2001,
+              max = 2020,
+              value = c(2001, 2020),
+              step = 1
+            ),
+            
+            radioButtons(
+              "gender_r",
+              label = ("Select Gender"),
+              choices = c("Male", "Female", "Both"),
+              selected = "Both"
+            ),
+          ),
+          
                  mainPanel(
                    fluidRow(
                      column(6,
