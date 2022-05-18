@@ -209,12 +209,6 @@ ui <- fluidPage(
                    
                    uiOutput("region_data"),
                    
-                   # selectInput("region_data", 
-                   #             label = "Select Community Health Service Area(s)",
-                   #             choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                   #             multiple = TRUE,
-                   #             selected = "All"),
-                   
                    sliderInput("year_range_data", 
                                label = "Select Year Range",
                                min = 2001, max = 2020, value = c(2001, 2020)),
@@ -237,8 +231,41 @@ ui <- fluidPage(
 # Server logic ----
 server <- function(input, output) {
   
-  
   #By Disease Tab 
+  
+  HSC_disease<- c("Acute Myocardial Infarction",
+                  "Asthma",
+                  "Depression",
+                  "Gout and Crystal Arthropathies",
+                  "Stroke (Hospitalized Haemorrhagic)",
+                  "Stroke (Hospitalized)",
+                  "Stroke (Hospitalized Transient Ischemic Attack)",
+                  "Stroke (Hospitalized Ischemic)",
+                  "Mood and Anxiety Disorders",
+                  "Schizophrenia and Delusional Disorders",
+                  "Substance Use Disorders")
+  
+  output$dataset_d <- renderUI({
+    selectInput("dataset_d", 
+                label = "Select Rate Type",
+                choices = (
+                  if(input$disease_d %in% HSC_disease)
+                    c("Crude Incidence Rate",
+                      "Age Standardized Incidence Rate",
+                      "Crude Life Prevalence",
+                      "Age Standardized Life Prevalence",
+                      "Crude HSC Prevalence",
+                      "Age Standardized HSC Prevalence")
+                  else
+                    c("Crude Incidence Rate",
+                      "Age Standardized Incidence Rate",
+                      "Crude Life Prevalence",
+                      "Age Standardized Life Prevalence")
+                ),
+                multiple = FALSE,
+              )
+  })
+  
   
   datasetInput_d <- reactive({
     switch(input$dataset_d,
@@ -278,14 +305,7 @@ server <- function(input, output) {
                 selected = "All")
   })
   
-  output$dataset_d <- renderUI({
-    selectInput("disease_d", 
-                label = "Select Disease",
-                choices = unique(datasetInput_d()$DISEASE),
-                multiple = FALSE,
-    )
-  })
-  
+
   filter_df_d <- reactive({
     datasetInput_d() |> 
       filter ((GEOGRAPHY == healthboundInput_d())&
@@ -531,7 +551,7 @@ server <- function(input, output) {
 
   output$download_data <- downloadHandler(
     filename = function() {
-      paste("data-", Sys.Date(), ".csv", sep="")
+      paste("BC_Chronic_Disease_Data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
       write.csv(filter_df_data(), file)
@@ -539,10 +559,6 @@ server <- function(input, output) {
   )
   
   output$data_table <- renderDataTable(filter_df_data())
-  
-  
-  
-  
   
 }
 
