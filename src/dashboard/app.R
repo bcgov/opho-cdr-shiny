@@ -319,9 +319,9 @@ server <- function(input, output) {
                 label = "Select Health Region(s)",
                 choices = (
                   if(input$health_bound_d == "Health Authorities") 
-                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
+                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
                   else 
-                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
+                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))),
                 multiple = TRUE,
                 selected = "All")
   })
@@ -331,9 +331,9 @@ server <- function(input, output) {
                 label = "Select Health Region(s)",
                 choices = (
                   if(input$health_bound_data == "Health Authorities") 
-                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
+                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
                   else 
-                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
+                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))),
                 multiple = TRUE,
                 selected = "All")
   })
@@ -352,7 +352,7 @@ server <- function(input, output) {
             "Northern"
           )
         else
-          unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME)
+          sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
       ),
       multiple = FALSE,
       selected = "Interior"
