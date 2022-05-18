@@ -48,9 +48,10 @@ chsa_spdf <- readOGR(
   spTransform( CRS("+proj=longlat +datum=WGS84 +no_defs"))
 
 #read in ha shapefiles
-chsa_spdf <- readOGR(
+ha_spdf <- readOGR(
   dsn = paste0(getwd(),"/geo_data/ha_2018"),
   layer ="HA_2018",
   verbose = FALSE
 ) |>
   spTransform( CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
