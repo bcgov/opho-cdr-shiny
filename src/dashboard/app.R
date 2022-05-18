@@ -136,63 +136,60 @@ ui <- fluidPage(
                )),
       
       #By Region Tab
-      tabPanel(
-        "By Region",
-        sidebarLayout(
-          sidebarPanel(
-            h2("Filters"),
-            hr(style = "border-top: 1px solid #000000"),
-            
-            radioButtons(
-              "health_bound_r",
-              label = "Select Geography",
-              choices = c("Health Authorities", "Community Health Service Areas"),
-              selected = "Health Authorities"
-            ),
-            
-            uiOutput("region_r"),
-            selectInput(
-              "dataset_r",
-              label = "Select Rate Type",
-              choices = c(
-                "Crude Incidence Rate",
-                "Age Standardized Incidence Rate",
-                "Crude Life Prevalence",
-                "Age Standardized Life Prevalence",
-                "Crude HSC Prevalence",
-                "Age Standardized HSC Prevalence"
-              )
-            ),
-            
-            uiOutput("disease_r"),
-            
-            sliderInput(
-              "year_range_r",
-              label = "Select Year Range",
-              min = 2001,
-              max = 2020,
-              value = c(2001, 2020),
-              step = 1
-            ),
-            
-            radioButtons(
-              "gender_r",
-              label = ("Select Gender"),
-              choices = c("Male", "Female", "Both"),
-              selected = "Both"
-            ),
-          ),
-          
-                 mainPanel(
-                   fluidRow(
-                     column(6,
-                            plotOutput("region_tab_line_chart"),
-                     ),
-                     column(6,
-                            plotOutput("region_tab_pie_chart")
+      tabPanel("By Region",
+               sidebarLayout(
+                 sidebarPanel(
+                   h2("Filters"),
+                   hr(style = "border-top: 1px solid #000000"),
+                   
+                   radioButtons(
+                     "health_bound_r",
+                     label = "Select Geography",
+                     choices = c("Health Authorities", "Community Health Service Areas"),
+                     selected = "Health Authorities"
+                   ),
+                   
+                   uiOutput("region_r"),
+                   
+                   selectInput(
+                     "dataset_r",
+                     label = "Select Rate Type",
+                     choices = c(
+                       "Crude Incidence Rate",
+                       "Age Standardized Incidence Rate",
+                       "Crude Life Prevalence",
+                       "Age Standardized Life Prevalence",
+                       "Crude HSC Prevalence",
+                       "Age Standardized HSC Prevalence"
                      )
-                   ))
-               )),
+                   ),
+                   
+                   uiOutput("disease_r"),
+                   
+                   sliderInput(
+                     "year_range_r",
+                     label = "Select Year Range",
+                     min = 2001,
+                     max = 2020,
+                     value = c(2001, 2020),
+                     step = 1
+                   ),
+                   
+                   radioButtons(
+                     "gender_r",
+                     label = ("Select Gender"),
+                     choices = c("Male", "Female", "Both"),
+                     selected = "Both"
+                   ),
+                 ),
+                 
+                 mainPanel(fluidRow(plotOutput(
+                   "region_tab_line_chart"
+                 )),
+                 fluidRow(plotOutput(
+                   "region_tab_pie_chart"
+                 )))
+               )), 
       
       #Data Tab
       tabPanel("Data",
@@ -320,7 +317,8 @@ server <- function(input, output) {
                 label = "Select Health Region",
                 choices = (if(input$health_bound_r == "Health Authorities")  c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern")
                            else unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                multiple = FALSE)
+                multiple = FALSE,
+                selected = "Interior")
   })
   
   output$disease_d <- renderUI({
@@ -356,7 +354,7 @@ server <- function(input, output) {
               )
   })
   
-  filter_df_r <- reactive({
+  region_tab_filtered_data <- reactive({
     datasetInput_r() |> 
       filter ((HEALTH_BOUND_NAME %in% input$region_r) &
                 (if ("All" %in% input$disease_r) TRUE else (DISEASE %in% input$disease_r)) &
@@ -400,7 +398,7 @@ server <- function(input, output) {
   })
   
   output$region_tab_line_chart <- renderPlot({
-    filter_df_r() |>
+    region_tab_filtered_data() |>
       ggplot(aes_string(y = rateInput_r(), x = "YEAR", color = "DISEASE")) +
       geom_line(stat = 'summary', fun = mean) +
       labs(
@@ -412,12 +410,25 @@ server <- function(input, output) {
   })
   
   output$region_tab_pie_chart <- renderPlot({
-    filter_df_r() |> 
-      ggplot(aes_string(x= "2", y = rateInput_r(), fill = "DISEASE")) +
+    region_tab_filtered_data() |> 
+      group_by(DISEASE) |> 
+      summarise(total_rate = sum(switch(input$dataset_r,
+                                        "Crude Incidence Rate" = CRUDE_RATE_PER_1000,
+                                        "Age Standardized Incidence Rate" = STD_RATE_PER_1000,
+                                        "Crude Life Prevalence" = CRUDE_RATE_PER_1000,
+                                        "Age Standardized Life Prevalence" = STD_RATE_PER_1000,
+                                        "Crude HSC Prevalence" = CRUDE_RATE_PER_1000,
+                                        "Age Standardized HSC Prevalence" = STD_RATE_PER_1000))) |> 
+      arrange(desc(DISEASE)) |> 
+      mutate(prop = round(total_rate / sum(total_rate) * 100, 0),
+             lab.ypos = cumsum(prop) - 0.5 *  prop,                                                                                                                                                                                                                                                                                                                             prop,
+             props = paste0(prop, "%")) |> 
+      ggplot(aes_string(x = "2", y = "prop", fill = "DISEASE")) +
       geom_bar(stat = "identity") +
       coord_polar("y", start = 0) +
+      theme_void() + 
+      geom_text(aes(y = lab.ypos, label = props), color = "white") +
       labs(
-        y = rateInput_r(),
         legend = "Disease",
         title = paste0("Distribution of Diseases by ", input$dataset_r)
       )
