@@ -207,11 +207,18 @@ ui <- fluidPage(
                    
                    uiOutput("disease_data"),
                    
-                   selectInput("region_data", 
-                               label = "Select Community Health Service Area(s)",
-                               choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
-                               multiple = TRUE,
-                               selected = "All"),
+                   radioButtons("health_bound_data",
+                                label= "Select Geography",
+                                choices = c("Health Authorities","Community Health Service Areas"),
+                                selected="Health Authorities"),
+                   
+                   uiOutput("region_data"),
+                   
+                   # selectInput("region_data", 
+                   #             label = "Select Community Health Service Area(s)",
+                   #             choices = append("All",unique(inc_rate_df$HEALTH_BOUND_NAME)),
+                   #             multiple = TRUE,
+                   #             selected = "All"),
                    
                    sliderInput("year_range_data", 
                                label = "Select Year Range",
@@ -301,11 +308,32 @@ server <- function(input, output) {
            "Community Health Service Areas" = "CHSA")
   })
   
+  healthboundInput_data <- reactive ({
+    switch(input$health_bound_data,
+           "Health Authorities" = "HA",
+           "Community Health Service Areas" = "CHSA")
+  })
+  
   output$region_d <- renderUI({
     selectInput("region_d",
                 label = "Select Health Region(s)",
-                choices = (if(input$health_bound_d == "Health Authorities") c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
-                           else c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
+                choices = (
+                  if(input$health_bound_d == "Health Authorities") 
+                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
+                  else 
+                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
+                multiple = TRUE,
+                selected = "All")
+  })
+  
+  output$region_data <- renderUI({
+    selectInput("region_data",
+                label = "Select Health Region(s)",
+                choices = (
+                  if(input$health_bound_data == "Health Authorities") 
+                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
+                  else 
+                    c(append("All",unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
                 multiple = TRUE,
                 selected = "All")
   })

@@ -61,7 +61,7 @@ inc_rate_df <- inc_rate_df |>
          DISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))|>
-  filter(str_detect(HEALTH_BOUND_NAME,"Unknown"))
+  filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
 
 hsc_prev_df <- hsc_prev_df |>
   separate(HEALTH_BOUNDARIES,
@@ -72,7 +72,7 @@ hsc_prev_df <- hsc_prev_df |>
          ISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))|>
-  filter(str_detect(HEALTH_BOUND_NAME,"Unknown"))
+  filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
 
 life_prev_df <- life_prev_df |>
   separate(HEALTH_BOUNDARIES,
@@ -83,7 +83,7 @@ life_prev_df <- life_prev_df |>
          ISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))|>
-  filter(str_detect(HEALTH_BOUND_NAME,"Unknown"))
+  filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
 
 
 
