@@ -23,34 +23,68 @@ for (dir in list.dirs("data")[-1]) {
   }
 }
 
+# Define dictionary of disease names 
+disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementia",
+                  "AMI" = "Acute Myocardial Infarction",
+                  "ASTHMA" = "Asthma",
+                  "CKD_GBD" = "Chronic Kidney Disease",
+                  "COPD" = "Chronic Obstructive Pulmonary Disease",
+                  "DEPRESSION" = "Depression",
+                  "DIABETES" = "Diabetes Mellitus",
+                  "EPILEPSY" = "Epilepsy",
+                  "GOUT" = "Gout and Crystal Arthropathies",
+                  "HAEMORR_STROKE" = "Stroke (Hospitalized Haemorrhagic)",
+                  "HEART_FAILURE" = "Heart Failure",
+                  "HOSP_STROKE" = "Stroke (Hospitalized)",
+                  "HOSP_TIA" = "Stroke (Hospitalized Transient Ischemic Attack)",
+                  "HYPERTENSION" = "Hypertension",
+                  "IHD" = "Ischemic Heart Disease",
+                  "ISCH_STROKE" = "Stroke (Hospitalized Ischemic)",
+                  "JUVENILE_ARTHRITIS" = "Juvenile Idiopathic Arthritis",
+                  "MOOD_ANX" = "Mood and Anxiety Disorders",
+                  "MS" = "Multiple Sclerosis",
+                  "OSTEOARTHRITIS" = "Osteoarthritis",
+                  "OSTEOPOROSIS" = "Osteoporosis",
+                  "PARKINSONISM" = "Parkinson's Disease and Parkinsonism",
+                  "RHEUMATOID_ARTHRITIS" = "Rheumatoid Arthritis",
+                  "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
+                  "SUD" = "Substance Use Disorders")
+
 # Wrangle dataframes:
-#   
 inc_rate_df <- inc_rate_df |>
   separate(HEALTH_BOUNDARIES,
            c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
            " ",
            extra = "merge") |>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7))) |>
+  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
+         DISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
-  data.table::setcolorder(c("YEAR"))
+  data.table::setcolorder(c("YEAR"))|>
+  filter(str_detect(HEALTH_BOUND_NAME,"Unknown"))
 
 hsc_prev_df <- hsc_prev_df |>
   separate(HEALTH_BOUNDARIES,
            c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
            " ",
            extra = "merge") |>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7))) |>
+  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
+         ISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
-  data.table::setcolorder(c("YEAR"))
+  data.table::setcolorder(c("YEAR"))|>
+  filter(str_detect(HEALTH_BOUND_NAME,"Unknown"))
 
 life_prev_df <- life_prev_df |>
   separate(HEALTH_BOUNDARIES,
            c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
            " ",
            extra = "merge") |>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7))) |>
+  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
+         ISEASE = str_replace_all(DISEASE,disease_dict)) |>
   select(-FISC_YR_LABEL) |>
-  data.table::setcolorder(c("YEAR"))
+  data.table::setcolorder(c("YEAR"))|>
+  filter(str_detect(HEALTH_BOUND_NAME,"Unknown"))
+
+
 
 # Read the shapefiles for the Community Health Service Areas (CHSA) level
 chsa_spdf <- readOGR(
