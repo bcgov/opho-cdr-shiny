@@ -1,5 +1,5 @@
-# This file creates and wrangles the global data frames that are 
-# going to be used in app.R
+# This file creates and wrangles the global data frames and the shapefiles that are 
+#   going to be used in app.R
 
 # Create 3 empty dataframes that correspond to three rate types:
 #   Incidence Rate, Active Healthcare Contact (HSC) Prevalence, and Lifetime Prevalence
@@ -23,23 +23,33 @@ for (dir in list.dirs("data")[-1]) {
   }
 }
 
-#wrangle dataframes
+# Wrangle dataframes:
+#   
 inc_rate_df <- inc_rate_df |>
-  separate(HEALTH_BOUNDARIES,c("HEALTH_BOUND_CODE","HEALTH_BOUND_NAME")," ", extra = "merge")|>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL,4,7)))|>
-  select(-FISC_YR_LABEL)|>
+  separate(HEALTH_BOUNDARIES,
+           c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
+           " ",
+           extra = "merge") |>
+  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7))) |>
+  select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))
 
 hsc_prev_df <- hsc_prev_df |>
-  separate(HEALTH_BOUNDARIES,c("HEALTH_BOUND_CODE","HEALTH_BOUND_NAME")," ", extra = "merge")|>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL,4,7)))|>
-  select(-FISC_YR_LABEL)|>
+  separate(HEALTH_BOUNDARIES,
+           c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
+           " ",
+           extra = "merge") |>
+  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7))) |>
+  select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))
 
 life_prev_df <- life_prev_df |>
-  separate(HEALTH_BOUNDARIES,c("HEALTH_BOUND_CODE","HEALTH_BOUND_NAME")," ", extra = "merge")|>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL,4,7)))|>
-  select(-FISC_YR_LABEL)|>
+  separate(HEALTH_BOUNDARIES,
+           c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
+           " ",
+           extra = "merge") |>
+  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7))) |>
+  select(-FISC_YR_LABEL) |>
   data.table::setcolorder(c("YEAR"))
 
 # Read the shapefiles for the Community Health Service Areas (CHSA) level
