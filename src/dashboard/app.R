@@ -113,7 +113,8 @@ ui <- fluidPage(
                mainPanel(
                  width = 9,
                  fluidRow(
-                   column(6, leafletOutput("map",height = 700)),
+                   column(6, leafletOutput("map",height = 700),
+                          verbatimTextOutput("map_hover")),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350))),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=350))),
@@ -222,6 +223,7 @@ ui <- fluidPage(
                  mainPanel(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
+                   hr(),
                    dataTableOutput("data_table"))
                ))
                
@@ -302,7 +304,10 @@ server <- function(input, output) {
                   else 
                     c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))),
                 multiple = TRUE,
-                selected = "All")
+                selected = (
+                  if(input$health_bound_d == "Health Authorities") "All"
+                  else c()
+                ))
   })
   
 
@@ -322,7 +327,7 @@ server <- function(input, output) {
       ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
       geom_bar(stat='summary',fun=mean)+
       labs(x="Health Region",
-           y=rateInput_d(),
+           y=paste0(input$dataset_d," Per 1000"),
            title = paste0(input$dataset_d, " Per Region in ",input$year_d))+
       theme(legend.position="none",
             axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
@@ -330,14 +335,23 @@ server <- function(input, output) {
   })
   
   output$disease_graph_line <- renderPlotly({
-    p2<- filter_df_d()|>
+    d <- filter_df_d()|>
       filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
-      ggplot(aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME"))+
+      highlight_key( ~HEALTH_BOUND_NAME )
+    p2<- ggplot(d, aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
+                        # text = paste(
+                        #   input$dataset_d, rateInput_d(), "\n",
+                        #   "Year: ", "YEAR", "\n",
+                        #   sep = ""
+                        # )
+                        ))+
       geom_line(stat='summary',fun=mean)+
-      labs(y=rateInput_d(),
+      labs(y=paste0(input$dataset_d, " Per 1000"),
            x="Year",
-           title = paste0(input$dataset_d," Over Time"))
-    ggplotly(p2)
+           title = paste0(input$dataset_d," Over Time"),
+           legend = "Health Region")
+    gg <- ggplotly(p2,tooltip=c("YEAR","HEALTH_BOUND_NAME"))
+    highlight( gg, on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)
   })
   
   output$map <- renderLeaflet({
@@ -374,6 +388,12 @@ server <- function(input, output) {
       addLegend( pal=mypalette, values=~new_spdf@data[[rateInput_d()]], opacity=0.9, 
                  title = input$dataset_d, position = "bottomleft" )
     m
+    
+  })
+  
+  output$map_hover <- renderText({
+    input$map_shape_mouseover
+    # input$map_geojson_mouseover
     
   })
   
