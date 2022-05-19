@@ -1,0 +1,103 @@
+---
+title: 'BC Chronic Disease: Temporal Modeling with INLA'
+date: "May 17, 2022"
+author: 'Jennifer Hoang'
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(INLA)
+library(here)
+```
+
+```{r Load Data, include=FALSE}
+path <- here("General", "Data")
+
+inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+# hsc_prev_df <- read_csv(here(path, "hsc_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+# life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+
+diseases <- unique(inc_rate_df$DISEASE)
+x_year <- unique(inc_rate_df$YEAR)
+```
+
+## Random Walk Models for one CHSA
+
+```{r Functions to Fit and Plot Models}
+fit_inla_rw1 <- function(data) {
+  model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw1"),
+    data = data,
+    family = "gamma", control.predictor = list(compute = TRUE)
+  )
+
+  tibble(
+    x = x_year,
+    y_fitted = model$summary.fitted$mean,
+    ci_95_ll = model$summary.fitted$`0.025quant`,
+    ci_95_ul = model$summary.fitted$`0.975quant`,
+    model = "rw1"
+  )
+}
+
+fit_inla_rw2 <- function(data) {
+  model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw2"),
+    data = data,
+    family = "gamma", control.predictor = list(compute = TRUE)
+  )
+
+  tibble(
+    x = x_year,
+    y_fitted = model$summary.fitted$mean,
+    ci_95_ll = model$summary.fitted$`0.025quant`,
+    ci_95_ul = model$summary.fitted$`0.975quant`,
+    model = "rw2"
+  )
+}
+
+fit_loess <- function(data) {
+  model <- loess(STD_RATE_PER_1000 ~ YEAR, data = data)
+  model_predict <- predict(model, data, se = TRUE)
+
+  t <- qt(p = 0.975, df = model_predict$df)
+
+  tibble(
+    x = x_year,
+    y_fitted = model_predict$fit,
+    ci_95_ll = model_predict$fit - t * model_predict$se.fit,
+    ci_95_ul = model_predict$fit + t * model_predict$se.fit,
+    model = "loess"
+  )
+}
+
+plot_models <- function(data, disease, chsa) {
+  ggplot(aes(x = YEAR, y = STD_RATE_PER_1000), data = data) +
+    geom_point() +
+    geom_ribbon(aes(x = x, y = y_fitted, ymin = ci_95_ll, ymax = ci_95_ul, fill = model), alpha = 0.2, data = model_df) +
+    geom_line(aes(x = x, y = y_fitted, color = model), data = model_df, linetype = 2) +
+    labs(
+      x = "Year", y = "Standardized Incidence Rate",
+      title = paste(disease, "in", chsa)
+    )
+}
+```
+
+
+
+```{r Compare 3 Models, fig.show="hold", out.width="25%"}
+for (d in diseases) {
+  disease_data <- inc_rate_df |>
+    filter(DISEASE == d & HEALTH_BOUNDARIES == "1110 Fernie")
+
+  model_df <- rbind(fit_inla_rw1(disease_data), fit_inla_rw2(disease_data), fit_loess(disease_data))
+
+  p <- plot_models(disease_data, d, "1110 Fernie")
+  print(p)
+}
+```
+
+
+
