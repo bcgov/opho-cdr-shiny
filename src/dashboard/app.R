@@ -454,14 +454,12 @@ server <- function(input, output) {
                                         "Crude HSC Prevalence" = CRUDE_RATE_PER_1000,
                                         "Age Standardized HSC Prevalence" = STD_RATE_PER_1000))) |> 
       arrange(desc(DISEASE)) |> 
-      mutate(prop = round(total_rate / sum(total_rate) * 100, 0),
-             lab.ypos = cumsum(prop) - 0.5 *  prop,                                                                                                                                                                                                                                                                                                                             prop,
+      mutate(prop = round(total_rate / sum(total_rate) * 100, 0),                                                                                                                                                                                                                                                                                                                            prop,
              props = paste0(prop, "%")) |> 
       ggplot(aes_string(x = "2", y = "prop", fill = "DISEASE")) +
       geom_bar(stat = "identity") +
-      coord_polar("y", start = 0) +
       theme_void() + 
-      geom_text(aes(y = lab.ypos, label = props), color = "white") +
+      geom_text(aes(label = props), color = "white") +
       labs(
         legend = "Disease",
         title = paste0("Distribution of Diseases by ", input$dataset_r)
