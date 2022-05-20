@@ -18,20 +18,25 @@ library(here)
 path <- here("General", "Data")
 
 inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
-# hsc_prev_df <- read_csv(here(path, "hsc_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
-# life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+hsc_prev_df <- read_csv(here(path, "hsc_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
 
 diseases <- unique(inc_rate_df$DISEASE)
+hsc_diseases <- unique(hsc_prev_df$DISEASE)
 x_year <- unique(inc_rate_df$YEAR)
 ```
 
-## Random Walk Models for one CHSA
+## Comparing Random Walk Models
+
+We will try a Gamma prior distribution for the rates, which are continuous.
+One challenge is that Gamma does not support 0 values, so rare diseases can't be modeled.
 
 ```{r Functions to Fit and Plot Models}
 fit_inla_rw1 <- function(data) {
   model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw1"),
     data = data,
-    family = "gamma", control.predictor = list(compute = TRUE)
+    family = "gamma",
+    control.compute = list(dic = TRUE, waic = TRUE)
   )
 
   tibble(
@@ -39,6 +44,8 @@ fit_inla_rw1 <- function(data) {
     y_fitted = model$summary.fitted$mean,
     ci_95_ll = model$summary.fitted$`0.025quant`,
     ci_95_ul = model$summary.fitted$`0.975quant`,
+    dic = model$dic$dic,
+    waic = model$waic$waic,
     model = "rw1"
   )
 }
@@ -46,7 +53,8 @@ fit_inla_rw1 <- function(data) {
 fit_inla_rw2 <- function(data) {
   model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw2"),
     data = data,
-    family = "gamma", control.predictor = list(compute = TRUE)
+    family = "gamma",
+    control.compute = list(dic = TRUE, waic = TRUE)
   )
 
   tibble(
@@ -54,6 +62,8 @@ fit_inla_rw2 <- function(data) {
     y_fitted = model$summary.fitted$mean,
     ci_95_ll = model$summary.fitted$`0.025quant`,
     ci_95_ul = model$summary.fitted$`0.975quant`,
+    dic = model$dic$dic,
+    waic = model$waic$waic,
     model = "rw2"
   )
 }
@@ -69,35 +79,59 @@ fit_loess <- function(data) {
     y_fitted = model_predict$fit,
     ci_95_ll = model_predict$fit - t * model_predict$se.fit,
     ci_95_ul = model_predict$fit + t * model_predict$se.fit,
+    dic = NA,
+    waic = NA,
     model = "loess"
   )
 }
 
-plot_models <- function(data, disease, chsa) {
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+plot_models <- function(data, model_df, disease, chsa, rate_label) {
   ggplot(aes(x = YEAR, y = STD_RATE_PER_1000), data = data) +
     geom_point() +
     geom_ribbon(aes(x = x, y = y_fitted, ymin = ci_95_ll, ymax = ci_95_ul, fill = model), alpha = 0.2, data = model_df) +
     geom_line(aes(x = x, y = y_fitted, color = model), data = model_df, linetype = 2) +
     labs(
-      x = "Year", y = "Standardized Incidence Rate",
+      x = "Year", y = rate_label,
       title = paste(disease, "in", chsa)
-    )
+    ) +
+    scale_fill_manual(values=cbPalette) +
+    scale_colour_manual(values=cbPalette)
 }
 ```
 
 
 
-```{r Compare 3 Models, fig.show="hold", out.width="25%"}
-for (d in diseases) {
-  disease_data <- inc_rate_df |>
-    filter(DISEASE == d & HEALTH_BOUNDARIES == "1110 Fernie")
+```{r Compare 3 Models for 1 Outcome, fig.show="hold", out.width="25%"}
+compare_models <- function(data, chsa, rate_label) {
+  diseases <- unique(data$DISEASE)
+  x_year <- unique(inc_rate_df$YEAR)
+  
+  for (d in diseases) {
+    disease_data <- data |>
+      filter(DISEASE == d & HEALTH_BOUNDARIES == chsa)
 
-  model_df <- rbind(fit_inla_rw1(disease_data), fit_inla_rw2(disease_data), fit_loess(disease_data))
-
-  p <- plot_models(disease_data, d, "1110 Fernie")
-  print(p)
+    if (all(disease_data$STD_RATE_PER_1000 > 0)) {
+      model_df <- rbind(fit_inla_rw1(disease_data), fit_inla_rw2(disease_data), fit_loess(disease_data))
+      
+      p <- plot_models(disease_data, model_df, d, chsa, rate_label)
+      print(p)
+    }
+  }
 }
 ```
+
+### Age-Standardized Life Prevalence in Fernie
+```{r}
+compare_models(life_prev_df, "1110 Fernie", "Age-Std Life Prevalence")
+```
+
+### Standardized HSC Prevalence in Fernie
+```{r}
+compare_models(hsc_prev_df, "1110 Fernie", "Std HSC Prevalence")
+```
+
 
 
 
