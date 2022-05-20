@@ -1,30 +1,16 @@
 # This file creates and wrangles the global data frames and the shapefiles that are 
 #   going to be used in app.R
 
+
+##### Define and initialize global variables
+
 # Create 3 empty dataframes that correspond to three rate types:
 #   Incidence Rate, Active Healthcare Contact (HSC) Prevalence, and Lifetime Prevalence
 inc_rate_df <- data.frame()
 hsc_prev_df <- data.frame()
 life_prev_df <- data.frame()
 
-# Read csv files and concatenate rows with the same rate type
-for (dir in list.dirs("data")[-1]) {
-  for (file in list.files(dir)) {
-    new_df <- read_csv(paste0(dir, "/", file),
-                       col_select = (-"STDPOP"),
-                       show_col_types = FALSE) |>
-      drop_na(CRUDE_RATE_PER_1000)
-    
-    if (dir == "data/IncidenceRate") {
-      inc_rate_df <- rbind(inc_rate_df, new_df)
-      hsc_prev_df <- rbind(hsc_prev_df, new_df)
-    } else if (dir == "data/LifePrevalence") {
-      life_prev_df <- rbind(life_prev_df, new_df)
-    }
-  }
-}
-
-# Define dictionary of disease names 
+# Define a dictionary of disease names, which maps acronyms to user-friendly full names
 disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementia",
                   "AMI" = "Acute Myocardial Infarction",
                   "ASTHMA" = "Asthma",
@@ -51,7 +37,29 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
-# Wrangle dataframes:
+
+
+
+# Read csv files and concatenate rows with the same rate type
+for (dir in list.dirs("data")[-1]) {
+  for (file in list.files(dir)) {
+    new_df <- read_csv(paste0(dir, "/", file),
+                       col_select = (-"STDPOP"),
+                       show_col_types = FALSE) |>
+      drop_na(CRUDE_RATE_PER_1000)
+    
+    if (dir == "data/IncidenceRate") {
+      inc_rate_df <- rbind(inc_rate_df, new_df)
+      hsc_prev_df <- rbind(hsc_prev_df, new_df)
+    } else if (dir == "data/LifePrevalence") {
+      life_prev_df <- rbind(life_prev_df, new_df)
+    }
+  }
+}
+
+
+
+# Wrangle data frames:
 inc_rate_df <- inc_rate_df |>
   separate(HEALTH_BOUNDARIES,
            c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
@@ -87,7 +95,7 @@ life_prev_df <- life_prev_df |>
 
 
 
-# Read the shapefiles for the Community Health Service Areas (CHSA) level
+# Read the shape files for the Community Health Service Areas (CHSA) level
 chsa_spdf <- readOGR(
   dsn = paste0(getwd(), "/geo_data/chsa_2018"),
   layer = "CHSA_2018",
@@ -96,7 +104,7 @@ chsa_spdf <- readOGR(
   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
 
 
-# Read the shapefiles for the Health Authorities (HA) level
+# Read the shape files for the Health Authorities (HA) level
 ha_spdf <- readOGR(
   dsn = paste0(getwd(), "/geo_data/ha_2018"),
   layer = "HA_2018",
