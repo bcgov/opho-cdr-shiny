@@ -1,10 +1,10 @@
-# This file creates and wrangles the global data frames and the shapefiles that are 
+# This file creates the global variables and the shape files that are 
 #   going to be used in app.R
 
 
-##### Define and initialize global variables
+########## Define and initialize global variables ##########
 
-# Create 3 empty dataframes that correspond to three rate types:
+# Create 3 empty data frames that correspond to three rate types:
 #   Incidence Rate, Active Healthcare Contact (HSC) Prevalence, and Lifetime Prevalence
 inc_rate_df <- data.frame()
 hsc_prev_df <- data.frame()
@@ -37,8 +37,12 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
+# Define the geography choices in the filter
+GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
 
 
+
+########## Read data from files and prepare data frames for analysis ##########
 
 # Read csv files and concatenate rows with the same rate type
 for (dir in list.dirs("data")[-1]) {
@@ -58,41 +62,33 @@ for (dir in list.dirs("data")[-1]) {
 }
 
 
+# Clean the data frames using a function
 
-# Wrangle data frames:
-inc_rate_df <- inc_rate_df |>
-  separate(HEALTH_BOUNDARIES,
-           c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
-           " ",
-           extra = "merge") |>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-         DISEASE = str_replace_all(DISEASE,disease_dict)) |>
-  select(-FISC_YR_LABEL) |>
-  data.table::setcolorder(c("YEAR"))|>
-  filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
+# This function wrangles a data frame based on the following steps:
+#  1. extract the HEALTH_BOUND_CODE and HEALTH_BOUND_NAME from the HEALTH_BOUNDARIES column
+#  2. extract only the YEAR part from the FISC_YR_LABEL column and keep only the extracted YEAR
+#  3. replace the acronyms used in the DISEASE column with their full names
+#  4. reorder the the data frame based on YEAR
+#  5. remove the rows where HEALTH_BOUND_NAME is unknown
+#  
+#  It returns the cleaned data frame
 
-hsc_prev_df <- hsc_prev_df |>
-  separate(HEALTH_BOUNDARIES,
-           c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
-           " ",
-           extra = "merge") |>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-         DISEASE = str_replace_all(DISEASE,disease_dict)) |>
-  select(-FISC_YR_LABEL) |>
-  data.table::setcolorder(c("YEAR"))|>
-  filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
+wrangle_data_frame <- function(df) {
+  df |>
+    separate(HEALTH_BOUNDARIES,
+             c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
+             " ",
+             extra = "merge") |>
+    mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
+           DISEASE = str_replace_all(DISEASE, disease_dict)) |>
+    select(-FISC_YR_LABEL) |>
+    data.table::setcolorder(c("YEAR")) |>
+    filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))
+}
 
-life_prev_df <- life_prev_df |>
-  separate(HEALTH_BOUNDARIES,
-           c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
-           " ",
-           extra = "merge") |>
-  mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-         DISEASE = str_replace_all(DISEASE,disease_dict)) |>
-  select(-FISC_YR_LABEL) |>
-  data.table::setcolorder(c("YEAR"))|>
-  filter(!str_detect(HEALTH_BOUND_NAME,"Unknown"))
-
+inc_rate_df <- wrangle_data_frame(inc_rate_df)
+hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
+life_prev_df <- wrangle_data_frame(life_prev_df)
 
 
 # Read the shape files for the Community Health Service Areas (CHSA) level
