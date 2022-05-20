@@ -21,8 +21,6 @@ inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"), col_types = c
 hsc_prev_df <- read_csv(here(path, "hsc_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
 life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
 
-diseases <- unique(inc_rate_df$DISEASE)
-hsc_diseases <- unique(hsc_prev_df$DISEASE)
 x_year <- unique(inc_rate_df$YEAR)
 ```
 
@@ -32,6 +30,11 @@ We will try a Gamma prior distribution for the rates, which are continuous.
 One challenge is that Gamma does not support 0 values, so rare diseases can't be modeled.
 
 ```{r Functions to Fit and Plot Models}
+#' Fit a random walk 1 model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable with INLA. Assumes Gamma likelihood.
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
 fit_inla_rw1 <- function(data) {
   model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw1"),
     data = data,
@@ -50,6 +53,11 @@ fit_inla_rw1 <- function(data) {
   )
 }
 
+#' Fit a random walk 2 model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable with INLA. Assumes Gamma likelihood.
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
 fit_inla_rw2 <- function(data) {
   model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw2"),
     data = data,
@@ -68,6 +76,12 @@ fit_inla_rw2 <- function(data) {
   )
 }
 
+#' Fit a loess model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable. Confidence intervals generated
+#' using t-distribution approximation
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
 fit_loess <- function(data) {
   model <- loess(STD_RATE_PER_1000 ~ YEAR, data = data)
   model_predict <- predict(model, data, se = TRUE)
@@ -85,9 +99,17 @@ fit_loess <- function(data) {
   )
 }
 
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
+#' Generate line plot to compare models and confidence intervals
+#'
+#' @param data data frame containing original data
+#' @param model_df data frame containing model results
+#' @param disease character corresponding to entry in DISEASE column
+#' @param chsa character corresponding to entry in HEALTH_BOUNDARIES column
+#' @param rate_label character (label for Y axis)
+#' @return ggplot object
 plot_models <- function(data, model_df, disease, chsa, rate_label) {
+  cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  
   ggplot(aes(x = YEAR, y = STD_RATE_PER_1000), data = data) +
     geom_point() +
     geom_ribbon(aes(x = x, y = y_fitted, ymin = ci_95_ll, ymax = ci_95_ul, fill = model), alpha = 0.2, data = model_df) +
@@ -102,11 +124,16 @@ plot_models <- function(data, model_df, disease, chsa, rate_label) {
 ```
 
 
-
 ```{r Compare 3 Models for 1 Outcome, fig.show="hold", out.width="25%"}
+#' Generate line plot to compare loess, random walk 1, and random walk 2 models
+#' Only fits data without 0 values due to limitations with Gamma likelihood.
+#'
+#' @param data data frame
+#' @param chsa character corresponding to entry in HEALTH_BOUNDARIES column
+#' @param rate_label character (label for Y axis)
+#' @return ggplot object
 compare_models <- function(data, chsa, rate_label) {
   diseases <- unique(data$DISEASE)
-  x_year <- unique(inc_rate_df$YEAR)
   
   for (d in diseases) {
     disease_data <- data |>
@@ -123,13 +150,20 @@ compare_models <- function(data, chsa, rate_label) {
 ```
 
 ### Age-Standardized Life Prevalence in Fernie
+
+Note: not all plots are generated for all diseases because some rare diseases have 0 entries.
 ```{r}
-compare_models(life_prev_df, "1110 Fernie", "Age-Std Life Prevalence")
+compare_models(inc_rate_df, "1110 Fernie", "Age-Std Incidence Rate")
+```
+
+### Age-Standardized Life Prevalence in Fernie
+```{r}
+compare_models(life_prev_df, "1110 Fernie", "Age-Std Life Prevalence Rate")
 ```
 
 ### Standardized HSC Prevalence in Fernie
 ```{r}
-compare_models(hsc_prev_df, "1110 Fernie", "Std HSC Prevalence")
+compare_models(hsc_prev_df, "1110 Fernie", "Age-Std HSC Prevalence Rate")
 ```
 
 
