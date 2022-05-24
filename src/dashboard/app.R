@@ -157,7 +157,8 @@ ui <- fluidPage(
                      min = 2001,
                      max = 2020,
                      value = c(2001, 2020),
-                     step = 1
+                     step = 1,
+                     sep = ""
                    ),
                    
                    radioButtons(
@@ -394,9 +395,9 @@ server <- function(input, output) {
     
   })
   
-  ################
+  ################################
   # By Region Tab Server Side Logic
-  ################
+  ################################
   region_tab_dataset_used <- reactive({
     switch(input$region_tab_rate_type_selected,
            "Crude Incidence Rate" = inc_rate_df,
@@ -462,9 +463,9 @@ server <- function(input, output) {
   output$region_tab_line_chart <- renderPlot({
     region_tab_filtered_data() |>
       ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
-      geom_line(stat = 'summary', fun = mean) +
+      geom_line(stat = 'identity') +
       labs(
-        y = region_tab_rate_as_variable(),
+        y = input$region_tab_rate_type_selected,
         x = "Year",
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
