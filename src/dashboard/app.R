@@ -146,17 +146,10 @@ ui <- fluidPage(
                    selectInput(
                      "region_tab_rate_type_selected",
                      label = "Select Rate Type",
-                     choices = c(
-                       "Crude Incidence Rate",
-                       "Age Standardized Incidence Rate",
-                       "Crude Life Prevalence",
-                       "Age Standardized Life Prevalence",
-                       "Crude HSC Prevalence",
-                       "Age Standardized HSC Prevalence"
-                     )
+                     choices = RATE_TYPE_CHOICES
                    ),
                    
-                   uiOutput("disease_r"),
+                   uiOutput("region_tab_diseases_selected"),
                    
                    sliderInput(
                      "region_tab_year_range_selected",
@@ -168,7 +161,7 @@ ui <- fluidPage(
                    ),
                    
                    radioButtons(
-                     "gender_r",
+                     "region_tab_sex_selected",
                      label = ("Select Sex"),
                      choices = c("Male", "Female", "Total"),
                      selected = "Total",
@@ -401,10 +394,10 @@ server <- function(input, output) {
     
   })
   
-  
-  # By Region Tab
-  
-  datasetInput_r <- reactive({
+  ################
+  # By Region Tab Server Side Logic
+  ################
+  region_tab_dataset_used <- reactive({
     switch(input$region_tab_rate_type_selected,
            "Crude Incidence Rate" = inc_rate_df,
            "Age Standardized Incidence Rate" = inc_rate_df,
@@ -414,7 +407,7 @@ server <- function(input, output) {
            "Age Standardized HSC Prevalence" = hsc_prev_df)
   })
   
-  rateInput_r <- reactive({
+  region_tab_rate_as_variable <- reactive({
     switch(input$region_tab_rate_type_selected,
            "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
            "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
@@ -440,21 +433,21 @@ server <- function(input, output) {
   })
   
   
-  output$disease_r <- renderUI({
-    selectInput("disease_r", 
+  output$region_tab_diseases_selected <- renderUI({
+    selectInput("region_tab_diseases_selected", 
                 label = "Select Disease(s)",
-                choices = unique(datasetInput_r()$DISEASE),
+                choices = unique(region_tab_dataset_used()$DISEASE),
                 multiple = TRUE,
-                selected = unique(datasetInput_r()$DISEASE)[1])
+                selected = unique(region_tab_dataset_used()$DISEASE)[1])
   }) 
   
   region_tab_filtered_data <- reactive({
-    datasetInput_r() |>
+    region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
-                (if ("All" %in% input$disease_r)
+                (if ("All" %in% input$region_tab_diseases_selected)
                   TRUE
                  else
-                   (DISEASE %in% input$disease_r)
+                   (DISEASE %in% input$region_tab_diseases_selected)
                 ) &
                 (
                   YEAR %in% seq(
@@ -462,19 +455,16 @@ server <- function(input, output) {
                     to  =  max(input$region_tab_year_range_selected)
                   )
                 ) &
-                (if (input$gender_r == 'Both')
-                  TRUE
-                 else
-                   (CLNT_GENDER_LABEL == input$gender_r)
-                ))
+                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1))
+                )
   })
   
   output$region_tab_line_chart <- renderPlot({
     region_tab_filtered_data() |>
-      ggplot(aes_string(y = rateInput_r(), x = "YEAR", color = "DISEASE")) +
+      ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
       geom_line(stat = 'summary', fun = mean) +
       labs(
-        y = rateInput_r(),
+        y = region_tab_rate_as_variable(),
         x = "Year",
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
@@ -483,7 +473,7 @@ server <- function(input, output) {
   
   output$region_tab_bar_chart <- renderPlot({
     region_tab_filtered_data() |> 
-      ggplot(aes_string(x = "DISEASE", y = rateInput_r(), fill = "DISEASE")) +
+      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(), fill = "DISEASE")) +
       geom_bar(stat = "sum") +
       labs(
         legend = "Disease",
