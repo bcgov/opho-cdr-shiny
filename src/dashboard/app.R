@@ -18,7 +18,7 @@ library(crosstalk)
 # Define and load all the global variables, including the data frames and shape files
 ################################
 source('global.R', local = T) 
-options(spinner.color="#0dc5c1")
+options(spinner.color="#003366")
 
 ################################
 # UI Side Logic
@@ -256,18 +256,7 @@ server <- function(input, output) {
     # currently selected regions (currently only used for direct manip of map)
     regions = NULL
   )
-  
-  HSC_disease<- c("Acute Myocardial Infarction",
-                  "Asthma",
-                  "Depression",
-                  "Gout and Crystal Arthropathies",
-                  "Stroke (Hospitalized Haemorrhagic)",
-                  "Stroke (Hospitalized)",
-                  "Stroke (Hospitalized Transient Ischemic Attack)",
-                  "Stroke (Hospitalized Ischemic)",
-                  "Mood and Anxiety Disorders",
-                  "Schizophrenia and Delusional Disorders",
-                  "Substance Use Disorders")
+
   
   output$dataset_d <- renderUI({
     selectInput("dataset_d", 
@@ -345,9 +334,11 @@ server <- function(input, output) {
   # shared_data <- SharedData$new(filter_df_d)
   
   output$disease_graph_bar <- renderPlotly({
-    p<-filter_df_d()|>
+    d<-filter_df_d()|>
       filter((YEAR == input$year_d)&
-               (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+             (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+      highlight_key(~HEALTH_BOUND_NAME)
+    p <- d |>
       ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
       geom_bar(stat='identity')+
       labs(x="Health Region",
@@ -355,14 +346,16 @@ server <- function(input, output) {
            title = paste0(input$dataset_d, " Per Region in ",input$year_d))+
       theme(legend.position="none",
             axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-    ggplotly(p)
+    ggplotly(p)|>
+      highlight("plotly_hover")
   })
   
   output$disease_graph_line <- renderPlotly({
     d <- filter_df_d()|>
       filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
-      highlight_key( ~HEALTH_BOUND_NAME )
-    p2<- ggplot(d, aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
+      highlight_key(~HEALTH_BOUND_NAME)
+    p2<- d|>
+      ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
                               # text = paste(
                               #   input$dataset_d, rateInput_d(), "\n",
                               #   "Year: ", "YEAR", "\n",
@@ -384,7 +377,7 @@ server <- function(input, output) {
             by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
             by.y="HEALTH_BOUND_CODE")
     
-    mybins <- c(0,4,8,12,Inf)
+    mybins <- bin_dict[[input$disease_d]]
     mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
@@ -419,28 +412,22 @@ server <- function(input, output) {
     
   })
   
-  output$map_hover <- renderText({
-    input$map_shape_mouseover
-    # input$map_geojson_mouseover
-    
-  })
-  
-  observeEvent(input$map_shape_mouseover, {
-    rv$regions <- c(rv$regions, input$map_shape_mouseover)
-    
-    leafletProxy("map", session) %>%
-      removeShape(layerId = input$map_shape_mouseover$id) %>%
-      addPolygons(
-        data = shared_data(d),
-        color = "black",
-        fillOpacity = 1,
-        weight = 1,
-        highlightOptions = highlightOptions(fillOpacity = 0.2),
-        label = ~label,
-        layerId = ~label,
-        group = "foo"
-      )
-  })
+  # observeEvent(input$map_shape_mouseover, {
+  #   rv$regions <- c(rv$regions, input$map_shape_mouseover)
+  #   
+  #   leafletProxy("map", session) %>%
+  #     removeShape(layerId = input$map_shape_mouseover$id) %>%
+  #     addPolygons(
+  #       data = shared_data(d),
+  #       color = "black",
+  #       fillOpacity = 1,
+  #       weight = 1,
+  #       highlightOptions = highlightOptions(fillOpacity = 0.2),
+  #       label = ~label,
+  #       layerId = ~label,
+  #       group = "foo"
+  #     )
+  # })
    
   
   ################################

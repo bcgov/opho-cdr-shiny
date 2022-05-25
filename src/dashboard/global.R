@@ -39,9 +39,49 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
+
+# Define a dictionary of bins to use in choropleth map for each disease
+bin_dict <-list("Alzheimer's and Other Types of Dementia" = c(0,2,4,6,8,Inf),
+                "Acute Myocardial Infarction"= c(0,1,2,3,4,Inf),
+                "Asthma"= c(0,2,4,6,8,Inf),
+                "Chronic Kidney Disease"= c(0,1,2,3,4,Inf),
+                "Chronic Obstructive Pulmonary Disease"= c(0,2,4,6,8,Inf),
+                "Depression"= c(0,5,10,15,20,Inf),
+                "Diabetes Mellitus"= c(0,2,4,6,8,Inf),
+                "Epilepsy"= c(0,0.2,0.4,0.6,0.8,Inf),
+                "Gout and Crystal Arthropathies"= c(0,1,2,3,4,Inf),
+                "Stroke (Hospitalized Haemorrhagic)"= c(0,0.1,0.2,0.3,0.4,Inf),
+                "Heart Failure"= c(0,1,2,3,4,Inf),
+                "Stroke (Hospitalized)"= c(0,0.5,1,1.5,2,Inf),
+                "Stroke (Hospitalized Transient Ischemic Attack)"= c(0,0.2,0.4,0.6,0.8,Inf),
+                "Hypertension"= c(0,6,12,18,24,Inf),
+                "Ischemic Heart Disease"= c(0,2,4,6,8,Inf),
+                "Stroke (Hospitalized Ischemic)"= c(0,0.5,1,1.5,2,Inf),
+                "Juvenile Idiopathic Arthritis"= c(0,0.01,0.02,0.03,0.04,Inf),
+                "Mood and Anxiety Disorders"= c(0,8,16,24,32,Inf),
+                "Multiple Sclerosis"= c(0,0.05,0.1,0.15,0.2,Inf),
+                "Osteoarthritis"= c(0,3,6,9,12,Inf),
+                "Osteoporosis"= c(0,3,6,9,12,Inf),
+                "Parkinson's Disease and Parkinsonism"= c(0,0.2,0.4,0.6,0.8,Inf),
+                "Rheumatoid Arthritis"= c(0,0.2,0.4,0.6,0.8,Inf),
+                "Schizophrenia and Delusional Disorders"= c(0,0.2,0.4,0.6,0.8,Inf),
+                "Substance Use Disorders"= c(0,1,2,3,4,Inf))
+
 # Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
 HA_CHOICES <- c("Fraser", "Interior", "Northern", "Vancouver Coastal", "Vancouver Island")
+
+HSC_disease<- c("Acute Myocardial Infarction",
+                "Asthma",
+                "Depression",
+                "Gout and Crystal Arthropathies",
+                "Stroke (Hospitalized Haemorrhagic)",
+                "Stroke (Hospitalized)",
+                "Stroke (Hospitalized Transient Ischemic Attack)",
+                "Stroke (Hospitalized Ischemic)",
+                "Mood and Anxiety Disorders",
+                "Schizophrenia and Delusional Disorders",
+                "Substance Use Disorders")
 
 RATE_TYPE_CHOICES <- c(
   "Crude Incidence Rate",
