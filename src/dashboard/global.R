@@ -3,8 +3,9 @@
 #   going to be used in app.R
 ################################  
 
-
-########## Define and initialize global variables ##########
+################################
+# Define and initialize global variables
+################################
 
 # Create 3 empty data frames that correspond to three rate types:
 #   Incidence Rate, Active Healthcare Contact (HSC) Prevalence, and Lifetime Prevalence
@@ -61,9 +62,9 @@ RATE_TYPE_CHOICES <- c(
 # Read csv files and concatenate rows with the same rate type
 for (dir in list.dirs("data")[-1]) {
   for (file in list.files(dir)) {
-    new_df <- read_csv(paste0(dir, "/", file),
-                       col_select = (-"STDPOP"),
-                       show_col_types = FALSE) |>
+    new_df <- data.table::fread(paste0(dir, "/", file),
+                                verbose = FALSE,
+                                drop = c("STDPOP")) |>
       drop_na(CRUDE_RATE_PER_1000)
     
     if (dir == "data/IncidenceRate") {
@@ -74,7 +75,6 @@ for (dir in list.dirs("data")[-1]) {
     }
   }
 }
-
 
 # Clean the data frames using a function
 
@@ -104,6 +104,11 @@ inc_rate_df <- wrangle_data_frame(inc_rate_df)
 hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
 life_prev_df <- wrangle_data_frame(life_prev_df)
 
+tm <- microbenchmark::microbenchmark(use_read_csv,
+                                     use_fread,
+                                     times = 3)
+tm
+autoplot(tm)
 
 # Read the shape files for the Community Health Service Areas (CHSA) level
 chsa_spdf <- readOGR(
