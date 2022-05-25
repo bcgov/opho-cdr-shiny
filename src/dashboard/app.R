@@ -2,6 +2,7 @@
 # Load packages
 # ################################
 library(shiny)
+library(shinyjs)
 library(tidyverse)
 library(leaflet)
 library(rgdal)
@@ -18,7 +19,7 @@ library(crosstalk)
 # Define and load all the global variables, including the data frames and shape files
 ################################
 source('global.R', local = T) 
-options(spinner.color="#0dc5c1")
+options(spinner.color="#003366")
 
 ################################
 # UI Side Logic
@@ -28,6 +29,7 @@ options(spinner.color="#0dc5c1")
 ui <- fluidPage(
   theme = shinytheme("sandstone"),
   includeCSS("www/mytheme.css"), 
+  shinyjs::useShinyjs(),
   
   navbarPage("BC Chronic Disease Dashboard",
       
@@ -94,47 +96,51 @@ ui <- fluidPage(
       ################################
       tabPanel("By Disease",
                sidebarLayout(
-                 
-               sidebarPanel(
-                 width = 3,
-                 h2("Filters"),
-                 hr(style = "border-top: 1px solid #000000"),
-                 
-                 selectInput("disease_d",
-                             label= "Select Disease",
-                             choices = sort(unique(inc_rate_df$DISEASE))),
-                 
-                 uiOutput("dataset_d"),
-                 
-                 radioButtons("health_bound_d",
-                              label= "Select Geography",
-                              choices = GEOGRAPHY_CHOICES,
-                              selected= GEOGRAPHY_CHOICES[1]),
-                 
-                 uiOutput("region_d"),
-              
-                 selectInput("year_d", 
-                             label = "Select Fiscal Year",
-                             choices = c(seq(2001,2020))
-                             ),
-
-                 radioButtons("gender_d", 
-                              label = ("Select Sex"),
-                              choices = c("Male","Female","Total"), 
-                              selected = "Total",
-                              inline=TRUE),
-                 
+                 sidebarPanel(
+                   id="filters",
+                   width = 3,
+                   h2("Filters"),
+                   hr(style = "border-top: 1px solid #000000"),
+  
+                   selectInput("disease_d",
+                               label= "Select Disease",
+                               choices = sort(unique(inc_rate_df$DISEASE))),
+                   
+                   uiOutput("dataset_d"),
+                   
+                   radioButtons("health_bound_d",
+                                label= "Select Geography",
+                                choices = GEOGRAPHY_CHOICES,
+                                selected= GEOGRAPHY_CHOICES[1]),
+                   
+                   uiOutput("region_d"),
+                   
+                   radioButtons("gender_d", 
+                                label = ("Select Sex"),
+                                choices = c("Male","Female","Total"), 
+                                selected = "Total",
+                                inline=TRUE),
+                
+                   sliderInput("year_d", 
+                               label = "Select Fiscal Year",
+                               min = 2001,
+                               max=2020,
+                               value = 2001,
+                               animate = TRUE
+                              ),
+        
+                   actionButton("resetAll", "Reset")
+                    
                ),
                mainPanel(
                  width = 9,
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                          verbatimTextOutput("map_hover")),
+                          verbatimTextOutput("hover_stuff")),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
-                          ))
-                 )
+                          )))
                )),
       
       ################################
@@ -247,39 +253,21 @@ ui <- fluidPage(
 ################################
 # Server Side Logic
 ################################
-server <- function(input, output) {
+server <- function(input, output,session) {
   
   ################################
   # By Disease Tab Server Side Logic
   ################################
-  rv <- reactiveValues(
-    # currently selected regions (currently only used for direct manip of map)
-    regions = NULL
-  )
   
-  HSC_disease<- c("Acute Myocardial Infarction",
-                  "Asthma",
-                  "Depression",
-                  "Gout and Crystal Arthropathies",
-                  "Stroke (Hospitalized Haemorrhagic)",
-                  "Stroke (Hospitalized)",
-                  "Stroke (Hospitalized Transient Ischemic Attack)",
-                  "Stroke (Hospitalized Ischemic)",
-                  "Mood and Anxiety Disorders",
-                  "Schizophrenia and Delusional Disorders",
-                  "Substance Use Disorders")
-  
+  observeEvent(input$resetAll, {
+    reset("filters")
+  })
+
   output$dataset_d <- renderUI({
     selectInput("dataset_d", 
                 label = "Select Rate Type",
                 choices = (
-                  if(input$disease_d %in% HSC_disease)
-                    c("Crude Incidence Rate",
-                      "Age Standardized Incidence Rate",
-                      "Crude Life Prevalence",
-                      "Age Standardized Life Prevalence",
-                      "Crude HSC Prevalence",
-                      "Age Standardized HSC Prevalence")
+                  if(input$disease_d %in% HSC_disease) RATE_TYPE_CHOICES
                   else
                     c("Crude Incidence Rate",
                       "Age Standardized Incidence Rate",
@@ -289,7 +277,6 @@ server <- function(input, output) {
                 multiple = FALSE,
     )
   })
-  
   
   datasetInput_d <- reactive({
     switch(input$dataset_d,
@@ -328,7 +315,7 @@ server <- function(input, output) {
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") "All"
-                  else c()
+                  else c("100 Mile House","Abbotsford Rural")
                 ))
   })
   
@@ -342,12 +329,12 @@ server <- function(input, output) {
       )
   })
   
-  # shared_data <- SharedData$new(filter_df_d)
-  
   output$disease_graph_bar <- renderPlotly({
-    p<-filter_df_d()|>
+    d<-filter_df_d()|>
       filter((YEAR == input$year_d)&
-               (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+             (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+      highlight_key(~HEALTH_BOUND_NAME)
+    p <- d |>
       ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
       geom_bar(stat='identity')+
       labs(x="Health Region",
@@ -355,27 +342,31 @@ server <- function(input, output) {
            title = paste0(input$dataset_d, " Per Region in ",input$year_d))+
       theme(legend.position="none",
             axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-    ggplotly(p)
+    ggplotly(p,source = "disease_graph_bar")|>
+      highlight(on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
+      event_register('plotly_unhover')
   })
   
   output$disease_graph_line <- renderPlotly({
     d <- filter_df_d()|>
       filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
-      highlight_key( ~HEALTH_BOUND_NAME )
-    p2<- ggplot(d, aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
-                              # text = paste(
-                              #   input$dataset_d, rateInput_d(), "\n",
-                              #   "Year: ", "YEAR", "\n",
-                              #   sep = ""
-                              # )
+      highlight_key(~HEALTH_BOUND_NAME)
+    p2<- d|>
+      ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
+                        # text = paste(
+                        #   input$dataset_d, rateInput_d(), "\n",
+                        #   "Year: ", "YEAR", "\n",
+                        #   sep = ""
+                        # )
     ))+
       geom_line(stat="identity")+
       labs(y=paste0(input$dataset_d, " Per 1000"),
            x="Year",
-           title = paste0(input$dataset_d," Over Time"),
-           legend = "Health Region")
-    gg <- ggplotly(p2,tooltip=c("YEAR","HEALTH_BOUND_NAME"))
-    highlight( gg, on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)
+           title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
+           col = "Health Region")
+    ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
+      highlight( on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
+        event_register('plotly_unhover')
   })
   
   output$map <- renderLeaflet({
@@ -384,7 +375,7 @@ server <- function(input, output) {
             by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
             by.y="HEALTH_BOUND_CODE")
     
-    mybins <- c(0,4,8,12,Inf)
+    mybins <- bin_dict[[input$disease_d]]
     mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
@@ -419,28 +410,56 @@ server <- function(input, output) {
     
   })
   
-  output$map_hover <- renderText({
-    input$map_shape_mouseover
-    # input$map_geojson_mouseover
-    
+  output$hover_stuff <- renderPrint({
+
+    event_data("plotly_hover",
+               source = "disease_graph_bar")
+    # my_traces()
   })
   
-  observeEvent(input$map_shape_mouseover, {
-    rv$regions <- c(rv$regions, input$map_shape_mouseover)
-    
-    leafletProxy("map", session) %>%
-      removeShape(layerId = input$map_shape_mouseover$id) %>%
-      addPolygons(
-        data = shared_data(d),
-        color = "black",
-        fillOpacity = 1,
-        weight = 1,
-        highlightOptions = highlightOptions(fillOpacity = 0.2),
-        label = ~label,
-        layerId = ~label,
-        group = "foo"
-      )
+  my_traces <- reactive({
+    if ("All" %in% input$region_d) unique(filter_df_d()$HEALTH_BOUND_NAME)
+    else c(input$region_d)
   })
+  
+  observeEvent(event_data("plotly_hover",
+                          source = "disease_graph_bar"), {
+                            plotlyProxy("disease_graph_line", session) %>%
+                              plotlyProxyInvoke(
+                                method = "restyle",
+                                list(
+                                  line = list(
+                                    width = 0.1
+                                  )
+                                )
+                              ) %>%
+                              plotlyProxyInvoke(
+                                method = "restyle",
+                                "line",
+                                list(
+                                  width = 4
+                                ),
+                                as.integer(match(event_data("plotly_hover", source = "disease_graph_bar")[["key"]],
+                                                 my_traces())-1)
+                              )
+                          })
+
+  # observeEvent(input$map_shape_mouseover, {
+  #   rv$regions <- c(rv$regions, input$map_shape_mouseover)
+  #   
+  #   leafletProxy("map", session) %>%
+  #     removeShape(layerId = input$map_shape_mouseover$id) %>%
+  #     addPolygons(
+  #       data = shared_data(d),
+  #       color = "black",
+  #       fillOpacity = 1,
+  #       weight = 1,
+  #       highlightOptions = highlightOptions(fillOpacity = 0.2),
+  #       label = ~label,
+  #       layerId = ~label,
+  #       group = "foo"
+  #     )
+  # })
    
   
   ################################
