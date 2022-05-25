@@ -1,5 +1,7 @@
+################################
 # This file creates the global variables and the shape files that are 
 #   going to be used in app.R
+################################  
 
 
 ########## Define and initialize global variables ##########
@@ -37,12 +39,24 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
-# Define the geography choices in the filter
+# Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
+HA_CHOICES <- c("Fraser", "Interior", "Northern", "Vancouver Coastal", "Vancouver Island")
 
+RATE_TYPE_CHOICES <- c(
+  "Crude Incidence Rate",
+  "Age Standardized Incidence Rate",
+  "Crude Life Prevalence",
+  "Age Standardized Life Prevalence",
+  "Crude HSC Prevalence",
+  "Age Standardized HSC Prevalence"
+)
 
+# CHSA_CHOICES <- sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
 
-########## Read data from files and prepare data frames for analysis ##########
+################################
+# Read data from files and prepare data frames for analysis
+################################
 
 # Read csv files and concatenate rows with the same rate type
 for (dir in list.dirs("data")[-1]) {

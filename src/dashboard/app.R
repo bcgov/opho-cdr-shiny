@@ -1,32 +1,43 @@
-# Load packages ----
+################################
+# Load packages
+# ################################
 library(shiny)
 library(tidyverse)
 library(leaflet)
 library(rgdal)
 library(shinythemes)
 library(plotly)
+library(scales) # used to format the axis values
 library(shinycssloaders)
 library(crosstalk)
 
 
-# Source helper functions -----
-source('global.R', local = T) #load in data
+################################
+# Source helper functions
+# 
+# Define and load all the global variables, including the data frames and shape files
+################################
+source('global.R', local = T) 
+options(spinner.color="#0dc5c1")
 
-options(spinner.color="#003366")
-
-# User interface ----
-
+################################
+# UI Side Logic
+# 
+# Define the ui of the four main tabs of the dashboard from left to right
+################################
 ui <- fluidPage(
   theme = shinytheme("sandstone"),
-  includeCSS("www/mytheme.css"), #add custom styling
+  includeCSS("www/mytheme.css"), 
   
   navbarPage("BC Chronic Disease Dashboard",
-             
-             #Info Tab
-             tabPanel("Information", 
-                      h2("Welcome to the BC Chronic Disease Dashboard"),
-                      h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
-                      helpText(HTML("<br/><br/>
+      
+      ################################
+      # Information Tab UI Side Logic
+      ################################
+      tabPanel("Information", 
+               h2("Welcome to the BC Chronic Disease Dashboard"),
+               h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
+               helpText(HTML("<br/><br/>
                              This dashboard facilitates the exploration and visualization of spatial and temporal
                              trends of 25 different chronic diseases across the Province of British Columbia. The data 
                              is sourced from the Chronic Disease Registry (BCCDR).
@@ -77,169 +88,174 @@ ui <- fluidPage(
                                </p></li>
                              </ul>
                         note about fiscal year  "))),
-             
-             #By Disease Tab
-             tabPanel("By Disease",
-                      sidebarLayout(
-                        
-                        # Filters
-                        sidebarPanel(
-                          width = 3,
-                          h2("Filters"),
-                          hr(style = "border-top: 1px solid #000000"),
-                          
-                          selectInput("disease_d",
-                                      label= "Select Disease",
-                                      choices = sort(unique(inc_rate_df$DISEASE))),
-                          
-                          uiOutput("dataset_d"),
-                          
-                          radioButtons("health_bound_d",
-                                       label= "Select Geography",
-                                       choices = c("Health Authorities","Community Health Service Areas"),
-                                       selected="Health Authorities"),
-                          
-                          uiOutput("region_d"),
-                        
-                          
-                          radioButtons("gender_d", 
-                                       label = ("Select Sex"),
-                                       choices = c("Male","Female","Total"), 
-                                       selected = "Total",
-                                       inline=TRUE),
-                          
-                          sliderInput("year_d", 
-                                      label = "Select Fiscal Year",
-                                      min = 2001,
-                                      max=2020,
-                                      value=2001,
-                                      animate = TRUE)
-                          
-                        ),
-                        mainPanel(
-                          width = 9,
-                          fluidRow(
-                            column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                                   verbatimTextOutput("map_hover")),
-                            column(6, 
-                                   fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
-                                   fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
-                            ))
-                        )
-                      )),
-             
-             #By Region Tab
-             tabPanel("By Region",
-                      sidebarLayout(
-                        sidebarPanel(
-                          width = 3,
-                          h2("Filters"),
-                          hr(style = "border-top: 1px solid #000000"),
-                          
-                          radioButtons(
-                            "health_bound_r",
-                            label = "Select Geography",
-                            choices = c("Health Authorities", "Community Health Service Areas"),
-                            selected = "Health Authorities"
-                          ),
-                          
-                          uiOutput("region_tab_region_selected"),
-                          
-                          selectInput(
-                            "dataset_r",
-                            label = "Select Rate Type",
-                            choices = c(
-                              "Crude Incidence Rate",
-                              "Age Standardized Incidence Rate",
-                              "Crude Life Prevalence",
-                              "Age Standardized Life Prevalence",
-                              "Crude HSC Prevalence",
-                              "Age Standardized HSC Prevalence"
-                            )
-                          ),
-                          
-                          uiOutput("disease_r"),
-                          
-                          sliderInput(
-                            "region_tab_year_range_selected",
-                            label = "Select Year Range",
-                            min = 2001,
-                            max = 2020,
-                            value = c(2001, 2020),
-                            step = 1
-                          ),
-                          
-                          radioButtons(
-                            "gender_r",
-                            label = ("Select Sex"),
-                            choices = c("Male", "Female", "Total"),
-                            selected = "Total",
-                            inline = TRUE
-                          ),
-                        ),
-                        
-                        mainPanel(
-                          width = 9,
-                          fluidRow(plotOutput(
-                            "region_tab_line_chart"
-                          )),
-                          fluidRow(plotOutput(
-                            "region_tab_pie_chart"
-                          )))
-                      )), 
-             
-             #Data Tab
-             tabPanel("Data",
-                      sidebarLayout(
-                        
-                        #Filters
-                        sidebarPanel(
-                          width = 3,
-                          h2("Filters"),
-                          hr(style = "border-top: 1px solid #000000"),
-                          
-                          selectInput("dataset_data", 
-                                      label = "Select Rate Type",
-                                      choices = c("Crude Incidence Rate",
-                                                  "Age Standardized Incidence Rate",
-                                                  "Crude Life Prevalence",
-                                                  "Age Standardized Life Prevalence",
-                                                  "Crude HSC Prevalence",
-                                                  "Age Standardized HSC Prevalence")),
-                          
-                          uiOutput("disease_data"),
-                          
-                          radioButtons("health_bound_data",
-                                       label= "Select Geography",
-                                       choices = c("Health Authorities","Community Health Service Areas"),
-                                       selected="Health Authorities"),
-                          
-                          uiOutput("region_data"),
-                          
-                          sliderInput("year_range_data", 
-                                      label = "Select Year Range",
-                                      min = 2001, max = 2020, value = c(2001, 2020)),
-                          
-                          radioButtons("gender_data", 
-                                       label = ("Select Sex"),
-                                       choices = c("Male","Female","Total"), 
-                                       selected = "Total",
-                                       inline = TRUE),
-                        ),
-                        mainPanel(
-                          width = 9,
-                          downloadButton("download_data", label = "Download Data"),
-                          hr(),
-                          dataTableOutput("data_table"))
-                      ))
-             
+      
+      ################################
+      # "By Disease" Tab UI Side Logic
+      ################################
+      tabPanel("By Disease",
+               sidebarLayout(
+                 
+               sidebarPanel(
+                 width = 3,
+                 h2("Filters"),
+                 hr(style = "border-top: 1px solid #000000"),
+                 
+                 selectInput("disease_d",
+                             label= "Select Disease",
+                             choices = sort(unique(inc_rate_df$DISEASE))),
+                 
+                 uiOutput("dataset_d"),
+                 
+                 radioButtons("health_bound_d",
+                              label= "Select Geography",
+                              choices = GEOGRAPHY_CHOICES,
+                              selected= GEOGRAPHY_CHOICES[1]),
+                 
+                 uiOutput("region_d"),
+              
+                 selectInput("year_d", 
+                             label = "Select Fiscal Year",
+                             choices = c(seq(2001,2020))
+                             ),
+
+                 radioButtons("gender_d", 
+                              label = ("Select Sex"),
+                              choices = c("Male","Female","Total"), 
+                              selected = "Total",
+                              inline=TRUE),
+                 
+               ),
+               mainPanel(
+                 width = 9,
+                 fluidRow(
+                   column(6, leafletOutput("map",height = 700)%>% withSpinner(),
+                          verbatimTextOutput("map_hover")),
+                   column(6, 
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
+                          ))
+                 )
+               )),
+      
+      ################################
+      # "By Region" Tab UI Side Logic
+      ################################
+      tabPanel("By Region",
+               sidebarLayout(
+                 
+                 sidebarPanel(
+                   width = 3,
+                   h2("Filters"),
+                   hr(style = "border-top: 1px solid #000000"),
+                   
+                   radioButtons(
+                     "region_tab_geography_selected",
+                     label = "Select Geography",
+                     choices = GEOGRAPHY_CHOICES,
+                     selected = GEOGRAPHY_CHOICES[1]
+                   ),
+                   
+                   uiOutput("region_tab_region_selected"),
+                   
+                   selectInput(
+                     "region_tab_rate_type_selected",
+                     label = "Select Rate Type",
+                     choices = RATE_TYPE_CHOICES
+                   ),
+                   
+                   uiOutput("region_tab_diseases_selected"),
+                   
+                   sliderInput(
+                     "region_tab_year_range_selected",
+                     label = "Select Year Range",
+                     min = 2001,
+                     max = 2020,
+                     value = c(2001, 2020),
+                     step = 1,
+                     sep = ""
+                   ),
+                   
+                   radioButtons(
+                     "region_tab_sex_selected",
+                     label = ("Select Sex"),
+                     choices = c("Male", "Female", "Total"),
+                     selected = "Total",
+                     inline = TRUE
+                   ),
+                 ),
+                 
+                 mainPanel(
+                   width = 9,
+                   fluidRow(plotOutput(
+                   "region_tab_line_chart"
+                   )),
+                   fluidRow(plotOutput(
+                     "region_tab_bar_chart"
+                   )))
+               )), 
+      
+      ################################
+      # Download Data Tab UI Side Logic
+      ################################
+      tabPanel("Data",
+               sidebarLayout(
+                 
+                 #Filters
+                 sidebarPanel(
+                   width = 3,
+                   h2("Filters"),
+                   hr(style = "border-top: 1px solid #000000"),
+                   
+                   selectInput("dataset_data", 
+                               label = "Select Rate Type",
+                               choices = c("Crude Incidence Rate",
+                                           "Age Standardized Incidence Rate",
+                                           "Crude Life Prevalence",
+                                           "Age Standardized Life Prevalence",
+                                           "Crude HSC Prevalence",
+                                           "Age Standardized HSC Prevalence")),
+                   
+                   uiOutput("disease_data"),
+                   
+                   radioButtons("health_bound_data",
+                                label= "Select Geography",
+                                choices = GEOGRAPHY_CHOICES,
+                                selected=GEOGRAPHY_CHOICES[1]),
+                   
+                   uiOutput("region_data"),
+                   
+                   sliderInput("year_range_data", 
+                               label = "Select Year Range",
+                               min = 2001, max = 2020, value = c(2001, 2020)),
+                   
+                   radioButtons("gender_data", 
+                                label = ("Select Sex"),
+                                choices = c("Male","Female","Total"), 
+                                selected = "Total",
+                                inline = TRUE),
+                 ),
+                 mainPanel(
+                   width = 9,
+                   downloadButton("download_data", label = "Download Data"),
+                   hr(),
+                   dataTableOutput("data_table"))
+               ))
+               
   )
 )
 
-# Server logic ----
+################################
+# Server Side Logic
+################################
 server <- function(input, output) {
   
-  #By Disease Tab 
+  ################################
+  # By Disease Tab Server Side Logic
+  ################################
+  rv <- reactiveValues(
+    # currently selected regions (currently only used for direct manip of map)
+    regions = NULL
+  )
   
   HSC_disease<- c("Acute Myocardial Infarction",
                   "Asthma",
@@ -403,11 +419,36 @@ server <- function(input, output) {
     
   })
   
+  output$map_hover <- renderText({
+    input$map_shape_mouseover
+    # input$map_geojson_mouseover
+    
+  })
   
-  # By Region Tab
+  observeEvent(input$map_shape_mouseover, {
+    rv$regions <- c(rv$regions, input$map_shape_mouseover)
+    
+    leafletProxy("map", session) %>%
+      removeShape(layerId = input$map_shape_mouseover$id) %>%
+      addPolygons(
+        data = shared_data(d),
+        color = "black",
+        fillOpacity = 1,
+        weight = 1,
+        highlightOptions = highlightOptions(fillOpacity = 0.2),
+        label = ~label,
+        layerId = ~label,
+        group = "foo"
+      )
+  })
+   
   
-  datasetInput_r <- reactive({
-    switch(input$dataset_r,
+  ################################
+  # By Region Tab Server Side Logic
+  ################################
+  
+  region_tab_dataset_used <- reactive({
+    switch(input$region_tab_rate_type_selected,
            "Crude Incidence Rate" = inc_rate_df,
            "Age Standardized Incidence Rate" = inc_rate_df,
            "Crude Life Prevalence" = life_prev_df,
@@ -416,8 +457,8 @@ server <- function(input, output) {
            "Age Standardized HSC Prevalence" = hsc_prev_df)
   })
   
-  rateInput_r <- reactive({
-    switch(input$dataset_r,
+  region_tab_rate_as_variable <- reactive({
+    switch(input$region_tab_rate_type_selected,
            "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
            "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
            "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
@@ -431,14 +472,8 @@ server <- function(input, output) {
       "region_tab_region_selected",
       label = "Select Health Region",
       choices = (
-        if (input$health_bound_r == "Health Authorities")
-          c(
-            "Interior",
-            "Fraser",
-            "Vancouver Coastal",
-            "Vancouver Island",
-            "Northern"
-          )
+        if (input$region_tab_geography_selected == "Health Authorities")
+          HA_CHOICES
         else
           sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
       ),
@@ -448,72 +483,62 @@ server <- function(input, output) {
   })
   
   
-  output$disease_r <- renderUI({
-    selectInput("disease_r", 
-                label = "Select Disease(s)",
-                choices = unique(datasetInput_r()$DISEASE),
+  output$region_tab_diseases_selected <- renderUI({
+    selectizeInput("region_tab_diseases_selected", 
+                   label = "Select Disease(s)",
+                choices = unique(region_tab_dataset_used()$DISEASE),
                 multiple = TRUE,
-                selected = unique(datasetInput_r()$DISEASE)[1])
+                selected = unique(region_tab_dataset_used()$DISEASE)[1],
+                options = list(maxItems = 5))
   }) 
   
   region_tab_filtered_data <- reactive({
-    datasetInput_r() |>
-      filter ((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
-                (if ("All" %in% input$disease_r)
+    region_tab_dataset_used() |>
+      filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
+                (if ("All" %in% input$region_tab_diseases_selected)
                   TRUE
                  else
-                   (DISEASE %in% input$disease_r)
+                   (DISEASE %in% input$region_tab_diseases_selected)
                 ) &
                 (
-                  YEAR %in% seq(
-                    from  =  min(input$region_tab_year_range_selected),
-                    to  =  max(input$region_tab_year_range_selected)
-                  )
-                ) &
-                (if (input$gender_r == 'Both')
-                  TRUE
-                 else
-                   (CLNT_GENDER_LABEL == input$gender_r)
-                ))
+                  YEAR %in% seq(input$region_tab_year_range_selected[1], input$region_tab_year_range_selected[2], by = 1)
+                 ) &
+                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1))
+                )
   })
   
+  # plot the line chart showing trends of diseases over time
   output$region_tab_line_chart <- renderPlot({
     region_tab_filtered_data() |>
-      ggplot(aes_string(y = rateInput_r(), x = "YEAR", color = "DISEASE")) +
-      geom_line(stat = 'summary', fun = mean) +
+      ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
+      geom_line(stat = 'identity') +
       labs(
-        y = rateInput_r(),
+        y = input$region_tab_rate_type_selected,
         x = "Year",
         legend = "Disease",
-        title = paste0(input$dataset_r, " Over Time")
-      )
+        title = paste0(input$region_tab_rate_type_selected, " Over Time")
+      ) +
+      scale_x_continuous(breaks = breaks_width(1))
   })
   
-  output$region_tab_pie_chart <- renderPlot({
+  # plot a bar chart showing the distribution of cumulative rates for diseases
+  output$region_tab_bar_chart <- renderPlot({
     region_tab_filtered_data() |> 
-      group_by(DISEASE) |> 
-      summarise(total_rate = sum(switch(input$dataset_r,
-                                        "Crude Incidence Rate" = CRUDE_RATE_PER_1000,
-                                        "Age Standardized Incidence Rate" = STD_RATE_PER_1000,
-                                        "Crude Life Prevalence" = CRUDE_RATE_PER_1000,
-                                        "Age Standardized Life Prevalence" = STD_RATE_PER_1000,
-                                        "Crude HSC Prevalence" = CRUDE_RATE_PER_1000,
-                                        "Age Standardized HSC Prevalence" = STD_RATE_PER_1000))) |> 
-      arrange(desc(DISEASE)) |> 
-      mutate(prop = round(total_rate / sum(total_rate) * 100, 0),                                                                                                                                                                                                                                                                                                                            prop,
-             props = paste0(prop, "%")) |> 
-      ggplot(aes_string(x = "2", y = "prop", fill = "DISEASE")) +
+      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(), fill = "DISEASE")) +
       geom_bar(stat = "identity") +
-      theme_void() + 
-      geom_text(aes(label = props), color = "white") +
       labs(
         legend = "Disease",
-        title = paste0("Distribution of Diseases by ", input$dataset_r)
-      )
+        title = paste0("Distribution of Diseases by ", input$region_tab_rate_type_selected)
+      ) + 
+      scale_x_discrete(labels = wrap_format(10))
   })
   
+  # a map highlighting the selected health region to provide context
   
-  # Data Tab
+  
+  ################################
+  # Download Data Tab Server Side Logic
+  ################################
   datasetInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = inc_rate_df,
@@ -586,5 +611,7 @@ server <- function(input, output) {
   
 }
 
-# Run app ----
+################################
+# Run App
+################################
 shinyApp(ui, server)
