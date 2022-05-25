@@ -112,18 +112,21 @@ ui <- fluidPage(
                               selected= GEOGRAPHY_CHOICES[1]),
                  
                  uiOutput("region_d"),
-              
-                 selectInput("year_d", 
-                             label = "Select Fiscal Year",
-                             choices = c(seq(2001,2020))
-                             ),
-
+                 
                  radioButtons("gender_d", 
                               label = ("Select Sex"),
                               choices = c("Male","Female","Total"), 
                               selected = "Total",
                               inline=TRUE),
-                 
+              
+                 sliderInput("year_d", 
+                             label = "Select Fiscal Year",
+                             min = 2001,
+                             max=2020,
+                             value = 2001,
+                             animate = TRUE
+                             ),
+
                ),
                mainPanel(
                  width = 9,
