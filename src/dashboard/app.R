@@ -5,11 +5,15 @@ library(leaflet)
 library(rgdal)
 library(shinythemes)
 library(plotly)
+library(shinycssloaders)
+library(crosstalk)
+
 
 
 # Source helper functions -----
 source('global.R', local = T) #load in data
 
+options(spinner.color="#0dc5c1")
 
 # User interface ----
 
@@ -113,11 +117,11 @@ ui <- fluidPage(
                mainPanel(
                  width = 9,
                  fluidRow(
-                   column(6, leafletOutput("map",height = 700),
+                   column(6, leafletOutput("map",height = 700)%>% withSpinner(),
                           verbatimTextOutput("map_hover")),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350))),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=350))),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           ))
                  )
                )),
@@ -233,7 +237,15 @@ ui <- fluidPage(
 # Server logic ----
 server <- function(input, output) {
   
-  #By Disease Tab 
+  #By Disease Tab
+  
+  rv <- reactiveValues(
+    # currently selected regions (currently only used for direct manip of map)
+    regions = NULL
+  )
+  
+
+  
   
   HSC_disease<- c("Acute Myocardial Infarction",
                   "Asthma",
@@ -320,8 +332,10 @@ server <- function(input, output) {
       )
   })
   
+  shared_data <- SharedData$new(filter_df_d)
+  
   output$disease_graph_bar <- renderPlotly({
-    p<-filter_df_d()|>
+    p<-shared_data|>
       filter((YEAR == input$year_d)&
                (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
       ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
@@ -335,9 +349,8 @@ server <- function(input, output) {
   })
   
   output$disease_graph_line <- renderPlotly({
-    d <- filter_df_d()|>
-      filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
-      highlight_key( ~HEALTH_BOUND_NAME )
+    d <- shared_data|>
+      filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))
     p2<- ggplot(d, aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
                         # text = paste(
                         #   input$dataset_d, rateInput_d(), "\n",
@@ -356,7 +369,7 @@ server <- function(input, output) {
   
   output$map <- renderLeaflet({
     new_spdf<-(if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
-      merge(filter(filter_df_d(),(YEAR == input$year_d)),
+      merge(filter(shared_data,(YEAR == input$year_d)),
             by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
             by.y="HEALTH_BOUND_CODE")
     
@@ -379,6 +392,14 @@ server <- function(input, output) {
         color="gray", 
         weight=0.3,
         label = mytext,
+        highlight = highlightOptions(
+          weight = 3,
+          fillOpacity = 0,
+          color = "black",
+          opacity = 1.0,
+          bringToFront = TRUE,
+          sendToBack = TRUE), 
+        
         labelOptions = labelOptions( 
           style = list("font-weight" = "normal", padding = "3px 8px"), 
           textsize = "13px", 
@@ -396,6 +417,25 @@ server <- function(input, output) {
     # input$map_geojson_mouseover
     
   })
+  
+  observeEvent(input$map_shape_mouseover, {
+    rv$regions <- c(rv$regions, input$map_shape_mouseover)
+    
+    leafletProxy("map", session) %>%
+      removeShape(layerId = input$map_shape_mouseover$id) %>%
+      addPolygons(
+        data = shared_data(d),
+        color = "black",
+        fillOpacity = 1,
+        weight = 1,
+        highlightOptions = highlightOptions(fillOpacity = 0.2),
+        label = ~label,
+        layerId = ~label,
+        group = "foo"
+      )
+  })
+  
+  
   
   
   # By Region Tab
