@@ -6,7 +6,7 @@ and selects the RW model with lowest WAIC for a given disease rate metric
 (Incidence Rate, HSC Prevalence, Life Prevalence). 
 Outputs a CSV with model results.
 
-Usage: src/model/02_analysis.R --input=<input> --output=<output>
+Usage: src/model/01_analysis.R --input=<input> --output=<output>
 
 Options:
 --input=<input>       Path to data directory with rate data
