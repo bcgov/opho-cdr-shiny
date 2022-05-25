@@ -524,15 +524,19 @@ server <- function(input, output) {
       scale_x_continuous(breaks = breaks_width(1))
   })
   
+  # plot a bar chart showing the distribution of cumulative rates for diseases
   output$region_tab_bar_chart <- renderPlot({
     region_tab_filtered_data() |> 
       ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(), fill = "DISEASE")) +
-      geom_bar(stat = "sum") +
+      geom_bar(stat = "identity") +
       labs(
         legend = "Disease",
         title = paste0("Distribution of Diseases by ", input$region_tab_rate_type_selected)
-      )
+      ) + 
+      scale_x_discrete(labels = wrap_format(10))
   })
+  
+  # a map highlighting the selected health region to provide context
   
   
   ################################

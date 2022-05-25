@@ -1,7 +1,7 @@
-# 
+################################
 # This file creates the global variables and the shape files that are 
 #   going to be used in app.R
-#   
+################################  
 
 
 ########## Define and initialize global variables ##########
@@ -54,8 +54,9 @@ RATE_TYPE_CHOICES <- c(
 
 # CHSA_CHOICES <- sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
 
-
-########## Read data from files and prepare data frames for analysis ##########
+################################
+# Read data from files and prepare data frames for analysis
+################################
 
 # Read csv files and concatenate rows with the same rate type
 for (dir in list.dirs("data")[-1]) {
