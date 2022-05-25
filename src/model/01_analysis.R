@@ -105,10 +105,10 @@ main <- function(opt) {
       }
     }
 
+    # Write Model Results per Disease -----------------------------------------
     model_results <- model_results |>
       mutate_if(is.numeric, round, 3)
 
-    # Write Model Results per Disease -----------------------------------------
     if (!dir.exists(here(opt$output))) {
       dir.create(here(opt$output), recursive = TRUE)
       write_csv(model_results, here(opt$output, paste0(disease, ".csv")))
