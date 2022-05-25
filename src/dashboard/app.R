@@ -1,27 +1,36 @@
-# Load packages ----
+################################
+# Load packages
+# ################################
 library(shiny)
 library(tidyverse)
 library(leaflet)
 library(rgdal)
 library(shinythemes)
 library(plotly)
+library(scales) # used to format the axis values
 
-
-# Source helper functions -----
+################################
+# Source helper functions
+# 
 # Define and load all the global variables, including the data frames and shape files
+################################
 source('global.R', local = T) 
 
 
-# User interface ----
+################################
+# UI Side Logic
+# 
 # Define the ui of the four main tabs of the dashboard from left to right
+################################
 ui <- fluidPage(
-  # Add custom styling
   theme = shinytheme("sandstone"),
   includeCSS("www/mytheme.css"), 
   
   navbarPage("BC Chronic Disease Dashboard",
       
-      # Information Tab
+      ################################
+      # Information Tab UI Side Logic
+      ################################
       tabPanel("Information", 
                h2("Welcome to the BC Chronic Disease Dashboard"),
                h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
@@ -77,11 +86,12 @@ ui <- fluidPage(
                              </ul>
                         note about fiscal year  "))),
       
-      # "By Disease" Tab
+      ################################
+      # "By Disease" Tab UI Side Logic
+      ################################
       tabPanel("By Disease",
                sidebarLayout(
                  
-              # Define the filters from top to bottom
                sidebarPanel(
                  width = 3,
                  h2("Filters"),
@@ -124,11 +134,12 @@ ui <- fluidPage(
                  )
                )),
       
-      # "By Region" Tab
+      ################################
+      # "By Region" Tab UI Side Logic
+      ################################
       tabPanel("By Region",
                sidebarLayout(
                  
-                 # Define the filters from top to bottom
                  sidebarPanel(
                    width = 3,
                    h2("Filters"),
@@ -180,7 +191,9 @@ ui <- fluidPage(
                    )))
                )), 
       
-      #Data Tab
+      ################################
+      # Download Data Tab UI Side Logic
+      ################################
       tabPanel("Data",
                sidebarLayout(
                  
@@ -228,10 +241,14 @@ ui <- fluidPage(
   )
 )
 
-# Server logic ----
+################################
+# Server Side Logic
+################################
 server <- function(input, output) {
   
-  #By Disease Tab 
+  ################################
+  # By Disease Tab Server Side Logic
+  ################################
   
   HSC_disease<- c("Acute Myocardial Infarction",
                   "Asthma",
@@ -435,11 +452,12 @@ server <- function(input, output) {
   
   
   output$region_tab_diseases_selected <- renderUI({
-    selectInput("region_tab_diseases_selected", 
-                label = "Select Disease(s)",
+    selectizeInput("region_tab_diseases_selected", 
+                   label = "Select Disease(s)",
                 choices = unique(region_tab_dataset_used()$DISEASE),
                 multiple = TRUE,
-                selected = unique(region_tab_dataset_used()$DISEASE)[1])
+                selected = unique(region_tab_dataset_used()$DISEASE)[1],
+                options = list(maxItems = 5))
   }) 
   
   region_tab_filtered_data <- reactive({
@@ -451,15 +469,13 @@ server <- function(input, output) {
                    (DISEASE %in% input$region_tab_diseases_selected)
                 ) &
                 (
-                  YEAR %in% seq(
-                    from  =  min(input$region_tab_year_range_selected),
-                    to  =  max(input$region_tab_year_range_selected)
-                  )
-                ) &
+                  YEAR %in% seq(input$region_tab_year_range_selected[1], input$region_tab_year_range_selected[2], by = 1)
+                 ) &
                 (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1))
                 )
   })
   
+  # plot the line chart showing trends of diseases over time
   output$region_tab_line_chart <- renderPlot({
     region_tab_filtered_data() |>
       ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
@@ -469,7 +485,8 @@ server <- function(input, output) {
         x = "Year",
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
-      )
+      ) +
+      scale_x_continuous(breaks = breaks_width(1))
   })
   
   output$region_tab_bar_chart <- renderPlot({
@@ -483,7 +500,9 @@ server <- function(input, output) {
   })
   
   
-  # Data Tab
+  ################################
+  # Download Data Tab Server Side Logic
+  ################################
   datasetInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = inc_rate_df,
@@ -556,5 +575,7 @@ server <- function(input, output) {
   
 }
 
-# Run app ----
+################################
+# Run App
+################################
 shinyApp(ui, server)
