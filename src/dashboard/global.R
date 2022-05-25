@@ -104,12 +104,6 @@ inc_rate_df <- wrangle_data_frame(inc_rate_df)
 hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
 life_prev_df <- wrangle_data_frame(life_prev_df)
 
-tm <- microbenchmark::microbenchmark(use_read_csv,
-                                     use_fread,
-                                     times = 3)
-tm
-autoplot(tm)
-
 # Read the shape files for the Community Health Service Areas (CHSA) level
 chsa_spdf <- readOGR(
   dsn = paste0(getwd(), "/geo_data/chsa_2018"),
@@ -117,7 +111,6 @@ chsa_spdf <- readOGR(
   verbose = FALSE
 ) |>
   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
 
 # Read the shape files for the Health Authorities (HA) level
 ha_spdf <- readOGR(
