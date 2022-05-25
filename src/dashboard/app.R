@@ -614,4 +614,4 @@ server <- function(input, output) {
 ################################
 # Run App
 ################################
-shinyApp(ui, server)
+profvis::profvis(runApp(shinyApp(ui, server)))
