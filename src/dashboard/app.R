@@ -10,7 +10,7 @@ library(shinythemes)
 library(plotly)
 library(scales) # used to format the axis values
 library(shinycssloaders)
-library(crosstalk)
+library(rgeos)
 
 
 ################################
@@ -436,9 +436,14 @@ server <- function(input, output,session) {
     event <- input$map_shape_mouseover
     ppl <-  plotlyProxy("disease_graph_line", session) 
     ppb <- plotlyProxy("disease_graph_bar", session)
-    if(is.null(event)){
+    if(
+      # is.null(event)
+       (!is.null(input$map_shape_mouseover$id))&&
+       (!is.null(input$map_shape_mouseout$id)) &&
+       (input$map_shape_mouseout$id == input$map_shape_mouseover$id)
+       ){
       print("IS NULLL!! ")
-      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 0.5)))
+      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 1)))
       plotlyProxyInvoke(ppb,method = "restyle",list(opacity = 1))
     }else{
    ppl%>%
