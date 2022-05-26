@@ -8,11 +8,14 @@ If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badg
 BC Chronic Disease Dashboard
 ============================
 
-The Chronic Disease Registry is a data product that captures information about the 
-rate of new and persistent cases of chronic diseases in each CHSA (Community Health Service Area), 
-as well as demographic information such as sex and age standardized rates.
+The BC Chronic Disease Registry (CDR) is a data product that captures information 
+about the rate of new and persistent cases of chronic diseases across the province. 
+Age-standardized rates of disease are studied for different regions, 
+including HAs (Health Authorities) and CHSAs (Community Health Service Areas), 
+as well as for demographic variables such as sex.
+
 In this project we aim to create an interactive dashboard that will allow users 
-of all technical expertise to explore and visualize spatiotemporal information of the disease rates in the data,
+of all technical expertise to explore and visualize spatial and temporal information of the disease rates in the data,
 and to develop an analysis pipeline that will describe the temporal trends in the data. 
 
 ### Proposal
