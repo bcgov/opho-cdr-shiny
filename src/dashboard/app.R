@@ -377,10 +377,6 @@ server <- function(input, output,session) {
             axis.title.x = element_text(size=10),
             axis.title.y = element_text(size=10))
     ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
-      # highlight( on = "plotly_hover",
-      #            off = "plotly_doubleclick",
-      #            persistent = FALSE,
-      #            selected = attrs_selected(showlegend = FALSE))|>
       event_register('plotly_hover')
   })
   
@@ -395,7 +391,8 @@ server <- function(input, output,session) {
   
   output$map <- renderLeaflet({
     
-    mybins <- bin_dict[[input$disease_d]]
+    legend_inc <- round(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5)
+    mybins <- append(seq(round(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
@@ -486,6 +483,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # TEST
   output$hover_stuff <- renderPrint({
     input$map_shape_mouseover
     # my_traces()
@@ -594,29 +592,6 @@ server <- function(input, output,session) {
           group = "selected"
         )}
   })
-  
-  # observeEvent(event_data("plotly_hover",
-  #                         source = "disease_graph_bar"), {
-  #                           leafletProxy("map",session)%>%
-  #                           
-  #                         })
-
-  # observeEvent(input$map_shape_mouseover, {
-  #   rv$regions <- c(rv$regions, input$map_shape_mouseover)
-  #   
-  #   leafletProxy("map", session) %>%
-  #     removeShape(layerId = input$map_shape_mouseover$id) %>%
-  #     addPolygons(
-  #       data = shared_data(d),
-  #       color = "black",
-  #       fillOpacity = 1,
-  #       weight = 1,
-  #       highlightOptions = highlightOptions(fillOpacity = 0.2),
-  #       label = ~label,
-  #       layerId = ~label,
-  #       group = "foo"
-  #     )
-  # })
    
   
   ################################
