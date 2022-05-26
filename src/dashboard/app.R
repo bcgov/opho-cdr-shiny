@@ -141,7 +141,8 @@ ui <- fluidPage(
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)%>% withSpinner(),
                           verbatimTextOutput("hover_stuff"),
-                          verbatimTextOutput("hover_stuff2")),
+                          verbatimTextOutput("hover_stuff2")
+                          ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
                           br(),br(),
@@ -319,11 +320,11 @@ server <- function(input, output,session) {
                   if(input$health_bound_d == "Health Authorities") 
                     c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
                   else 
-                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))),
+                    c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") "All"
-                  else c("100 Mile House","Abbotsford Rural")
+                  else c("100 Mile House","Abbotsford Rural","Agassiz/Harrison","Alberni Valley/Bamfield")
                 ))
   })
   
@@ -354,7 +355,6 @@ server <- function(input, output,session) {
             axis.title.x = element_text(size=10),
             axis.title.y = element_text(size=10))
     ggplotly(p,source = "disease_graph_bar")|>
-      # highlight(on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
       event_register('plotly_hover')
   })
   
@@ -412,7 +412,7 @@ server <- function(input, output,session) {
         stroke=TRUE, 
         fillOpacity = 0.9, 
         color="gray", 
-        weight=0.3,
+        weight=1,
         label = mytext,
         highlight = highlightOptions(
           weight = 2,
@@ -435,6 +435,7 @@ server <- function(input, output,session) {
   rv_location <- reactiveValues(id=NULL,lat=NULL,lng=NULL)
   rv_location_move_old <- reactiveValues(lat=NULL,lng=NULL)
   
+  # Track mouseover activity
   observeEvent(input$map_shape_mouseover,{
     rv_shape(TRUE)
     event_info <- input$map_shape_mouseover
@@ -443,7 +444,7 @@ server <- function(input, output,session) {
     rv_location$id <- event_info$id
     rv_location$lat <- event_info$lat
     rv_location$lng <- event_info$lng
-    
+    if (event_info$id %in% append("All",input$region_d)){
     ppl%>%
       plotlyProxyInvoke(
         method = "restyle",
@@ -452,7 +453,7 @@ server <- function(input, output,session) {
       plotlyProxyInvoke(
         method = "restyle",
         "line",
-        list(width = 4),
+        list(width = 3),
         as.integer(match(event_info$id,
                          my_traces())-1)
       )
@@ -465,9 +466,10 @@ server <- function(input, output,session) {
         method = "restyle",
         list(opacity=1),
         as.integer(match(event_info$id,my_traces())-1)
-      )
+      )}
   })
   
+  # Track mouseout   activity
   observeEvent(input$map_shape_mouseout, {
     event_info <- input$map_shape_mouseover
     event_info_old <- reactiveValuesToList(rv_location_move_old)
@@ -487,12 +489,12 @@ server <- function(input, output,session) {
   
   # TEST
   output$hover_stuff <- renderPrint({
-    input$map_shape_mouseover
+    input$map_shape_mouseover$id
     # my_traces()
   })
   
   output$hover_stuff2 <- renderPrint({
-    input$map_shape_mouseout
+    input$region_d
   })
   
 
@@ -508,8 +510,7 @@ server <- function(input, output,session) {
       ppb <- plotlyProxy("disease_graph_bar", session)
       lp <- leafletProxy("map",session)
       if (is.null(event)){
-        print("IS NULLL!! ")
-        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=1)))
         ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
         lp %>% clearGroup('selected')
       }else{
@@ -521,7 +522,7 @@ server <- function(input, output,session) {
         plotlyProxyInvoke(
           method = "restyle",
           "line",
-          list(width = 4),
+          list(width = 3),
           as.integer(match(event[["key"]],my_traces())-1)
         )
         ppb %>%
@@ -555,8 +556,7 @@ server <- function(input, output,session) {
     ppb <- plotlyProxy("disease_graph_bar", session)
     lp <- leafletProxy("map",session)
     if (is.null(event)){
-      print("IS NULLL!! ")
-      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=1)))
       ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
       lp %>% clearGroup('selected')
     }else{
@@ -568,7 +568,7 @@ server <- function(input, output,session) {
         plotlyProxyInvoke(
           method = "restyle",
           "line",
-          list(width = 4),
+          list(width = 3),
           as.integer(match(event[["key"]],my_traces())-1)
         )
       ppb %>%
