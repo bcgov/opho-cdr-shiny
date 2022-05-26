@@ -101,7 +101,7 @@ ui <- fluidPage(
       tabPanel("By Disease",
                sidebarLayout(
                  sidebarPanel(
-                   id="filters",
+                   id="filters_d",
                    width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
@@ -133,7 +133,7 @@ ui <- fluidPage(
                                animate = TRUE
                               ),
         
-                   actionButton("resetAll", "Reset")
+                   actionButton("reset_d", "Reset")
                     
                ),
                mainPanel(
@@ -214,6 +214,7 @@ ui <- fluidPage(
                  
                  #Filters
                  sidebarPanel(
+                   id="filters_data",
                    width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
@@ -245,6 +246,7 @@ ui <- fluidPage(
                                 choices = c("Male","Female","Total"), 
                                 selected = "Total",
                                 inline = TRUE),
+                   actionButton("reset_data", "Reset")
                  ),
                  mainPanel(
                    width = 9,
@@ -265,8 +267,8 @@ server <- function(input, output,session) {
   # By Disease Tab Server Side Logic
   ################################
   
-  observeEvent(input$resetAll, {
-    reset("filters")
+  observeEvent(input$reset_d, {
+    reset("filters_d")
   })
 
   output$dataset_d <- renderUI({
@@ -392,7 +394,7 @@ server <- function(input, output,session) {
   output$map <- renderLeaflet({
     
     legend_inc <- round(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5)
-    mybins <- append(seq(round(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
+    mybins <- append(seq(floor(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
@@ -696,6 +698,11 @@ server <- function(input, output,session) {
   ################################
   # Download Data Tab Server Side Logic
   ################################
+  
+  observeEvent(input$reset_data, {
+    reset("filters_data")
+  })
+  
   datasetInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = inc_rate_df,
