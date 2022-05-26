@@ -36,60 +36,64 @@ ui <- fluidPage(
       ################################
       # Information Tab UI Side Logic
       ################################
-      tabPanel("Information", 
-               h2("Welcome to the BC Chronic Disease Dashboard"),
-               h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
-               helpText(HTML("<br/><br/>
-                             This dashboard facilitates the exploration and visualization of spatial and temporal
-                             trends of 25 different chronic diseases across the Province of British Columbia. The data 
-                             is sourced from the Chronic Disease Registry (BCCDR).
-                             <br/><br/>
-                             The three tabs in the dashboard and their respective features are described below.<br/>
-                             <ul>
-                               <li><b>By Disease</b></li>
-                               This tab allows for the trend comparisons of one disease over several Health Authorities(HA)  
-                               or Community Health Service Areas (CHSA). In this tab the user should select a rate type, 
-                               a disease, geography type, year, and gender. The user can also optionally specify 
-                               multiple HAs or CHSAs. <br/><br/>
-                               <li><b>By Region</b></li>
-                               This tab allows for the trend comparisons of several diseases in one particular HA or CHSA.
-                               In this tab the user should select a rate type, disease(s) of interest, geography type,
-                               year, and gender. <br/><br/>
-                               <li><b>Data</b></li>
-                               This tab retrieves all data specified by the user. In this tab the user should select a rate type,
-                               disease(s), health region(s), year range, and gender. There is also an option for the user to
-                               download the selected data.<br/><br/>
-                             </ul>
-                             The definitions of the rate types are provided below.
-                             <ul>
-                               <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
-                               specified population during a specified time period. 
-                               It is calculated as the number of new cases in the population at-risk in a 
-                               specified period of time divided by the person-time at risk or the number of persons at risk 
-                               (i.e., mid-year population in a reporting year minus previous year's prevalent cases) in the same period. 
+      navbarMenu("Information",
+        tabPanel("About", 
+                 h2("Welcome to the BC Chronic Disease Dashboard"),
+                 h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
+                 helpText(HTML("<br/><br/>
+                               This dashboard facilitates the exploration and visualization of spatial and temporal
+                               trends of 25 different chronic diseases across the Province of British Columbia. The data 
+                               is sourced from the Chronic Disease Registry (BCCDR).
                                <br/><br/>
-                               <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
-                               (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
-                               <li><b>Lifetime Prevalence</b>: proportion of individuals who have had the condition for at least part of 
-                               their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
-                               who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
-                               a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
-                               carried forward to count as a case every year thereafter until the person's death, their migration out of BC,
-                               or the absence of follow-up. 
-                               <br/><br/>
-                               <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
-                               in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
-                               <li><b>Active Healthcare Contact (HSC) Prevalence</b>: For relapsing-remitting diseases, the BCCDR measures 
-                               active healthcare contact prevalence. Cases are counted if they previously met case definition criteria 
-                               for a disease, continued to live and receive healthcare services for the disease again in BC during a
-                               later reporting period. That is, cases are counted for a reporting period if the patient seek healthcare 
-                               services for relapsing-remitting conditions again after the fiscal year when they were ascertained as a case. 
-                               <br/><br/>
-                               <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
-                               healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
-                               </p></li>
-                             </ul>
-                        note about fiscal year  "))),
+                               The three tabs in the dashboard and their respective features are described below.<br/>
+                               <ul>
+                                 <li><b>By Disease</b></li>
+                                 This tab allows for the trend comparisons of one disease over several Health Authorities(HA)  
+                                 or Community Health Service Areas (CHSA). In this tab the user should select a rate type, 
+                                 a disease, geography type, year, and gender. The user can also optionally specify 
+                                 multiple HAs or CHSAs. <br/><br/>
+                                 <li><b>By Region</b></li>
+                                 This tab allows for the trend comparisons of several diseases in one particular HA or CHSA.
+                                 In this tab the user should select a rate type, disease(s) of interest, geography type,
+                                 year, and gender. <br/><br/>
+                                 <li><b>Data</b></li>
+                                 This tab retrieves all data specified by the user. In this tab the user should select a rate type,
+                                 disease(s), health region(s), year range, and gender. There is also an option for the user to
+                                 download the selected data.<br/><br/>
+                               </ul>"))),
+           tabPanel("Rate Types",
+                    helpText(HTML(
+                               "The definitions of the rate types are provided below.
+                               <ul>
+                                 <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
+                                 specified population during a specified time period. 
+                                 It is calculated as the number of new cases in the population at-risk in a 
+                                 specified period of time divided by the person-time at risk or the number of persons at risk 
+                                 (i.e., mid-year population in a reporting year minus previous year's prevalent cases) in the same period. 
+                                 <br/><br/>
+                                 <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
+                                 (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
+                                 <li><b>Lifetime Prevalence</b>: proportion of individuals who have had the condition for at least part of 
+                                 their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
+                                 who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
+                                 a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
+                                 carried forward to count as a case every year thereafter until the person's death, their migration out of BC,
+                                 or the absence of follow-up. 
+                                 <br/><br/>
+                                 <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
+                                 in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
+                                 <li><b>Active Healthcare Contact (HSC) Prevalence</b>: For relapsing-remitting diseases, the BCCDR measures 
+                                 active healthcare contact prevalence. Cases are counted if they previously met case definition criteria 
+                                 for a disease, continued to live and receive healthcare services for the disease again in BC during a
+                                 later reporting period. That is, cases are counted for a reporting period if the patient seek healthcare 
+                                 services for relapsing-remitting conditions again after the fiscal year when they were ascertained as a case. 
+                                 <br/><br/>
+                                 <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
+                                 healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
+                                 </p></li>
+                               </ul>
+                          note about fiscal year  "))),
+        tabPanel("Diseases")),
       
       ################################
       # "By Disease" Tab UI Side Logic
@@ -139,6 +143,7 @@ ui <- fluidPage(
                           verbatimTextOutput("hover_stuff")),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
+                          br(),br(),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           )))
                )),
@@ -339,12 +344,13 @@ server <- function(input, output,session) {
       geom_bar(stat='identity')+
       labs(x="Health Region",
            y=paste0(input$dataset_d," Per 1000"),
-           title = paste0(input$dataset_d, " Per Region in ",input$year_d))+
+           title = paste0(input$dataset_d," of ",input$disease_d, " Per Region in ",input$year_d))+
       theme(legend.position="none",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+            axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+            plot.title = element_text(size=10))
     ggplotly(p,source = "disease_graph_bar")|>
       highlight(on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
-      event_register('plotly_unhover')
+      event_register('plotly_hover')
   })
   
   output$disease_graph_line <- renderPlotly({
@@ -363,32 +369,41 @@ server <- function(input, output,session) {
       labs(y=paste0(input$dataset_d, " Per 1000"),
            x="Year",
            title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
-           col = "Health Region")
+           col = "Health Region")+
+      theme(plot.title = element_text(size=10))
     ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
-      highlight( on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
-        event_register('plotly_unhover')
+      highlight( on = "plotly_hover",
+                 off = "plotly_doubleclick",
+                 persistent = FALSE,
+                 selected = attrs_selected(showlegend = FALSE))
   })
   
-  output$map <- renderLeaflet({
-    new_spdf<-(if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
+  
+  map_spdf<- reactive({
+    (if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
       merge(filter(filter_df_d(),(YEAR == input$year_d)),
             by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
             by.y="HEALTH_BOUND_CODE")
     
+  })
+  
+  output$map <- renderLeaflet({
+    
     mybins <- bin_dict[[input$disease_d]]
-    mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
+    mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
-      "CHSA: ", new_spdf@data$CHSA_Name,"<br/>", 
-      "HA: ", new_spdf@data$HA_Name, "<br/>", 
-      paste0(input$dataset_d,":"), new_spdf@data[[rateInput_d()]], 
+      "CHSA: ",(if(input$health_bound_d == "Health Authorities")"N/A" else map_spdf()@data$CHSA_Name),"<br/>", 
+      "HA: ", map_spdf()@data$HA_Name, "<br/>", 
+      paste0(input$dataset_d,":"), map_spdf()@data[[rateInput_d()]], 
       sep="") |>
       lapply(htmltools::HTML)
     
-    m<-leaflet(new_spdf) %>% 
+    m<-leaflet(map_spdf()) %>% 
       setView( lat=55, lng=-127 , zoom=4.5) %>%
       addPolygons( 
-        fillColor = ~mypalette(new_spdf@data[[rateInput_d()]]), 
+        layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
+        fillColor = ~mypalette(map_spdf()@data[[rateInput_d()]]), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
         color="gray", 
@@ -404,45 +419,97 @@ server <- function(input, output,session) {
           direction = "auto"
         )
       ) |>
-      addLegend( pal=mypalette, values=~new_spdf@data[[rateInput_d()]], opacity=0.9, 
+      addLegend( pal=mypalette, values=~map_spdf()@data[[rateInput_d()]], opacity=0.9, 
                  title = input$dataset_d, position = "bottomleft" )
     m
     
   })
   
+  
+  observe( {
+    event <- input$map_shape_mouseover
+    ppl <-  plotlyProxy("disease_graph_line", session) 
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    if(is.null(event)){
+      print("IS NULLL!! ")
+      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 0.5)))
+      plotlyProxyInvoke(ppb,method = "restyle",list(opacity = 1))
+    }else{
+   ppl%>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        list(line = list(width = 0.5))
+      ) %>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        "line",
+        list(width = 4),
+        as.integer(match(event$id,
+                         my_traces())-1)
+      )
+    ppb %>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        list(opacity=0.2)
+      ) %>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        list(opacity=1),
+        as.integer(match(event$id,my_traces())-1)
+      )}
+  })
+  
   output$hover_stuff <- renderPrint({
-
     event_data("plotly_hover",
                source = "disease_graph_bar")
     # my_traces()
   })
-  
+
   my_traces <- reactive({
-    if ("All" %in% input$region_d) unique(filter_df_d()$HEALTH_BOUND_NAME)
-    else c(input$region_d)
+    if ("All" %in% input$region_d) sort(unique(filter_df_d()$HEALTH_BOUND_NAME))
+    else sort(c(input$region_d))
   })
   
-  observeEvent(event_data("plotly_hover",
-                          source = "disease_graph_bar"), {
-                            plotlyProxy("disease_graph_line", session) %>%
-                              plotlyProxyInvoke(
-                                method = "restyle",
-                                list(
-                                  line = list(
-                                    width = 0.1
-                                  )
-                                )
-                              ) %>%
-                              plotlyProxyInvoke(
-                                method = "restyle",
-                                "line",
-                                list(
-                                  width = 4
-                                ),
-                                as.integer(match(event_data("plotly_hover", source = "disease_graph_bar")[["key"]],
-                                                 my_traces())-1)
-                              )
-                          })
+  observe({
+      event <- event_data("plotly_hover",source = "disease_graph_bar")
+      pp <-plotlyProxy("disease_graph_line", session)
+      lp <- leafletProxy("map",session)
+      if (is.null(event)){
+        print("IS NULLL!! ")
+        pp%>%
+          plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+        lp %>% clearGroup('selected')
+      }else{
+       pp %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(line = list(width = 0.5))
+        ) %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          "line",
+          list(width = 4),
+          as.integer(match(event[["key"]],my_traces())-1)
+        )
+      lp %>%
+        addPolygons(
+          data=subset(map_spdf(),
+                      (if(input$health_bound_d == "Health Authorities") HA_Name 
+                       else CHSA_Name) 
+                      == event[["key"]]),
+          stroke= TRUE,
+          weight = 2,
+          color = "black",
+          fill= NaN,
+          group = "selected"
+        )}
+    })
+  
+  # observeEvent(event_data("plotly_hover",
+  #                         source = "disease_graph_bar"), {
+  #                           leafletProxy("map",session)%>%
+  #                           
+  #                         })
 
   # observeEvent(input$map_shape_mouseover, {
   #   rv$regions <- c(rv$regions, input$map_shape_mouseover)
