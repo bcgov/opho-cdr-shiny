@@ -111,7 +111,7 @@ for (dir in list.dirs("data")[-1]) {
       inc_rate_df <- rbind(inc_rate_df, new_df)
     } else if (dir == "data/LifePrevalence") {
       life_prev_df <- rbind(life_prev_df, new_df)
-    } else {
+    } else if (dir == "data/HSCPrevalence") {
       hsc_prev_df <- rbind(hsc_prev_df, new_df)
     }
   }
@@ -135,7 +135,8 @@ wrangle_data_frame <- function(df) {
              " ",
              extra = "merge") |>
     mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-           DISEASE = str_replace_all(DISEASE, disease_dict)) |>
+           DISEASE = str_replace_all(DISEASE, disease_dict),
+           DISEASE = ifelse(endsWith(DISEASE, "_EPI"), str_sub(DISEASE, 1, -5), DISEASE)) |>
     select(-FISC_YR_LABEL) |>
     data.table::setcolorder(c("YEAR")) |>
     filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))
