@@ -432,21 +432,20 @@ server <- function(input, output,session) {
   })
   
   ## Linked highlighting when hovering on map
-  observe({
-    event <- input$map_shape_mouseover
-    ppl <-  plotlyProxy("disease_graph_line", session) 
+  rv_shape <- reactiveVal(FALSE)
+  rv_location <- reactiveValues(id=NULL,lat=NULL,lng=NULL)
+  rv_location_move_old <- reactiveValues(lat=NULL,lng=NULL)
+  
+  observeEvent(input$map_shape_mouseover,{
+    rv_shape(TRUE)
+    event_info <- input$map_shape_mouseover
+    ppl <-  plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
-    if(
-      # is.null(event)
-       (!is.null(input$map_shape_mouseover$id))&&
-       (!is.null(input$map_shape_mouseout$id)) &&
-       (input$map_shape_mouseout$id == input$map_shape_mouseover$id)
-       ){
-      print("IS NULLL!! ")
-      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 1)))
-      plotlyProxyInvoke(ppb,method = "restyle",list(opacity = 1))
-    }else{
-   ppl%>%
+    rv_location$id <- event_info$id
+    rv_location$lat <- event_info$lat
+    rv_location$lng <- event_info$lng
+    
+    ppl%>%
       plotlyProxyInvoke(
         method = "restyle",
         list(line = list(width = 0.5))
@@ -455,7 +454,7 @@ server <- function(input, output,session) {
         method = "restyle",
         "line",
         list(width = 4),
-        as.integer(match(event$id,
+        as.integer(match(event_info$id,
                          my_traces())-1)
       )
     ppb %>%
@@ -466,17 +465,34 @@ server <- function(input, output,session) {
       plotlyProxyInvoke(
         method = "restyle",
         list(opacity=1),
-        as.integer(match(event$id,my_traces())-1)
-      )}
+        as.integer(match(event_info$id,my_traces())-1)
+      )
+  })
+  
+  observeEvent(input$map_shape_mouseout, {
+    event_info <- input$map_shape_mouseover
+    event_info_old <- reactiveValuesToList(rv_location_move_old)
+    ppl <-  plotlyProxy("disease_graph_line", session)
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    
+    if (all(unlist(event_info[c('lat','lng')]) == unlist(event_info_old[c('lat','lng')]))){
+      rv_shape(FALSE)
+      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 1)))
+      plotlyProxyInvoke(ppb,method = "restyle",list(opacity = 1))
+
+    }else{
+      rv_location_move_old$lat <- event_info$lat
+      rv_location_move_old$lng <- event_info$lng
+    }
   })
   
   output$hover_stuff <- renderPrint({
-    input$map_shape_mouseover$id
+    input$map_shape_mouseover
     # my_traces()
   })
   
   output$hover_stuff2 <- renderPrint({
-    input$map_shape_mouseout$id
+    input$map_shape_mouseout
   })
   
 

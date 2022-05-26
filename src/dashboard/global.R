@@ -154,7 +154,7 @@ chsa_spdf <- readOGR(
 
 # Simplify Spatial Polygons for faster rendering
 regions_df <- chsa_spdf@data
-chsa_spdf <- gSimplify(chsa_spdf,0.05,topologyPreserve = TRUE)
+chsa_spdf <- gSimplify(chsa_spdf,0.01,topologyPreserve = TRUE)
 chsa_spdf <- SpatialPolygonsDataFrame(chsa_spdf, regions_df)
 
 # Read the shape files for the Health Authorities (HA) level
@@ -167,5 +167,5 @@ ha_spdf <- readOGR(
 
 # Simplify Spatial Polygons for faster rendering
 regions_df <- ha_spdf@data
-ha_spdf <- gSimplify(ha_spdf,0.05,topologyPreserve = TRUE)
+ha_spdf <- gSimplify(ha_spdf,0.01,topologyPreserve = TRUE)
 ha_spdf <- SpatialPolygonsDataFrame(ha_spdf, regions_df)
