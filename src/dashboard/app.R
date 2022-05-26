@@ -143,7 +143,7 @@ ui <- fluidPage(
                           verbatimTextOutput("hover_stuff")),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
-                          br(),
+                          br(),br(),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           )))
                )),
@@ -347,7 +347,7 @@ server <- function(input, output,session) {
            title = paste0(input$dataset_d," of ",input$disease_d, " Per Region in ",input$year_d))+
       theme(legend.position="none",
             axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
-            plot.title = element_text(size=20))
+            plot.title = element_text(size=10))
     ggplotly(p,source = "disease_graph_bar")|>
       highlight(on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
       event_register('plotly_hover')
@@ -370,7 +370,7 @@ server <- function(input, output,session) {
            x="Year",
            title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
            col = "Health Region")+
-      theme(plot.title = element_text(size=22))
+      theme(plot.title = element_text(size=10))
     ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
       highlight( on = "plotly_hover",
                  off = "plotly_doubleclick",
@@ -388,7 +388,7 @@ server <- function(input, output,session) {
     mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
-      "CHSA: ", new_spdf@data$CHSA_Name,"<br/>", 
+      "CHSA: ",(if(input$health_bound_d == "Health Authorities")"N/A" else new_spdf@data$CHSA_Name),"<br/>", 
       "HA: ", new_spdf@data$HA_Name, "<br/>", 
       paste0(input$dataset_d,":"), new_spdf@data[[rateInput_d()]], 
       sep="") |>
@@ -397,6 +397,7 @@ server <- function(input, output,session) {
     m<-leaflet(new_spdf) %>% 
       setView( lat=55, lng=-127 , zoom=4.5) %>%
       addPolygons( 
+        layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
         fillColor = ~mypalette(new_spdf@data[[rateInput_d()]]), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
@@ -419,12 +420,51 @@ server <- function(input, output,session) {
     
   })
   
-  output$hover_stuff <- renderPrint({
+  rv <- reactiveValues()
 
-    event_data("plotly_hover",
-               source = "disease_graph_bar")
-    # my_traces()
+  
+  observeEvent(input$map_shape_mouseover, {
+    event <- input$map_shape_mouseover
+    plotlyProxy("disease_graph_line", session) %>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        list(
+          line = list(width = 0.5)
+        )
+      ) %>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        "line",
+        list(
+          width = 4
+        ),
+        as.integer(match(event$id,
+                         my_traces())-1)
+      )
+    plotlyProxy("disease_graph_bar", session) %>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        list(
+          opacity=0.1
+        )
+      ) %>%
+      plotlyProxyInvoke(
+        method = "restyle",
+        list(
+          opacity=1
+        ),
+        as.integer(match(event$id,
+                         my_traces())-1)
+      )
+    
   })
+  
+  # output$hover_stuff <- renderPrint({
+  # 
+  #   event_data("plotly_hover",
+  #              source = "disease_graph_bar")
+  #   # my_traces()
+  # })
   
   my_traces <- reactive({
     if ("All" %in% input$region_d) sort(unique(filter_df_d()$HEALTH_BOUND_NAME))
@@ -437,9 +477,7 @@ server <- function(input, output,session) {
                               plotlyProxyInvoke(
                                 method = "restyle",
                                 list(
-                                  line = list(
-                                    width = 0.1
-                                  )
+                                  line = list(width = 0.1)
                                 )
                               ) %>%
                               plotlyProxyInvoke(
@@ -451,7 +489,14 @@ server <- function(input, output,session) {
                                 as.integer(match(event_data("plotly_hover", source = "disease_graph_bar")[["key"]],
                                                  my_traces())-1)
                               )
+                              
                           })
+  
+  # observeEvent(event_data("plotly_hover",
+  #                         source = "disease_graph_bar"), {
+  #                           leafletProxy("map",session)%>%
+  #                           
+  #                         })
 
   # observeEvent(input$map_shape_mouseover, {
   #   rv$regions <- c(rv$regions, input$map_shape_mouseover)
@@ -642,4 +687,4 @@ server <- function(input, output,session) {
 ################################
 # Run App
 ################################
-shinyApp(ui, server))
+shinyApp(ui, server)
