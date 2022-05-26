@@ -378,27 +378,32 @@ server <- function(input, output,session) {
                  selected = attrs_selected(showlegend = FALSE))
   })
   
-  output$map <- renderLeaflet({
-    new_spdf<-(if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
+  
+  map_spdf<- reactive({
+    (if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
       merge(filter(filter_df_d(),(YEAR == input$year_d)),
             by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
             by.y="HEALTH_BOUND_CODE")
     
+  })
+  
+  output$map <- renderLeaflet({
+    
     mybins <- bin_dict[[input$disease_d]]
-    mypalette <- colorBin( palette="YlOrBr", domain=new_spdf@data[[rateInput_d()]], na.color="transparent", bins=mybins)
+    mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
-      "CHSA: ",(if(input$health_bound_d == "Health Authorities")"N/A" else new_spdf@data$CHSA_Name),"<br/>", 
-      "HA: ", new_spdf@data$HA_Name, "<br/>", 
-      paste0(input$dataset_d,":"), new_spdf@data[[rateInput_d()]], 
+      "CHSA: ",(if(input$health_bound_d == "Health Authorities")"N/A" else map_spdf()@data$CHSA_Name),"<br/>", 
+      "HA: ", map_spdf()@data$HA_Name, "<br/>", 
+      paste0(input$dataset_d,":"), map_spdf()@data[[rateInput_d()]], 
       sep="") |>
       lapply(htmltools::HTML)
     
-    m<-leaflet(new_spdf) %>% 
+    m<-leaflet(map_spdf()) %>% 
       setView( lat=55, lng=-127 , zoom=4.5) %>%
       addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
-        fillColor = ~mypalette(new_spdf@data[[rateInput_d()]]), 
+        fillColor = ~mypalette(map_spdf()@data[[rateInput_d()]]), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
         color="gray", 
@@ -414,83 +419,92 @@ server <- function(input, output,session) {
           direction = "auto"
         )
       ) |>
-      addLegend( pal=mypalette, values=~new_spdf@data[[rateInput_d()]], opacity=0.9, 
+      addLegend( pal=mypalette, values=~map_spdf()@data[[rateInput_d()]], opacity=0.9, 
                  title = input$dataset_d, position = "bottomleft" )
     m
     
   })
   
   rv <- reactiveValues()
-
   
   observeEvent(input$map_shape_mouseover, {
     event <- input$map_shape_mouseover
-    plotlyProxy("disease_graph_line", session) %>%
+    ppl <-  plotlyProxy("disease_graph_line", session) 
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    if(is.null(event)){
+      print("IS NULLL!! ")
+      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 0.5)))
+      plotlyProxyInvoke(ppb,method = "restyle",list(opacity = 1))
+    }else{
+   ppl%>%
       plotlyProxyInvoke(
         method = "restyle",
-        list(
-          line = list(width = 0.5)
-        )
+        list(line = list(width = 0.5))
       ) %>%
       plotlyProxyInvoke(
         method = "restyle",
         "line",
-        list(
-          width = 4
-        ),
+        list(width = 4),
         as.integer(match(event$id,
                          my_traces())-1)
       )
-    plotlyProxy("disease_graph_bar", session) %>%
+    ppb %>%
       plotlyProxyInvoke(
         method = "restyle",
-        list(
-          opacity=0.1
-        )
+        list(opacity=0.2)
       ) %>%
       plotlyProxyInvoke(
         method = "restyle",
-        list(
-          opacity=1
-        ),
-        as.integer(match(event$id,
-                         my_traces())-1)
-      )
-    
+        list(opacity=1),
+        as.integer(match(event$id,my_traces())-1)
+      )}
   })
   
-  # output$hover_stuff <- renderPrint({
-  # 
-  #   event_data("plotly_hover",
-  #              source = "disease_graph_bar")
-  #   # my_traces()
-  # })
-  
+  output$hover_stuff <- renderPrint({
+    event_data("plotly_hover",
+               source = "disease_graph_bar")
+    # my_traces()
+  })
+
   my_traces <- reactive({
     if ("All" %in% input$region_d) sort(unique(filter_df_d()$HEALTH_BOUND_NAME))
     else sort(c(input$region_d))
   })
   
-  observeEvent(event_data("plotly_hover",
-                          source = "disease_graph_bar"), {
-                            plotlyProxy("disease_graph_line", session) %>%
-                              plotlyProxyInvoke(
-                                method = "restyle",
-                                list(
-                                  line = list(width = 0.1)
-                                )
-                              ) %>%
-                              plotlyProxyInvoke(
-                                method = "restyle",
-                                "line",
-                                list(
-                                  width = 4
-                                ),
-                                as.integer(match(event_data("plotly_hover", source = "disease_graph_bar")[["key"]],
-                                                 my_traces())-1)
-                              )
-                              
-                          })
+  observe({
+      event <- event_data("plotly_hover",source = "disease_graph_bar")
+      pp <-plotlyProxy("disease_graph_line", session)
+      lp <- leafletProxy("map",session)
+      if (is.null(event)){
+        print("IS NULLL!! ")
+        pp%>%
+          plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+        lp %>% clearGroup('selected')
+      }else{
+       pp %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(line = list(width = 0.5))
+        ) %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          "line",
+          list(width = 4),
+          as.integer(match(event[["key"]],my_traces())-1)
+        )
+      lp %>%
+        addPolygons(
+          data=subset(map_spdf(),
+                      (if(input$health_bound_d == "Health Authorities") HA_Name 
+                       else CHSA_Name) 
+                      == event[["key"]]),
+          stroke= TRUE,
+          weight = 2,
+          color = "black",
+          fill= NaN,
+          group = "selected"
+        )}
+    })
   
   # observeEvent(event_data("plotly_hover",
   #                         source = "disease_graph_bar"), {
