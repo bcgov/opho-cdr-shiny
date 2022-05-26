@@ -9,23 +9,50 @@ runtime: shiny
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-```{r message=FALSE}
+```{r Load Libraries, message=FALSE}
 library(shiny)
 library(tidyverse)
 library(ggplot2)
 library(here)
 ```
 
-## Age-Standardized HSC Prevalance Rate
 
 ```{r Load Data, message=FALSE}
-hsc_prev_df <- data.frame()
+#' Read and concatenate all csv files in a folder
+#' 
+#' @param path to folder containing csv files
+#' @return dataframe with concatenated data
+load_files <- function(path) {
+  combined_df <- data.frame()
 
-for (file in list.files(here("results/model/HSCPrevalence"))) {
-  new_df <- read_csv(paste0(here("results/model/HSCPrevalence"), "/", file))
-  hsc_prev_df <- rbind(hsc_prev_df, new_df)
+  for (file in list.files(here(path))) {
+    new_df <- read_csv(here(path, file))
+    combined_df <- rbind(combined_df, new_df)
+  }
+  combined_df
 }
+
+#' Wrangle original dataset to add numeric year column
+#' 
+#' @param dataframe with original data
+#' @return dataframe with year column
+wrangle_orig_df <- function(data) {
+  data |>
+    mutate(YEAR = as.numeric(substr(FISC_YR_LABEL, 4, 7)))
+}
+
+# Load model data
+hsc_prev_df <- load_files("results/model/HSCPrevalence")
+inc_rate_df <- load_files("results/model/IncidenceRate")
+
+# Load original data set for 95% confidence interval comparison
+orig_hsc_prev_df <- load_files("General/Data_T_CHSA/HSCPrevalence") |>
+  wrangle_orig_df()
+orig_inc_rate_df <- load_files("General/Data_T_CHSA/IncidenceRate") |>
+  wrangle_orig_df()
 ```
+
+## Age-Standardized HSC Prevalance Rate
 
 ```{r HSC Prev Rate Plot}
 # Input -----------------------------------------------------------------------
@@ -42,8 +69,14 @@ inputPanel(
   )
 )
 
+# Reactive Elements -----------------------------------------------------------
 selected_data <- reactive({
   hsc_prev_df |>
+    dplyr::filter(HEALTH_BOUNDARIES == input$region & DISEASE == input$disease)
+})
+
+orig_hsc_selected_data <- reactive({
+  orig_hsc_prev_df |>
     dplyr::filter(HEALTH_BOUNDARIES == input$region & DISEASE == input$disease)
 })
 
@@ -51,6 +84,11 @@ selected_data <- reactive({
 renderPlot({
   selected_data() |>
     ggplot(aes(x = year, y = y_fitted)) +
+    geom_ribbon(data = orig_hsc_selected_data(),
+      aes(x = YEAR, y = STD_RATE_PER_1000, ymin = STD_LCL_95, ymax = STD_UCL_95),
+      alpha = 0.2,
+      fill = "lightblue"
+    ) +
     geom_point(aes(y = y_obs)) +
     geom_line() +
     geom_ribbon(
@@ -69,6 +107,60 @@ renderText({
   paste("The selected model was:", selected_data()$model[1])
 })
 ```
+Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
 
+## Age-Standardized Incidence Rate
 
+```{r Inc Rate Plot}
+# Input -----------------------------------------------------------------------
+inputPanel(
+  selectInput("inc_region",
+    label = "CHSA",
+    choices = sort(unique(inc_rate_df$HEALTH_BOUNDARIES)),
+    selected = "1110 Fernie"
+  ),
+  selectInput("inc_disease",
+    label = "Disease",
+    choices = unique(inc_rate_df$DISEASE),
+    selected = "AMI"
+  )
+)
 
+# Reactive Elements -----------------------------------------------------------
+inc_selected_data <- reactive({
+  inc_rate_df |>
+    dplyr::filter(HEALTH_BOUNDARIES == input$inc_region & DISEASE == input$inc_disease)
+})
+
+orig_inc_selected_data <- reactive({
+  orig_inc_rate_df |>
+    dplyr::filter(HEALTH_BOUNDARIES == input$inc_region & DISEASE == input$inc_disease)
+})
+
+# Output -----------------------------------------------------------------------
+renderPlot({
+  inc_selected_data() |>
+    ggplot(aes(x = year, y = y_fitted)) +
+    geom_ribbon(data = orig_inc_selected_data(),
+      aes(x = YEAR, y = STD_RATE_PER_1000, ymin = STD_LCL_95, ymax = STD_UCL_95),
+      alpha = 0.2,
+      fill = "lightblue"
+    ) +
+    geom_point(aes(y = y_obs)) +
+    geom_line() +
+    geom_ribbon(
+      aes(ymin = ci_95_ll, ymax = ci_95_ul),
+      alpha = 0.2
+    ) +
+    geom_line(aes(x = year, y = y_fitted), linetype = 2) +
+    labs(
+      x = "Year", y = "Age Standardized Incidence Rate (per 1000)",
+      title = paste(input$inc_disease, "in", input$inc_region)
+    ) +
+    theme_grey(base_size = 14)
+})
+
+renderText({
+  paste("The selected model was:", inc_selected_data()$model[1])
+})
+```
