@@ -197,10 +197,10 @@ ui <- fluidPage(
                  
                  mainPanel(
                    width = 9,
-                   fluidRow(plotOutput(
+                   fluidRow(plotlyOutput(
                    "region_tab_line_chart"
                    )),
-                   fluidRow(plotOutput(
+                   fluidRow(plotlyOutput(
                      "region_tab_bar_chart"
                    )))
                )), 
@@ -594,8 +594,8 @@ server <- function(input, output,session) {
   })
   
   # plot the line chart showing trends of diseases over time
-  output$region_tab_line_chart <- renderPlot({
-    region_tab_filtered_data() |>
+  output$region_tab_line_chart <- renderPlotly({
+    line_chart <- region_tab_filtered_data() |>
       ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
       geom_line(stat = 'identity') +
       labs(
@@ -605,18 +605,24 @@ server <- function(input, output,session) {
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
       ) +
       scale_x_continuous(breaks = breaks_width(1))
+    
+    ggplotly(line_chart)
   })
   
   # plot a bar chart showing the distribution of cumulative rates for diseases
-  output$region_tab_bar_chart <- renderPlot({
-    region_tab_filtered_data() |> 
+  output$region_tab_bar_chart <- renderPlotly({
+    bar_chart <- region_tab_filtered_data() |> 
+      filter(YEAR == input$region_tab_year_range_selected[1]) |> 
       ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(), fill = "DISEASE")) +
       geom_bar(stat = "identity") +
       labs(
+        y = input$region_tab_rate_type_selected,
         legend = "Disease",
-        title = paste0("Distribution of Diseases by ", input$region_tab_rate_type_selected)
+        title = paste0("Distribution of Diseases by ", input$region_tab_rate_type_selected,
+                       " in ", input$region_tab_year_range_selected[1])
       ) + 
       scale_x_discrete(labels = wrap_format(10))
+    ggplotly(bar_chart)
   })
   
   # a map highlighting the selected health region to provide context
