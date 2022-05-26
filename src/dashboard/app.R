@@ -425,9 +425,8 @@ server <- function(input, output,session) {
     
   })
   
-  rv <- reactiveValues()
   
-  observeEvent(input$map_shape_mouseover, {
+  observe( {
     event <- input$map_shape_mouseover
     ppl <-  plotlyProxy("disease_graph_line", session) 
     ppb <- plotlyProxy("disease_graph_bar", session)
