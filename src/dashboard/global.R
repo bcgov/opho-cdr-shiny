@@ -109,9 +109,10 @@ for (dir in list.dirs("data")[-1]) {
     
     if (dir == "data/IncidenceRate") {
       inc_rate_df <- rbind(inc_rate_df, new_df)
-      hsc_prev_df <- rbind(hsc_prev_df, new_df)
     } else if (dir == "data/LifePrevalence") {
       life_prev_df <- rbind(life_prev_df, new_df)
+    } else {
+      hsc_prev_df <- rbind(hsc_prev_df, new_df)
     }
   }
 }
