@@ -4,6 +4,7 @@
 library(shiny)
 library(shinyjs)
 library(tidyverse)
+library(plyr)
 library(leaflet)
 library(rgdal)
 library(shinythemes)
@@ -444,7 +445,8 @@ server <- function(input, output,session) {
     rv_location$id <- event_info$id
     rv_location$lat <- event_info$lat
     rv_location$lng <- event_info$lng
-    if (event_info$id %in% append("All",input$region_d)){
+    if ((event_info$id %in% input$region_d) ||
+      (input$region_d =="All")){
     ppl%>%
       plotlyProxyInvoke(
         method = "restyle",
