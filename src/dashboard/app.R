@@ -393,7 +393,7 @@ server <- function(input, output,session) {
   
   output$map <- renderLeaflet({
     
-    legend_inc <- round(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5)
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,0.5)
     mybins <- append(seq(floor(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
