@@ -140,7 +140,8 @@ ui <- fluidPage(
                  width = 9,
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                          verbatimTextOutput("hover_stuff")),
+                          verbatimTextOutput("hover_stuff"),
+                          verbatimTextOutput("hover_stuff2")),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
                           br(),br(),
@@ -344,12 +345,14 @@ server <- function(input, output,session) {
       geom_bar(stat='identity')+
       labs(x="Health Region",
            y=paste0(input$dataset_d," Per 1000"),
-           title = paste0(input$dataset_d," of ",input$disease_d, " Per Region in ",input$year_d))+
+           title = paste0(input$dataset_d," of ",input$disease_d, " in ",input$year_d))+
       theme(legend.position="none",
             axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
-            plot.title = element_text(size=10))
+            plot.title = element_text(size=12),
+            axis.title.x = element_text(size=10),
+            axis.title.y = element_text(size=10))
     ggplotly(p,source = "disease_graph_bar")|>
-      highlight(on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
+      # highlight(on = "plotly_hover",off = "plotly_doubleclick",persistent = FALSE)|>
       event_register('plotly_hover')
   })
   
@@ -370,12 +373,15 @@ server <- function(input, output,session) {
            x="Year",
            title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
            col = "Health Region")+
-      theme(plot.title = element_text(size=10))
+      theme(plot.title = element_text(size=12),
+            axis.title.x = element_text(size=10),
+            axis.title.y = element_text(size=10))
     ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
-      highlight( on = "plotly_hover",
-                 off = "plotly_doubleclick",
-                 persistent = FALSE,
-                 selected = attrs_selected(showlegend = FALSE))
+      # highlight( on = "plotly_hover",
+      #            off = "plotly_doubleclick",
+      #            persistent = FALSE,
+      #            selected = attrs_selected(showlegend = FALSE))|>
+      event_register('plotly_hover')
   })
   
   
@@ -425,8 +431,8 @@ server <- function(input, output,session) {
     
   })
   
-  
-  observe( {
+  ## Linked highlighting when hovering on map
+  observe({
     event <- input$map_shape_mouseover
     ppl <-  plotlyProxy("disease_graph_line", session) 
     ppb <- plotlyProxy("disease_graph_bar", session)
@@ -460,27 +466,33 @@ server <- function(input, output,session) {
   })
   
   output$hover_stuff <- renderPrint({
-    event_data("plotly_hover",
-               source = "disease_graph_bar")
+    input$map_shape_mouseover$id
     # my_traces()
   })
+  
+  output$hover_stuff2 <- renderPrint({
+    input$map_shape_mouseout$id
+  })
+  
 
   my_traces <- reactive({
     if ("All" %in% input$region_d) sort(unique(filter_df_d()$HEALTH_BOUND_NAME))
     else sort(c(input$region_d))
   })
   
+  ## Linked highlighting when hovering on bar graph
   observe({
       event <- event_data("plotly_hover",source = "disease_graph_bar")
-      pp <-plotlyProxy("disease_graph_line", session)
+      ppl <-plotlyProxy("disease_graph_line", session)
+      ppb <- plotlyProxy("disease_graph_bar", session)
       lp <- leafletProxy("map",session)
       if (is.null(event)){
         print("IS NULLL!! ")
-        pp%>%
-          plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+        ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
         lp %>% clearGroup('selected')
       }else{
-       pp %>%
+       ppl %>%
         plotlyProxyInvoke(
           method = "restyle",
           list(line = list(width = 0.5))
@@ -489,6 +501,63 @@ server <- function(input, output,session) {
           method = "restyle",
           "line",
           list(width = 4),
+          as.integer(match(event[["key"]],my_traces())-1)
+        )
+        ppb %>%
+          plotlyProxyInvoke(
+            method = "restyle",
+            list(opacity=0.2)
+          ) %>%
+          plotlyProxyInvoke(
+            method = "restyle",
+            list(opacity=1),
+            as.integer(match(event[["key"]],my_traces())-1)
+          )
+      lp %>%
+        addPolygons(
+          data=subset(map_spdf(),
+                      (if(input$health_bound_d == "Health Authorities") HA_Name 
+                       else CHSA_Name) 
+                      == event[["key"]]),
+          stroke= TRUE,
+          weight = 2,
+          color = "black",
+          fill= NaN,
+          group = "selected"
+        )}
+    })
+  
+  ## Linked highlighting when hovering on line graph
+  observe({
+    event <- event_data("plotly_hover",source = "disease_graph_line")
+    ppl <-plotlyProxy("disease_graph_line", session)
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    lp <- leafletProxy("map",session)
+    if (is.null(event)){
+      print("IS NULLL!! ")
+      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+      ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
+      lp %>% clearGroup('selected')
+    }else{
+      ppl %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(line = list(width = 0.5))
+        ) %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          "line",
+          list(width = 4),
+          as.integer(match(event[["key"]],my_traces())-1)
+        )
+      ppb %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(opacity=0.2)
+        ) %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(opacity=1),
           as.integer(match(event[["key"]],my_traces())-1)
         )
       lp %>%
@@ -503,7 +572,7 @@ server <- function(input, output,session) {
           fill= NaN,
           group = "selected"
         )}
-    })
+  })
   
   # observeEvent(event_data("plotly_hover",
   #                         source = "disease_graph_bar"), {
