@@ -1,0 +1,74 @@
+---
+title: "BC Chronic Disease: Temporal Model Plots"
+output: html_document
+date: '2022-05-25'
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r message=FALSE}
+library(shiny)
+library(tidyverse)
+library(ggplot2)
+library(here)
+```
+
+## Age-Standardized HSC Prevalance Rate
+
+```{r Load Data, message=FALSE}
+hsc_prev_df <- data.frame()
+
+for (file in list.files(here("results/model/HSCPrevalence"))) {
+  new_df <- read_csv(paste0(here("results/model/HSCPrevalence"), "/", file))
+  hsc_prev_df <- rbind(hsc_prev_df, new_df)
+}
+```
+
+```{r HSC Prev Rate Plot}
+# Input -----------------------------------------------------------------------
+inputPanel(
+  selectInput("region",
+    label = "CHSA",
+    choices = sort(unique(hsc_prev_df$HEALTH_BOUNDARIES)),
+    selected = "1110 Fernie"
+  ),
+  selectInput("disease",
+    label = "Disease",
+    choices = unique(hsc_prev_df$DISEASE),
+    selected = "AMI_EPI"
+  )
+)
+
+selected_data <- reactive({
+  hsc_prev_df |>
+    dplyr::filter(HEALTH_BOUNDARIES == input$region & DISEASE == input$disease)
+})
+
+# Output -----------------------------------------------------------------------
+renderPlot({
+  selected_data() |>
+    ggplot(aes(x = year, y = y_fitted)) +
+    geom_point(aes(y = y_obs)) +
+    geom_line() +
+    geom_ribbon(
+      aes(ymin = ci_95_ll, ymax = ci_95_ul),
+      alpha = 0.2
+    ) +
+    geom_line(aes(x = year, y = y_fitted), linetype = 2) +
+    labs(
+      x = "Year", y = "Age Standardized HSC Prevalence Rate (per 1000)",
+      title = paste(input$disease, "in", input$region)
+    ) +
+    theme_grey(base_size = 14)
+})
+
+renderText({
+  paste("The selected model was:", selected_data()$model[1])
+})
+```
+
+
+
