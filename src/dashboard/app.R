@@ -201,9 +201,10 @@ ui <- fluidPage(
                    fluidRow(plotlyOutput(
                    "region_tab_line_chart"
                    )),
-                   fluidRow(plotlyOutput(
+                   fluidRow(column(6, plotlyOutput(
                      "region_tab_bar_chart"
-                   )))
+                   ))))
+                 # , column(6, leafletOutput("region_tab_map")
                )), 
       
       ################################
@@ -716,6 +717,7 @@ server <- function(input, output,session) {
   })
   
   # a map highlighting the selected health region to provide context
+  
   
   
   ################################
