@@ -388,7 +388,7 @@ server <- function(input, output,session) {
     (if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
       merge(filter(filter_df_d(),(YEAR == input$year_d)),
             by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
-            by.y="HEALTH_BOUND_CODE")
+            by.y="HALTH_BOUND_CODE")
     
   })
   
@@ -668,10 +668,11 @@ server <- function(input, output,session) {
       geom_line(stat = 'identity') +
       labs(
         y = input$region_tab_rate_type_selected,
-        x = "Year",
+        x = NULL,
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
-      ) +
+      ) + 
+      theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
     
     ggplotly(line_chart)
@@ -679,17 +680,24 @@ server <- function(input, output,session) {
   
   # plot a bar chart showing the distribution of cumulative rates for diseases
   output$region_tab_bar_chart <- renderPlotly({
-    bar_chart <- region_tab_filtered_data() |> 
-      filter(YEAR == input$region_tab_year_range_selected[1]) |> 
-      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(), fill = "DISEASE")) +
+    bar_chart <- region_tab_filtered_data() |>
+      filter(YEAR == input$region_tab_year_range_selected[1]) |>
+      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(),
+                        fill = "DISEASE")) +
       geom_bar(stat = "identity") +
       labs(
         y = input$region_tab_rate_type_selected,
-        legend = "Disease",
-        title = paste0("Distribution of Diseases by ", input$region_tab_rate_type_selected,
-                       " in ", input$region_tab_year_range_selected[1])
-      ) + 
+        x = NULL,
+        title = paste0(
+          "Distribution of Diseases by ",
+          input$region_tab_rate_type_selected,
+          " in ",
+          input$region_tab_year_range_selected[1]
+        )
+      ) + theme(plot.title = element_text(size = 8),
+                legend.position = "none") +
       scale_x_discrete(labels = wrap_format(10))
+    
     ggplotly(bar_chart)
   })
   
