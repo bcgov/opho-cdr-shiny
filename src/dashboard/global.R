@@ -40,6 +40,13 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
+# Define dictionary of HA colours
+HA_colours <- c("Interior" = "#3891A7",
+                "Fraser" = "#C3860D",
+                "Vancouver Coastal" = "#C42E2E",
+                "Vancouver Island" = "#67A63C",
+                "Northern" = "#914FAB")
+
 # Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
 HA_CHOICES <- c("Fraser", "Interior", "Northern", "Vancouver Coastal", "Vancouver Island")
@@ -76,7 +83,7 @@ for (dir in list.dirs("data")[-1]) {
   for (file in list.files(dir)) {
     new_df <- data.table::fread(paste0(dir, "/", file),
                                 verbose = FALSE,
-                                drop = c("STDPOP","NUMERATOR","DENOMINATOR")) |>
+                                drop = c("STDPOP")) |>
       drop_na(CRUDE_RATE_PER_1000)
     
     if (dir == "data/IncidenceRate") {
