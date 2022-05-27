@@ -131,7 +131,9 @@ ui <- fluidPage(
                                min = 2001,
                                max=2020,
                                value = 2001,
-                               animate = TRUE
+                               sep = "",
+                               ticks = FALSE,
+                               animate = animationOptions(interval = 1000)
                               ),
         
                    actionButton("reset_d", "Reset")
@@ -319,12 +321,12 @@ server <- function(input, output,session) {
                 label = "Select Health Region(s)",
                 choices = (
                   if(input$health_bound_d == "Health Authorities") 
-                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
+                    c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
                   else 
                     c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
                 multiple = TRUE,
                 selected = (
-                  if(input$health_bound_d == "Health Authorities") "All"
+                  if(input$health_bound_d == "Health Authorities") HA_CHOICES
                   else c("100 Mile House","Abbotsford Rural","Agassiz/Harrison","Alberni Valley/Bamfield")
                 ))
   })
@@ -333,17 +335,18 @@ server <- function(input, output,session) {
   filter_df_d <- reactive({
     datasetInput_d() |> 
       filter ((GEOGRAPHY == healthboundInput_d())&
-                # (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)) &
                 (DISEASE == input$disease_d) &
                 (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
       )
   })
   
   output$disease_graph_bar <- renderPlotly({
+    # d<-datasetInput_d()|>
+    #   highlight_key(~HEALTH_BOUND_NAME)
     d<-filter_df_d()|>
-      filter((YEAR == input$year_d)&
-             (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
-      highlight_key(~HEALTH_BOUND_NAME)
+          filter((YEAR == input$year_d)&
+                   (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+          highlight_key(~HEALTH_BOUND_NAME)
     p <- d |>
       ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
       geom_bar(stat='identity')+
@@ -355,13 +358,26 @@ server <- function(input, output,session) {
             plot.title = element_text(size=12),
             axis.title.x = element_text(size=10),
             axis.title.y = element_text(size=10))
-    ggplotly(p,source = "disease_graph_bar")|>
+    ggplotly(p,source = "disease_graph_bar",tooltip=("YEAR"))|>
       event_register('plotly_hover')
   })
   
+  # observe({
+  #   p <- plotlyProxy("disease_graph_bar",session)
+  # 
+  #   d<-filter_df_d()|>
+  #     filter((YEAR == input$year_d)&
+  #              (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+  #     highlight_key(~HEALTH_BOUND_NAME)
+  #   p %>%
+  #     plotlyProxyInvoke("deleteTraces")
+  #     # plotlyProxyInvoke("addTraces",list(y = d[[rateInput_d()]],
+  #     #                                    x = d$HEALTH_BOUND_NAME ))
+  # })
+  
   output$disease_graph_line <- renderPlotly({
     d <- filter_df_d()|>
-      filter((if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d)))|>
+      filter(HEALTH_BOUND_NAME %in% input$region_d)|>
       highlight_key(~HEALTH_BOUND_NAME)
     p2<- d|>
       ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
@@ -399,9 +415,9 @@ server <- function(input, output,session) {
     mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
-      "CHSA: ",(if(input$health_bound_d == "Health Authorities")"N/A" else map_spdf()@data$CHSA_Name),"<br/>", 
-      "HA: ", map_spdf()@data$HA_Name, "<br/>", 
-      paste0(input$dataset_d,":"), map_spdf()@data[[rateInput_d()]], 
+      "<b>CHSA<b/>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else map_spdf()@data$CHSA_Name),"<br/>", 
+      "<b>HA<b/>: ", map_spdf()@data$HA_Name, "<br/>", 
+      "<b>",paste0(input$dataset_d,":"),"<b/>", map_spdf()@data[[rateInput_d()]], 
       sep="") |>
       lapply(htmltools::HTML)
     
@@ -445,8 +461,7 @@ server <- function(input, output,session) {
     rv_location$id <- event_info$id
     rv_location$lat <- event_info$lat
     rv_location$lng <- event_info$lng
-    if ((event_info$id %in% input$region_d) ||
-      (input$region_d =="All")){
+    if ((event_info$id %in% input$region_d)){
     ppl%>%
       plotlyProxyInvoke(
         method = "restyle",
@@ -501,8 +516,7 @@ server <- function(input, output,session) {
   
 
   my_traces <- reactive({
-    if ("All" %in% input$region_d) sort(unique(filter_df_d()$HEALTH_BOUND_NAME))
-    else sort(c(input$region_d))
+    sort(input$region_d)
   })
   
   ## Linked highlighting when hovering on bar graph
