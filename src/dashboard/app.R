@@ -31,6 +31,7 @@ ui <- fluidPage(
   theme = shinytheme("sandstone"),
   includeCSS("www/mytheme.css"), 
   shinyjs::useShinyjs(),
+  leafletjs,
   
   navbarPage("BC Chronic Disease Dashboard",
       
@@ -132,7 +133,7 @@ ui <- fluidPage(
                                max=2020,
                                value = 2001,
                                sep = "",
-                               ticks = FALSE,
+                               ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
         
@@ -225,12 +226,8 @@ ui <- fluidPage(
                    
                    selectInput("dataset_data", 
                                label = "Select Rate Type",
-                               choices = c("Crude Incidence Rate",
-                                           "Age Standardized Incidence Rate",
-                                           "Crude Life Prevalence",
-                                           "Age Standardized Life Prevalence",
-                                           "Crude HSC Prevalence",
-                                           "Age Standardized HSC Prevalence")),
+                               choices = RATE_TYPE_CHOICES,
+                               selected = RATE_TYPE_CHOICES[1]),
                    
                    uiOutput("disease_data"),
                    
@@ -285,35 +282,11 @@ server <- function(input, output,session) {
                       "Age Standardized Incidence Rate",
                       "Crude Life Prevalence",
                       "Age Standardized Life Prevalence")
+                 
                 ),
+                selected = "Crude Incidence Rate",
                 multiple = FALSE,
     )
-  })
-  
-  datasetInput_d <- reactive({
-    switch(input$dataset_d,
-           "Crude Incidence Rate" = inc_rate_df,
-           "Age Standardized Incidence Rate" = inc_rate_df,
-           "Crude Life Prevalence" = life_prev_df,
-           "Age Standardized Life Prevalence" = life_prev_df,
-           "Crude HSC Prevalence" = hsc_prev_df,
-           "Age Standardized HSC Prevalence" = hsc_prev_df)
-  })
-  
-  rateInput_d <- reactive({
-    switch(input$dataset_d,
-           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
-           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
-           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
-  })
-  
-  healthboundInput_d <- reactive ({
-    switch(input$health_bound_d,
-           "Health Authorities" = "HA",
-           "Community Health Service Areas" = "CHSA")
   })
   
   output$region_d <- renderUI({
@@ -329,6 +302,48 @@ server <- function(input, output,session) {
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
                   else c("100 Mile House","Abbotsford Rural","Agassiz/Harrison","Alberni Valley/Bamfield")
                 ))
+  })
+  
+  datasetInput_d <- reactive({
+    shiny::validate(need(input$dataset_d, message=F))
+    if(!is.null(input$dataset_d)){
+    switch(input$dataset_d,
+           "Crude Incidence Rate" = inc_rate_df,
+           "Age Standardized Incidence Rate" = inc_rate_df,
+           "Crude Life Prevalence" = life_prev_df,
+           "Age Standardized Life Prevalence" = life_prev_df,
+           "Crude HSC Prevalence" = hsc_prev_df,
+           "Age Standardized HSC Prevalence" = hsc_prev_df)
+    }
+  })
+  
+  rateInput_d <- reactive({
+    shiny::validate(need(input$dataset_d, message=F))
+    if(!is.null(input$dataset_d)){
+    switch(input$dataset_d,
+           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
+           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
+           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
+           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
+           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
+           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
+    }
+  })
+  
+  healthboundInput_d <- reactive ({
+    if(!is.null(input$health_bound_d)){
+    switch(input$health_bound_d,
+           "Health Authorities" = "HA",
+           "Community Health Service Areas" = "CHSA")
+    }
+  })
+  
+  spdf_d <- reactive ({
+    if(!is.null(input$health_bound_d)){
+    switch(input$health_bound_d,
+           "Health Authorities" = ha_spdf,
+           "Community Health Service Areas" = chsa_spdf)
+    }
   })
   
   
@@ -400,32 +415,51 @@ server <- function(input, output,session) {
   })
   
   
-  map_spdf<- reactive({
-    (if(input$health_bound_d == "Health Authorities") ha_spdf else chsa_spdf)|>
-      merge(filter(filter_df_d(),(YEAR == input$year_d)),
-            by.x= (if(input$health_bound_d == "Health Authorities")"HA_CD" else "CHSA_CD"),
-            by.y="HEALTH_BOUND_CODE")
-    
-  })
+  # map_spdf<- reactive({
+  #   spdf_d()|>
+  #     merge(filter(filter_df_d(),(YEAR == input$year_d)),
+  #           by.x= (if(input$health_bound_d == "Health Authorities")"HA_Name" else "CHSA_Name"),
+  #           by.y="HEALTH_BOUND_NAME")
+  #   
+  # })
+  
   
   output$map <- renderLeaflet({
     
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,0.5)
-    mybins <- append(seq(floor(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
+    #select dummy data
+    dummyData <- datasetInput_d() |>
+      filter(CLNT_GENDER_LABEL=='T',
+             GEOGRAPHY=="HA",
+             DISEASE=="Asthma",
+             YEAR==2001) 
+    
+    dummy_spdf <- data.table::copy(spdf_d())
+    
+    dummy_spdf@data <- spdf_d()@data|>
+      mutate(CRUDE_RATE_PER_1000=dummyData$CRUDE_RATE_PER_1000[match(
+                if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
+                dummyData$HEALTH_BOUND_NAME)],
+             STD_RATE_PER_1000= dummyData$STD_RATE_PER_1000[match(
+                if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
+                dummyData$HEALTH_BOUND_NAME)]
+             )
+    
+    legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.5)
+    mybins <- append(seq(floor(min(dummyData[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="lightgray")
     
     mytext <- paste(
-      "<b>CHSA<b/>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else map_spdf()@data$CHSA_Name),"<br/>", 
-      "<b>HA<b/>: ", map_spdf()@data$HA_Name, "<br/>", 
-      "<b>",paste0(input$dataset_d,":"),"<b/>", map_spdf()@data[[rateInput_d()]], 
+      "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
+      "<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
+      paste0(input$dataset_d,":"), dummy_spdf@data[[rateInput_d()]],
       sep="") |>
       lapply(htmltools::HTML)
     
-    m<-leaflet(map_spdf()) %>% 
+    m<-leaflet(dummy_spdf) %>% 
       setView( lat=55, lng=-127 , zoom=4.5) %>%
       addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
-        fillColor = ~mypalette(map_spdf()@data[[rateInput_d()]]), 
+        fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
         color="gray", 
@@ -439,14 +473,52 @@ server <- function(input, output,session) {
           style = list("font-weight" = "normal", padding = "3px 8px"), 
           textsize = "13px", 
           direction = "auto"
-        )
+        ),
       ) |>
-      addLegend( pal=mypalette, values=~map_spdf()@data[[rateInput_d()]], opacity=0.9, 
+      addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
                  title = input$dataset_d, position = "bottomleft" )
     m
     
   })
   
+
+  observe({
+
+    year_filtered_map_df <- filter(filter_df_d(),YEAR == input$year_d)
+
+    current_map_spdf <- data.table::copy(spdf_d())
+
+    current_map_spdf@data <- spdf_d()@data|>
+      mutate(CRUDE_RATE_PER_1000= year_filtered_map_df$CRUDE_RATE_PER_1000[match(
+                spdf_d()@data[[if(input$health_bound_d == "Health Authorities") "HA_Name" else "CHSA_Name"]],
+                 year_filtered_map_df$HEALTH_BOUND_NAME)],
+             STD_RATE_PER_1000= year_filtered_map_df$STD_RATE_PER_1000[match(
+                 if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
+                 year_filtered_map_df$HEALTH_BOUND_NAME)])
+
+    current_map_spdf@data$text <- paste0(
+      "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else current_map_spdf@data$CHSA_Name),"<br/>",
+      "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
+      "<b>",paste0(input$dataset_d,":"),"</b>", current_map_spdf@data[[rateInput_d()]]) 
+
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,0.5)
+    mybins <- append(seq(floor(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins,na.color="lightgray")
+
+    print(head(current_map_spdf@data))
+    
+    leafletProxy("map",data = current_map_spdf) %>%
+      clearMarkers() %>%
+      clearControls()%>%
+      addLegend( pal=mypalette, values=current_map_spdf@data[[rateInput_d()]], opacity=0.9,
+                 title = input$dataset_d, position = "bottomleft" )%>%
+      setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
+                    fillColor = mypalette(current_map_spdf@data[[rateInput_d()]]),
+                    label = current_map_spdf@data$text
+                    )
+
+  })
+
   ## Linked highlighting when hovering on map
   rv_shape <- reactiveVal(FALSE)
   rv_location <- reactiveValues(id=NULL,lat=NULL,lng=NULL)
@@ -486,7 +558,7 @@ server <- function(input, output,session) {
       )}
   })
   
-  # Track mouseout   activity
+  # Track mouseout activity
   observeEvent(input$map_shape_mouseout, {
     event_info <- input$map_shape_mouseover
     event_info_old <- reactiveValuesToList(rv_location_move_old)
@@ -511,7 +583,7 @@ server <- function(input, output,session) {
   })
   
   output$hover_stuff2 <- renderPrint({
-    input$region_d
+    input$dataset_d
   })
   
 
@@ -519,7 +591,7 @@ server <- function(input, output,session) {
     sort(input$region_d)
   })
   
-  ## Linked highlighting when hovering on bar graph
+  ## Link highlighting when hovering on bar graph
   observe({
       event <- event_data("plotly_hover",source = "disease_graph_bar")
       ppl <-plotlyProxy("disease_graph_line", session)
@@ -553,7 +625,7 @@ server <- function(input, output,session) {
           )
       lp %>%
         addPolygons(
-          data=subset(map_spdf(),
+          data=subset(spdf_d(),
                       (if(input$health_bound_d == "Health Authorities") HA_Name 
                        else CHSA_Name) 
                       == event[["key"]]),
@@ -599,7 +671,7 @@ server <- function(input, output,session) {
         )
       lp %>%
         addPolygons(
-          data=subset(map_spdf(),
+          data=subset(spdf_d(),
                       (if(input$health_bound_d == "Health Authorities") HA_Name 
                        else CHSA_Name) 
                       == event[["key"]]),
