@@ -76,7 +76,7 @@ for (dir in list.dirs("data")[-1]) {
   for (file in list.files(dir)) {
     new_df <- data.table::fread(paste0(dir, "/", file),
                                 verbose = FALSE,
-                                drop = c("STDPOP")) |>
+                                drop = c("STDPOP","NUMERATOR","DENOMINATOR")) |>
       drop_na(CRUDE_RATE_PER_1000)
     
     if (dir == "data/IncidenceRate") {

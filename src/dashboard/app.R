@@ -356,38 +356,65 @@ server <- function(input, output,session) {
   })
   
   output$disease_graph_bar <- renderPlotly({
-    # d<-datasetInput_d()|>
+    
+    #Dummy Data
+    # d<-inc_rate_df|>
+    #   filter(CLNT_GENDER_LABEL=='T',
+    #          GEOGRAPHY=="HA",
+    #          DISEASE=="Asthma",
+    #          YEAR==2001)|>
     #   highlight_key(~HEALTH_BOUND_NAME)
+    
     d<-filter_df_d()|>
           filter((YEAR == input$year_d)&
                    (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
           highlight_key(~HEALTH_BOUND_NAME)
+    
     p <- d |>
-      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
-      geom_bar(stat='identity')+
+      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= "CRUDE_RATE_PER_1000",color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME",
+                        frame = "YEAR"
+                        ))+
+      geom_col(position = "identity")+
       labs(x="Health Region",
            y=paste0(input$dataset_d," Per 1000"),
-           title = paste0(input$dataset_d," of ",input$disease_d, " in ",input$year_d))+
+           title = paste0(input$dataset_d," of ",input$disease_d, " in 2001"))+
       theme(legend.position="none",
             axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
             plot.title = element_text(size=12),
             axis.title.x = element_text(size=10),
             axis.title.y = element_text(size=10))
-    ggplotly(p,source = "disease_graph_bar",tooltip=("YEAR"))|>
-      event_register('plotly_hover')
+    ggplotly(p,source = "disease_graph_bar",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
+      event_register('plotly_hover')|>
+      animation_opts(frame=500, transition=500, redraw=FALSE)
   })
   
   # observe({
-  #   p <- plotlyProxy("disease_graph_bar",session)
+  #   newdata <- filter_df_d()|>
+  #      filter(
+  #        (YEAR == input$year_d)&
+  #        (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+  #           highlight_key(~HEALTH_BOUND_NAME)
+  #   
+  #   print(newdata)
   # 
-  #   d<-filter_df_d()|>
-  #     filter((YEAR == input$year_d)&
-  #              (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
-  #     highlight_key(~HEALTH_BOUND_NAME)
+  #   p <- plotlyProxy("disease_graph_bar",session,deferUntilFlush=FALSE)
+  #   
   #   p %>%
-  #     plotlyProxyInvoke("deleteTraces")
-  #     # plotlyProxyInvoke("addTraces",list(y = d[[rateInput_d()]],
-  #     #                                    x = d$HEALTH_BOUND_NAME ))
+  #     plotlyProxyInvoke("animate",
+  #                       list(
+  #                         data = list(list(
+  #                           x = newdata$HEALTH_BOUND_NAME,
+  #                           y = newdata[[rateInput_d()]]
+  #                           # frame = list(newdata$YEAR)
+  #                         )),
+  #                         traces = list(as.integer(2)),
+  #                         layout = list(title = list(text = paste0(input$dataset_d," of ",input$disease_d, " in ",input$year_d),
+  #                                                    size = 12))
+  #                       ),
+  #                       # animationAttributes
+  #                       list()
+  #     )
+  # 
   # })
   
   output$disease_graph_line <- renderPlotly({
@@ -410,7 +437,7 @@ server <- function(input, output,session) {
       theme(plot.title = element_text(size=12),
             axis.title.x = element_text(size=10),
             axis.title.y = element_text(size=10))
-    ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
+    ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
       event_register('plotly_hover')
   })
   
@@ -424,6 +451,7 @@ server <- function(input, output,session) {
   # })
   
   
+  # Render map per Input Rate
   output$map <- renderLeaflet({
     
     #select dummy data
@@ -481,7 +509,7 @@ server <- function(input, output,session) {
     
   })
   
-
+#Update map with filter changes
   observe({
 
     year_filtered_map_df <- filter(filter_df_d(),YEAR == input$year_d)
@@ -505,8 +533,6 @@ server <- function(input, output,session) {
     mybins <- append(seq(floor(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins,na.color="lightgray")
 
-    print(head(current_map_spdf@data))
-    
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
       clearControls()%>%
