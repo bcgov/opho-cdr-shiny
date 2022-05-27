@@ -101,7 +101,7 @@ ui <- fluidPage(
       tabPanel("By Disease",
                sidebarLayout(
                  sidebarPanel(
-                   id="filters",
+                   id="filters_d",
                    width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
@@ -133,7 +133,7 @@ ui <- fluidPage(
                                animate = TRUE
                               ),
         
-                   actionButton("resetAll", "Reset")
+                   actionButton("reset_d", "Reset")
                     
                ),
                mainPanel(
@@ -215,6 +215,7 @@ ui <- fluidPage(
                  
                  #Filters
                  sidebarPanel(
+                   id="filters_data",
                    width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
@@ -246,6 +247,7 @@ ui <- fluidPage(
                                 choices = c("Male","Female","Total"), 
                                 selected = "Total",
                                 inline = TRUE),
+                   actionButton("reset_data", "Reset")
                  ),
                  mainPanel(
                    width = 9,
@@ -266,8 +268,8 @@ server <- function(input, output,session) {
   # By Disease Tab Server Side Logic
   ################################
   
-  observeEvent(input$resetAll, {
-    reset("filters")
+  observeEvent(input$reset_d, {
+    reset("filters_d")
   })
 
   output$dataset_d <- renderUI({
@@ -378,10 +380,6 @@ server <- function(input, output,session) {
             axis.title.x = element_text(size=10),
             axis.title.y = element_text(size=10))
     ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
-      # highlight( on = "plotly_hover",
-      #            off = "plotly_doubleclick",
-      #            persistent = FALSE,
-      #            selected = attrs_selected(showlegend = FALSE))|>
       event_register('plotly_hover')
   })
   
@@ -396,7 +394,8 @@ server <- function(input, output,session) {
   
   output$map <- renderLeaflet({
     
-    mybins <- bin_dict[[input$disease_d]]
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,0.5)
+    mybins <- append(seq(floor(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=map_spdf()@data[[rateInput_d()]], na.color="transparent", bins=mybins)
     
     mytext <- paste(
@@ -487,6 +486,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # TEST
   output$hover_stuff <- renderPrint({
     input$map_shape_mouseover
     # my_traces()
@@ -595,29 +595,6 @@ server <- function(input, output,session) {
           group = "selected"
         )}
   })
-  
-  # observeEvent(event_data("plotly_hover",
-  #                         source = "disease_graph_bar"), {
-  #                           leafletProxy("map",session)%>%
-  #                           
-  #                         })
-
-  # observeEvent(input$map_shape_mouseover, {
-  #   rv$regions <- c(rv$regions, input$map_shape_mouseover)
-  #   
-  #   leafletProxy("map", session) %>%
-  #     removeShape(layerId = input$map_shape_mouseover$id) %>%
-  #     addPolygons(
-  #       data = shared_data(d),
-  #       color = "black",
-  #       fillOpacity = 1,
-  #       weight = 1,
-  #       highlightOptions = highlightOptions(fillOpacity = 0.2),
-  #       label = ~label,
-  #       layerId = ~label,
-  #       group = "foo"
-  #     )
-  # })
    
   
   ################################
@@ -723,6 +700,11 @@ server <- function(input, output,session) {
   ################################
   # Download Data Tab Server Side Logic
   ################################
+  
+  observeEvent(input$reset_data, {
+    reset("filters_data")
+  })
+  
   datasetInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = inc_rate_df,
