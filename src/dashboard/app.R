@@ -201,10 +201,10 @@ ui <- fluidPage(
                    fluidRow(plotlyOutput(
                    "region_tab_line_chart"
                    )),
-                   fluidRow(column(6, plotlyOutput(
+                   fluidRow(column(8, plotlyOutput(
                      "region_tab_bar_chart"
-                   ))))
-                 # , column(6, leafletOutput("region_tab_map")
+                   )), column(4, leafletOutput("region_tab_map"))))
+                 
                )), 
       
       ################################
@@ -672,7 +672,7 @@ server <- function(input, output,session) {
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
       ) + 
-      theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
     
     ggplotly(line_chart)
@@ -702,7 +702,21 @@ server <- function(input, output,session) {
   })
   
   # a map highlighting the selected health region to provide context
+  region_tab_map_data <- reactive({
+    (if (input$region_tab_geography_selected == "Health Authorities")
+      ha_spdf
+     else
+       chsa_spdf)
+  })
   
+  output$region_tab_map <- renderLeaflet({
+    map <- leaflet(region_tab_map_data()) %>%
+    addPolygons(weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE))
+    map
+    })
   
   
   ################################
