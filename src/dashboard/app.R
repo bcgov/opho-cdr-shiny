@@ -206,9 +206,10 @@ ui <- fluidPage(
                    fluidRow(plotlyOutput(
                    "region_tab_line_chart"
                    )),
-                   fluidRow(plotlyOutput(
+                   fluidRow(column(8, plotlyOutput(
                      "region_tab_bar_chart"
-                   )))
+                   )), column(4, leafletOutput("region_tab_map"))))
+                 
                )), 
       
       ################################
@@ -781,10 +782,11 @@ server <- function(input, output,session) {
       geom_line(stat = 'identity') +
       labs(
         y = input$region_tab_rate_type_selected,
-        x = "Year",
+        x = NULL,
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
-      ) +
+      ) + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
     
     ggplotly(line_chart)
@@ -792,21 +794,43 @@ server <- function(input, output,session) {
   
   # plot a bar chart showing the distribution of cumulative rates for diseases
   output$region_tab_bar_chart <- renderPlotly({
-    bar_chart <- region_tab_filtered_data() |> 
-      filter(YEAR == input$region_tab_year_range_selected[1]) |> 
-      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(), fill = "DISEASE")) +
+    bar_chart <- region_tab_filtered_data() |>
+      filter(YEAR == input$region_tab_year_range_selected[1]) |>
+      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(),
+                        fill = "DISEASE")) +
       geom_bar(stat = "identity") +
       labs(
         y = input$region_tab_rate_type_selected,
-        legend = "Disease",
-        title = paste0("Distribution of Diseases by ", input$region_tab_rate_type_selected,
-                       " in ", input$region_tab_year_range_selected[1])
-      ) + 
+        x = NULL,
+        title = paste0(
+          "Distribution of Diseases by ",
+          input$region_tab_rate_type_selected,
+          " in ",
+          input$region_tab_year_range_selected[1]
+        )
+      ) + theme(plot.title = element_text(size = 8),
+                legend.position = "none") +
       scale_x_discrete(labels = wrap_format(10))
+    
     ggplotly(bar_chart)
   })
   
   # a map highlighting the selected health region to provide context
+  region_tab_map_data <- reactive({
+    (if (input$region_tab_geography_selected == "Health Authorities")
+      ha_spdf
+     else
+       chsa_spdf)
+  })
+  
+  output$region_tab_map <- renderLeaflet({
+    map <- leaflet(region_tab_map_data()) %>%
+    addPolygons(weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE))
+    map
+    })
   
   
   ################################

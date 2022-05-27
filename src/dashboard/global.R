@@ -139,6 +139,7 @@ ha_spdf <- readOGR(
 ) |>
   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
 
+
 # Simplify Spatial Polygons for faster rendering
 regions_df <- ha_spdf@data
 ha_spdf <- gSimplify(ha_spdf,0.01,topologyPreserve = TRUE)
