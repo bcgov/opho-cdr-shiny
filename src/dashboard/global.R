@@ -40,12 +40,9 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
-# Define dictionary of HA colours
-HA_colours <- c("Interior" = "#3891A7",
-                "Fraser" = "#C3860D",
-                "Vancouver Coastal" = "#C42E2E",
-                "Vancouver Island" = "#67A63C",
-                "Northern" = "#914FAB")
+# Define dataframe of HA colours
+HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern"),
+                         Colors = c("#3891A7","#C3860D","#C42E2E", "#67A63C","#914FAB"))
 
 # Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
