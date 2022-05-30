@@ -455,28 +455,51 @@ server <- function(input, output,session) {
   
   # Render line graph 
   output$disease_graph_line <- renderPlotly({
-    d <- filter_df_d()|>
-      filter(HEALTH_BOUND_NAME %in% input$region_d)|>
-      highlight_key(~HEALTH_BOUND_NAME)
     
-    p2<- d|>
-      ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
-                        # text = paste(
-                        #   input$dataset_d, rateInput_d(), "\n",
-                        #   "Year: ", "YEAR", "\n",
-                        #   sep = ""
-                        # )
-    ))+
-      geom_line(stat="identity")+
-      labs(y=paste0(input$dataset_d, " Per 1000"),
-           x="Year",
-           title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
-           col = "Health Region")+
-      theme(plot.title = element_text(size=12),
-            axis.title.x = element_text(size=10),
-            axis.title.y = element_text(size=10))
-    ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
+    d <- filter_df_d()|>
+      filter(HEALTH_BOUND_NAME %in% input$region_d)
+    
+    d |>
+    highlight_key(~HEALTH_BOUND_NAME)|>
+    plot_ly(
+      x= d$YEAR,
+      y=d[[rateInput_d()]],
+      source = "disease_graph_line",
+      type = "scatter",
+      mode="line",
+      line = list(width=2),
+      color = ~HEALTH_BOUND_NAME,
+      colors = setNames(HA_colours$Colors,HA_colours$Regions)
+    )%>%
+      layout(yaxis=list(
+                        # range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
+                        title = paste0(input$dataset_d," Per 1000")),
+             xaxis = list(title = 'Year'),
+             title = paste0(input$dataset_d," of ",input$disease_d, " Over Time"),
+             margin = list(t = 50)
+             # showlegend = FALSE
+      ) %>%
       event_register('plotly_hover')
+    
+    # p2<- d_hl|>
+    #   ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
+    #                     # text = paste(
+    #                     #   input$dataset_d, rateInput_d(), "\n",
+    #                     #   "Year: ", "YEAR", "\n",
+    #                     #   sep = ""
+    #                     # )
+    # ))+
+    #   geom_line(stat="identity")+
+    #   scale_color_manual(values= setNames(HA_colours$Colors,HA_colours$Regions))+
+    #   labs(y=paste0(input$dataset_d, " Per 1000"),
+    #        x="Year",
+    #        title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
+    #        col = "Health Region")+
+    #   theme(plot.title = element_text(size=12),
+    #         axis.title.x = element_text(size=10),
+    #         axis.title.y = element_text(size=10))
+    # ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
+    #   event_register('plotly_hover')
 
   })
 
@@ -599,7 +622,9 @@ server <- function(input, output,session) {
     ppl%>%
       plotlyProxyInvoke(
         method = "restyle",
-        list(line = list(width = 0.5))
+        list(line = list(width = 0.5),
+             color = list(~HEALTH_BOUND_NAME),
+             colors = list(setNames(HA_colours$Colors,HA_colours$Regions)))
       ) %>%
       plotlyProxyInvoke(
         method = "restyle",
@@ -620,11 +645,7 @@ server <- function(input, output,session) {
             y=list(filter(filter_df_d(),YEAR == input$year_d)[[rateInput_d()]][match(event_info$id,filter(filter_df_d(),YEAR == input$year_d)$HEALTH_BOUND_NAME)]),
             type='bar',
             marker = list(opacity = 1,
-                          color = HA_colours$Colors[match(event_info$id,HA_colours$Regions)]),
-            hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                  '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
-                                  '<b>Year</b>: ',input$year_d,
-                                  '<extra></extra>')
+                          color = HA_colours$Colors[match(event_info$id,HA_colours$Regions)])
           ))
    }
   })
@@ -638,7 +659,7 @@ server <- function(input, output,session) {
     
     if (all(unlist(event_info[c('lat','lng')]) == unlist(event_info_old[c('lat','lng')]))){
       rv_shape(FALSE)
-      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 1)))
+      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 2)))
       plotlyProxyInvoke(ppb, "deleteTraces",list(as.integer(1)))%>%
         plotlyProxyInvoke(method = "restyle",list(opacity = 1))
 
@@ -655,7 +676,7 @@ server <- function(input, output,session) {
   })
   
   output$hover_stuff2 <- renderPrint({
-    input$map_shape_mouseover
+    event_data("plotly_hover",source = "disease_graph_line")
   })
   
 
@@ -670,7 +691,7 @@ server <- function(input, output,session) {
       ppb <- plotlyProxy("disease_graph_bar", session)
       lp <- leafletProxy("map",session)
       if (is.null(event)){
-        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=1)))
+        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
         ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
                 plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
         lp %>% clearGroup('selected')
@@ -705,19 +726,7 @@ server <- function(input, output,session) {
                                     '<extra></extra>')
             )
           )
-        # %>%
-        #   plotlyProxyInvoke(
-        #     method="relayout",
-        #     list(barmode="overlay")
-        # 
-        #   )
-        # %>%
-          # plotlyProxyInvoke(
-          #   method = "restyle",
-          #   list(opacity=1)
-          #   # as.integer(match(event[["x"]],my_traces())-1)
-          #   # as.integer(0)
-          # )
+
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
@@ -739,8 +748,9 @@ server <- function(input, output,session) {
     ppb <- plotlyProxy("disease_graph_bar", session)
     lp <- leafletProxy("map",session)
     if (is.null(event)){
-      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=1)))
-      ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
+      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+      ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
+              plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
       lp %>% clearGroup('selected')
     }else{
       ppl %>%
@@ -754,16 +764,22 @@ server <- function(input, output,session) {
           list(width = 3),
           as.integer(match(event[["key"]],my_traces())-1)
         )
+      
       ppb %>%
         plotlyProxyInvoke(
           method = "restyle",
           list(opacity=0.2)
         ) %>%
         plotlyProxyInvoke(
-          method = "restyle",
-          list(opacity=1),
-          as.integer(match(event[["key"]],my_traces())-1)
-        )
+          method = "addTraces",
+          list(
+            x=list(event[["key"]]),
+            y=list(filter(filter_df_d(),YEAR == input$year_d)[[rateInput_d()]][match(event[["key"]],filter(filter_df_d(),YEAR == input$year_d)$HEALTH_BOUND_NAME)]),
+            type='bar',
+            marker = list(opacity = 1,
+                          color = HA_colours$Colors[match(event[["key"]],HA_colours$Regions)])
+          ))
+      
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
