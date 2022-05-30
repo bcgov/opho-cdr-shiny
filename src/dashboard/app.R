@@ -362,24 +362,34 @@ server <- function(input, output,session) {
       )
   })
   
-  # Render bar graph for each rate 
+  # Render bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
     
-    dummyData <- datasetInput_d() |>
-      filter(CLNT_GENDER_LABEL=='T',
-             GEOGRAPHY =="HA",
-             DISEASE == "Acute Myocardial Infarction",
-             YEAR==2001)
+    # dummyData <- datasetInput_d() |>
+    #   filter(CLNT_GENDER_LABEL=='T',
+    #          GEOGRAPHY =="HA",
+    #          DISEASE == "Acute Myocardial Infarction",
+    #          YEAR==2001)
     
     dummyData <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d,
              YEAR == 2001
              )
+    
+    lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")  
 
       plot_ly(x=dummyData$HEALTH_BOUND_NAME,
               y=dummyData[[rateInput_d()]],
               source = "disease_graph_bar",
               type = 'bar',
+              error_y=list(
+                type = "data",
+                symmetric = FALSE,
+                arrayminus =dummyData[[rateInput_d()]]- dummyData[[lower]],
+                array = dummyData[[upper]]- dummyData[[rateInput_d()]],
+                color = '#000000',
+                width = 10),
               marker = list(color = HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]),
               # hovertemplate = paste('<b>Health Region</b>: %{x}',
               #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
