@@ -552,7 +552,7 @@ server <- function(input, output,session) {
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
       "<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
-      paste0(input$dataset_d,":"), round(dummy_spdf@data[[rateInput_d()]],2),
+      paste0(input$dataset_d,":"), format(round(dummy_spdf@data[[rateInput_d()]],1),1),
       sep="") |>
       lapply(htmltools::HTML)
     
@@ -600,12 +600,12 @@ server <- function(input, output,session) {
     if(input$health_bound_d == "Health Authorities"){
       current_map_spdf@data$text <- paste0(
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",paste0(input$dataset_d,":"),"</b>", round(current_map_spdf@data[[rateInput_d()]],1))
+        "<b>",input$dataset_d,": ","</b>",format(round(current_map_spdf@data[[rateInput_d()]],1),1))
     }else{
       current_map_spdf@data$text <- paste0(
         "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",paste0(input$dataset_d,":"),"</b>", round(current_map_spdf@data[[rateInput_d()]],1))
+        "<b>",input$dataset_d,": ","</b>", format(round(current_map_spdf@data[[rateInput_d()]],1),1))
   }
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
