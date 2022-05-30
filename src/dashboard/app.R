@@ -390,6 +390,7 @@ server <- function(input, output,session) {
               )%>%
       layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
                         title = paste0(input$dataset_d," Per 1000"),
+                        gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black'),
              xaxis = list(title = list(text = 'Health Region', standoff = 15),
                           categoryorder = "category ascending",
@@ -447,11 +448,14 @@ server <- function(input, output,session) {
                         list(
                           autosize = F,
                           yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
-                                     title = paste0(input$dataset_d," Per 1000")),
+                                     title = paste0(input$dataset_d," Per 1000"),
+                                     gridcolor = "#d9dadb",
+                                     showline= T, linewidth=1, linecolor='black'),
                           xaxis=list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 15),
                                      categoryorder = "category ascending",
-                                     automargin = TRUE),
+                                     automargin = TRUE,
+                                     showline= T, linewidth=1, linecolor='black'),
                           title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " in ", input$year_d,"</b>"),
                                        font = list(size = 14))
                         ))
@@ -548,7 +552,7 @@ server <- function(input, output,session) {
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
       "<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
-      paste0(input$dataset_d,":"), dummy_spdf@data[[rateInput_d()]],
+      paste0(input$dataset_d,":"), round(dummy_spdf@data[[rateInput_d()]],2),
       sep="") |>
       lapply(htmltools::HTML)
     
@@ -596,15 +600,15 @@ server <- function(input, output,session) {
     if(input$health_bound_d == "Health Authorities"){
       current_map_spdf@data$text <- paste0(
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",paste0(input$dataset_d,":"),"</b>", current_map_spdf@data[[rateInput_d()]])
+        "<b>",paste0(input$dataset_d,":"),"</b>", round(current_map_spdf@data[[rateInput_d()]],1))
     }else{
       current_map_spdf@data$text <- paste0(
         "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",paste0(input$dataset_d,":"),"</b>", current_map_spdf@data[[rateInput_d()]]) 
+        "<b>",paste0(input$dataset_d,":"),"</b>", round(current_map_spdf@data[[rateInput_d()]],1))
   }
 
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,0.1)
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#d9dadb")
 
