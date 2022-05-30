@@ -389,12 +389,16 @@ server <- function(input, output,session) {
               hoverinfo="skip"
               )%>%
       layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
-                        title = paste0(input$dataset_d," Per 1000")),
-             xaxis = list(title = 'Health Region',
-                          categoryorder = "category ascending"),
-             title = paste0(input$dataset_d," of ",input$disease_d, " in 2001"),
+                        title = paste0(input$dataset_d," Per 1000"),
+                        showline= T, linewidth=1, linecolor='black'),
+             xaxis = list(title = list(text = 'Health Region', standoff = 15),
+                          categoryorder = "category ascending",
+                          showline= T, linewidth=1, linecolor='black'),
+             title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " in 2001 </b>"),
+                          font = list(size = 14)),
              barmode = "overlay",
              margin = list(t = 50)
+             # plot_bgcolor= '#d9dadb'
              # showlegend = FALSE
             ) %>%
       event_register('plotly_hover')
@@ -445,10 +449,11 @@ server <- function(input, output,session) {
                           yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
                                      title = paste0(input$dataset_d," Per 1000")),
                           xaxis=list(fixedrange = TRUE,
-                                     title = 'Health Region',
+                                     title = list(text = 'Health Region', standoff = 15),
                                      categoryorder = "category ascending",
                                      automargin = TRUE),
-                          title = paste0(input$dataset_d," of ",input$disease_d, " in ", input$year_d)
+                          title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " in ", input$year_d,"</b>"),
+                                       font = list(size = 14))
                         ))
     
   })
@@ -470,18 +475,24 @@ server <- function(input, output,session) {
       line = list(width=2),
       color = ~HEALTH_BOUND_NAME,
       colors = setNames(HA_colours$Colors,HA_colours$Regions),
-      hovertemplate = paste('<b>Health Region</b>: %{line}',
+      hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
                             '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                             '<br><b>Year</b>: %{x}',
                             '<extra></extra>'
                             )
     )%>%
-      layout(yaxis=list(title = paste0(input$dataset_d," Per 1000")),
-             xaxis = list(title = 'Year'),
+      layout(yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                        gridcolor = "#d9dadb",
+                        showline= T, linewidth=1, linecolor='black'),
+             xaxis = list(title = 'Year',
+                          gridcolor = "#d9dadb",
+                          showline= T, linewidth=1, linecolor='black'),
              title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " Over Time </b>"),
                           font = list(size = 14)),
              margin = list(t = 50),
-             legend=list(title=list(text='<b> Health Region </b>'))
+             legend=list(title=list(text='Health Region'))
+             # plot_bgcolor= '#d9dadb'
+             # hovermode = "x unified"
              # showlegend = FALSE
       ) %>%
       event_register('plotly_hover')
