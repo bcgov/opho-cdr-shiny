@@ -466,17 +466,22 @@ server <- function(input, output,session) {
       y=d[[rateInput_d()]],
       source = "disease_graph_line",
       type = "scatter",
-      mode="line",
+      mode="lines",
       line = list(width=2),
       color = ~HEALTH_BOUND_NAME,
-      colors = setNames(HA_colours$Colors,HA_colours$Regions)
+      colors = setNames(HA_colours$Colors,HA_colours$Regions),
+      hovertemplate = paste('<b>Health Region</b>: %{line}',
+                            '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                            '<br><b>Year</b>: %{x}',
+                            '<extra></extra>'
+                            )
     )%>%
-      layout(yaxis=list(
-                        # range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
-                        title = paste0(input$dataset_d," Per 1000")),
+      layout(yaxis=list(title = paste0(input$dataset_d," Per 1000")),
              xaxis = list(title = 'Year'),
-             title = paste0(input$dataset_d," of ",input$disease_d, " Over Time"),
-             margin = list(t = 50)
+             title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " Over Time </b>"),
+                          font = list(size = 14)),
+             margin = list(t = 50),
+             legend=list(title=list(text='<b> Health Region </b>'))
              # showlegend = FALSE
       ) %>%
       event_register('plotly_hover')
