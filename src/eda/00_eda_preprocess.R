@@ -5,7 +5,7 @@
 for each of the HSC Prevalence, IncidenceRate, and LifePrevalence data folders.
 Used to create files for modeling EDA.
 
-Usage: src/eda/01_eda_preprocess.R --input=<input> --out_dir=<out_dir>
+Usage: src/eda/00_eda_preprocess.R --input=<input> --out_dir=<out_dir>
 
 Options:
 --input=<input>       Path to data directory
