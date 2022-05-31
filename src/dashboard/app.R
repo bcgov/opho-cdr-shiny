@@ -362,6 +362,11 @@ server <- function(input, output,session) {
       )
   })
   
+  error <- reactiveValues(
+    lower = NULL,
+    upper = NULL
+  )
+  
   # Render bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
     
@@ -375,19 +380,19 @@ server <- function(input, output,session) {
       filter(HEALTH_BOUND_NAME %in% input$region_d,
              YEAR == 2001
              )
-    
-    lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")  
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
-      plot_ly(x=dummyData$HEALTH_BOUND_NAME,
+      plot_ly(data=dummyData,
+              x=dummyData$HEALTH_BOUND_NAME,
               y=dummyData[[rateInput_d()]],
               source = "disease_graph_bar",
               type = 'bar',
               error_y=list(
                 type = "data",
                 symmetric = FALSE,
-                arrayminus =dummyData[[rateInput_d()]]- dummyData[[lower]],
-                array = dummyData[[upper]]- dummyData[[rateInput_d()]],
+                arrayminus =dummyData[[rateInput_d()]]- dummyData[[error$lower]],
+                array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
                 color = '#000000',
                 width = 10),
               marker = list(color = HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]),
@@ -445,6 +450,9 @@ server <- function(input, output,session) {
       filter((YEAR == input$year_d)&
                ((HEALTH_BOUND_NAME %in% input$region_d)))
     
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95") 
+    
     p <- plotlyProxy("disease_graph_bar", session)
     
     p %>%
@@ -452,6 +460,13 @@ server <- function(input, output,session) {
                         list(
                           x = list(newdata$HEALTH_BOUND_NAME),
                           y= list(newdata[[rateInput_d()]]),
+                          error_y=list(
+                            type = "data",
+                            symmetric = FALSE,
+                            arrayminus =newdata[[rateInput_d()]]- newdata[[error$lower]],
+                            array = newdata[[error$upper]]- newdata[[rateInput_d()]],
+                            color = '#000000',
+                            width = 10),
                           marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
                         ))|>
       plotlyProxyInvoke("relayout",
@@ -717,6 +732,9 @@ server <- function(input, output,session) {
   ## Link highlighting when hovering on bar graph
   observe({
       event <- event_data("plotly_hover",source = "disease_graph_bar")
+      error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+      error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+      bar_data<- filter(filter_df_d(),YEAR == input$year_d)
       ppl <-plotlyProxy("disease_graph_line", session)
       ppb <- plotlyProxy("disease_graph_bar", session)
       lp <- leafletProxy("map",session)
@@ -748,15 +766,23 @@ server <- function(input, output,session) {
               x=list(event[["x"]]),
               y=list(event[["y"]]),
               type='bar',
+              error_y=list(
+                type = "data",
+                symmetric = FALSE,
+                arrayminus = list(event[["y"]]- bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]),
+                array = list(bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]- event[["y"]]),
+                color = '#000000',
+                width = 10),
               marker = list(opacity = 1,
                             color = HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]),
               hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
                                     '<b>Year</b>: ',input$year_d,
+                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
+                                    '<b>Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
+                                                                    bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)],')',
                                     '<extra></extra>')
             )
           )
-
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
@@ -774,6 +800,9 @@ server <- function(input, output,session) {
   ## Linked highlighting when hovering on line graph
   observe({
     event <- event_data("plotly_hover",source = "disease_graph_line")
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+    bar_data<- filter(filter_df_d(),YEAR == input$year_d)
     ppl <-plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
     lp <- leafletProxy("map",session)
@@ -804,7 +833,14 @@ server <- function(input, output,session) {
           method = "addTraces",
           list(
             x=list(event[["key"]]),
-            y=list(filter(filter_df_d(),YEAR == input$year_d)[[rateInput_d()]][match(event[["key"]],filter(filter_df_d(),YEAR == input$year_d)$HEALTH_BOUND_NAME)]),
+            y=list(bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
+            error_y=list(
+              type = "data",
+              symmetric = FALSE,
+              arrayminus = list(y- bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]),
+              array = list(bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]- y),
+              color = '#000000',
+              width = 10),
             type='bar',
             marker = list(opacity = 1,
                           color = HA_colours$Colors[match(event[["key"]],HA_colours$Regions)])
