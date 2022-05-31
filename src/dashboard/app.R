@@ -52,13 +52,13 @@ ui <- fluidPage(
                  ),
         tabPanel("Rate Types",
                  p(HTML("<u><h2>Rate Types</h2></u></br>")),
-                  p(HTML(rate_info))
+                 p(HTML(rate_info))
                  ),
         tabPanel("Diseases",
                  position = c("fixed-top"),
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
-                 p(HTML(disease_info
-                 )))),
+                 p(HTML(disease_info))
+                 )),
       
       ################################
       # "By Disease" Tab UI Side Logic
@@ -221,8 +221,8 @@ ui <- fluidPage(
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
                    dataTableOutput("data_table"))
-               ))
-               
+               )),
+      # position = "fixed-top"          
   )
 )
 
