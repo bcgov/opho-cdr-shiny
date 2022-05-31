@@ -1,7 +1,7 @@
 ---
 title: "BC Chronic Disease: Temporal Model Plots"
 output: html_document
-date: '2022-05-25'
+date: '2022-05-31'
 runtime: shiny
 ---
 
@@ -17,9 +17,9 @@ library(here)
 ```
 
 
-```{r Load Data, message=FALSE}
+```{r Load Data and Functions, message=FALSE}
 #' Read and concatenate all csv files in a folder
-#' 
+#'
 #' @param path to folder containing csv files
 #' @return dataframe with concatenated data
 load_files <- function(path) {
@@ -33,7 +33,7 @@ load_files <- function(path) {
 }
 
 #' Wrangle original dataset to add numeric year column
-#' 
+#'
 #' @param dataframe with original data
 #' @return dataframe with year column
 wrangle_orig_df <- function(data) {
@@ -41,53 +41,20 @@ wrangle_orig_df <- function(data) {
     mutate(YEAR = as.numeric(substr(FISC_YR_LABEL, 4, 7)))
 }
 
-# Load model data
-hsc_prev_df <- load_files("results/model/HSCPrevalence")
-inc_rate_df <- load_files("results/model/IncidenceRate")
-life_prev_df <- load_files("results/model/LifePrevalence")
-
-# Load original data set for 95% confidence interval comparison
-orig_hsc_prev_df <- load_files("General/Data_T_CHSA/HSCPrevalence") |>
-  wrangle_orig_df()
-orig_inc_rate_df <- load_files("General/Data_T_CHSA/IncidenceRate") |>
-  wrangle_orig_df()
-orig_life_prev_df <- load_files("General/Data_T_CHSA/LifePrevalence") |>
-  wrangle_orig_df()
-```
-
-## Age-Standardized HSC Prevalance Rate
-
-```{r HSC Prev Rate Plot}
-# Input -----------------------------------------------------------------------
-inputPanel(
-  selectInput("region",
-    label = "CHSA",
-    choices = sort(unique(hsc_prev_df$HEALTH_BOUNDARIES)),
-    selected = "1110 Fernie"
-  ),
-  selectInput("disease",
-    label = "Disease",
-    choices = unique(hsc_prev_df$DISEASE),
-    selected = "AMI_EPI"
-  )
-)
-
-# Reactive Elements -----------------------------------------------------------
-hsc_selected_data <- reactive({
-  hsc_prev_df |>
-    dplyr::filter(HEALTH_BOUNDARIES == input$region & DISEASE == input$disease)
-})
-
-orig_hsc_selected_data <- reactive({
-  orig_hsc_prev_df |>
-    dplyr::filter(HEALTH_BOUNDARIES == input$region & DISEASE == input$disease)
-})
-
-# Output -----------------------------------------------------------------------
-renderPlot({
-  hsc_selected_data() |>
+#' Create line plot with smoothing model with original point 
+#' observations and confidence intervals
+#' 
+#' @param model_data dataframe with fitted model results
+#' @param orig_data dataframe with original data
+#' @param title y_title title for y-axis (character)
+#' @param input_disease name of disease for plot title (character)
+#' @param input_region name of region for plot title (character)
+#' @return ggplot object
+line_plot <- function(model_data, orig_data, y_title, input_disease, input_region) {
+  model_data |>
     ggplot(aes(x = year, y = y_fitted)) +
-    geom_ribbon(data = orig_hsc_selected_data(),
+    geom_ribbon(
+      data = orig_data,
       aes(x = YEAR, y = STD_RATE_PER_1000, ymin = STD_LCL_95, ymax = STD_UCL_95),
       alpha = 0.2,
       fill = "lightblue"
@@ -100,12 +67,63 @@ renderPlot({
     ) +
     geom_line(aes(x = year, y = y_fitted), linetype = 2) +
     labs(
-      x = "Year", y = "Age Standardized HSC Prevalence Rate (per 1000)",
-      title = paste(input$disease, "in", input$region)
+      x = "Year", y = y_title,
+      title = paste(input_disease, "in", input_region)
     ) +
-    theme_grey(base_size = 14) + 
+    theme_grey(base_size = 14) +
     theme(panel.grid.minor = element_blank()) +
-    scale_x_continuous(n.breaks = 20)
+    scale_x_continuous(n.breaks = 20) +
+    expand_limits(y = 0)
+}
+
+# Load model data
+hsc_prev_df <- load_files(here("results", "model", "HSCPrevalence"))
+inc_rate_df <- load_files(here("results", "model", "IncidenceRate"))
+life_prev_df <- load_files(here("results", "model", "LifePrevalence"))
+
+# Load original data set for 95% confidence interval comparison
+orig_hsc_prev_df <- load_files(here("General", "Data_T_CHSA", "HSCPrevalence")) |>
+  wrangle_orig_df()
+orig_inc_rate_df <- load_files(here("General", "Data_T_CHSA", "IncidenceRate")) |>
+  wrangle_orig_df()
+orig_life_prev_df <- load_files(here("General", "Data_T_CHSA", "LifePrevalence")) |>
+  wrangle_orig_df()
+```
+
+## Age-Standardized HSC Prevalence Rate
+
+```{r HSC Prev Rate Plot}
+# Input -----------------------------------------------------------------------
+inputPanel(
+  selectInput("hsc_region",
+    label = "CHSA",
+    choices = sort(unique(hsc_prev_df$HEALTH_BOUNDARIES)),
+    selected = "1110 Fernie"
+  ),
+  selectInput("hsc_disease",
+    label = "Disease",
+    choices = unique(hsc_prev_df$DISEASE),
+    selected = "AMI_EPI"
+  )
+)
+
+# Reactive Elements -----------------------------------------------------------
+hsc_selected_data <- reactive({
+  hsc_prev_df |>
+    dplyr::filter(HEALTH_BOUNDARIES == input$hsc_region & DISEASE == input$hsc_disease)
+})
+
+orig_hsc_selected_data <- reactive({
+  orig_hsc_prev_df |>
+    dplyr::filter(HEALTH_BOUNDARIES == input$hsc_region & DISEASE == input$hsc_disease)
+})
+
+# Output -----------------------------------------------------------------------
+renderPlot({
+  line_plot(hsc_selected_data(), orig_hsc_selected_data(),
+    y_title = "Age Standardized HSC Prevalence Rate (per 1000)",
+    input$hsc_disease, input$hsc_region
+  )
 })
 
 renderText({
@@ -144,27 +162,10 @@ orig_inc_selected_data <- reactive({
 
 # Output -----------------------------------------------------------------------
 renderPlot({
-  inc_selected_data() |>
-    ggplot(aes(x = year, y = y_fitted)) +
-    geom_ribbon(data = orig_inc_selected_data(),
-      aes(x = YEAR, y = STD_RATE_PER_1000, ymin = STD_LCL_95, ymax = STD_UCL_95),
-      alpha = 0.2,
-      fill = "lightblue"
-    ) +
-    geom_point(aes(y = y_obs)) +
-    geom_line() +
-    geom_ribbon(
-      aes(ymin = ci_95_ll, ymax = ci_95_ul),
-      alpha = 0.2
-    ) +
-    geom_line(aes(x = year, y = y_fitted), linetype = 2) +
-    labs(
-      x = "Year", y = "Age Standardized Incidence Rate (per 1000)",
-      title = paste(input$inc_disease, "in", input$inc_region)
-    ) +
-    theme_grey(base_size = 14) + 
-    theme(panel.grid.minor = element_blank()) +
-    scale_x_continuous(n.breaks = 20)
+  line_plot(inc_selected_data(), orig_inc_selected_data(),
+    y_title = "Age Standardized Incidence Rate (per 1000)",
+    input$inc_disease, input$inc_region
+  )
 })
 
 renderText({
@@ -202,27 +203,10 @@ orig_life_selected_data <- reactive({
 
 # Output -----------------------------------------------------------------------
 renderPlot({
-  life_selected_data() |>
-    ggplot(aes(x = year, y = y_fitted)) +
-    geom_ribbon(data = orig_life_selected_data(),
-      aes(x = YEAR, y = STD_RATE_PER_1000, ymin = STD_LCL_95, ymax = STD_UCL_95),
-      alpha = 0.2,
-      fill = "lightblue"
-    ) +
-    geom_point(aes(y = y_obs)) +
-    geom_line() +
-    geom_ribbon(
-      aes(ymin = ci_95_ll, ymax = ci_95_ul),
-      alpha = 0.2
-    ) +
-    geom_line(aes(x = year, y = y_fitted), linetype = 2) +
-    labs(
-      x = "Year", y = "Age Standardized Incidence Rate (per 1000)",
-      title = paste(input$life_disease, "in", input$life_region)
-    ) +
-    theme_grey(base_size = 14) +
-    theme(panel.grid.minor = element_blank()) +
-    scale_x_continuous(n.breaks = 20)
+  line_plot(life_selected_data(), orig_life_selected_data(),
+    y_title = "Age Standardized Life Prevalence Rate (per 1000)",
+    input$life_disease, input$life_region
+  )
 })
 
 renderText({
