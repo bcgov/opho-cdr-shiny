@@ -561,14 +561,24 @@ server <- function(input, output,session) {
     
     dummy_spdf <- data.table::copy(spdf_d())
     
-    dummy_spdf@data <- spdf_d()@data|>
-      mutate(CRUDE_RATE_PER_1000=dummyData$CRUDE_RATE_PER_1000[match(
-                if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
-                dummyData$HEALTH_BOUND_NAME)],
-             STD_RATE_PER_1000= dummyData$STD_RATE_PER_1000[match(
-                if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
-                dummyData$HEALTH_BOUND_NAME)]
-             )
+    # dummy_spdf@data <- spdf_d()@data|>
+    #   mutate(CRUDE_RATE_PER_1000=dummyData$CRUDE_RATE_PER_1000[match(
+    #             if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
+    #             dummyData$HEALTH_BOUND_NAME)],
+    #          STD_RATE_PER_1000= dummyData$STD_RATE_PER_1000[match(
+    #             if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
+    #             dummyData$HEALTH_BOUND_NAME)]
+    #          )
+    
+    if(input$health_bound_d == "Health Authorities"){
+      dummy_spdf@data <- spdf_d()@data|>
+          left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
+    }else{
+      dummy_spdf@data <- spdf_d()@data|>
+        left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
+    }
+    
+    
     
     legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
@@ -611,26 +621,39 @@ server <- function(input, output,session) {
   observe({
   
     year_filtered_map_df <- filter(filter_df_d(),YEAR == input$year_d)
+    
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
     current_map_spdf <- data.table::copy(spdf_d())
 
-    current_map_spdf@data <- spdf_d()@data|>
-      mutate(CRUDE_RATE_PER_1000= year_filtered_map_df$CRUDE_RATE_PER_1000[match(
-                spdf_d()@data[[if(input$health_bound_d == "Health Authorities") "HA_Name" else "CHSA_Name"]],
-                 year_filtered_map_df$HEALTH_BOUND_NAME)],
-             STD_RATE_PER_1000= year_filtered_map_df$STD_RATE_PER_1000[match(
-                 if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
-                 year_filtered_map_df$HEALTH_BOUND_NAME)])
+    # current_map_spdf@data <- spdf_d()@data|>
+    #   mutate(CRUDE_RATE_PER_1000= year_filtered_map_df$CRUDE_RATE_PER_1000[match(
+    #             spdf_d()@data[[if(input$health_bound_d == "Health Authorities") "HA_Name" else "CHSA_Name"]],
+    #              year_filtered_map_df$HEALTH_BOUND_NAME)],
+    #          STD_RATE_PER_1000= year_filtered_map_df$STD_RATE_PER_1000[match(
+    #              if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
+    #              year_filtered_map_df$HEALTH_BOUND_NAME)])
+    
+    if(input$health_bound_d == "Health Authorities"){
+      current_map_spdf@data <- spdf_d()@data|>
+        left_join(year_filtered_map_df,by=c("HA_Name"="HEALTH_BOUND_NAME"))
+    }else{
+      current_map_spdf@data <- spdf_d()@data|>
+        left_join(year_filtered_map_df,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
+    }
 
     if(input$health_bound_d == "Health Authorities"){
       current_map_spdf@data$text <- paste0(
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>",format(round(current_map_spdf@data[[rateInput_d()]],1),1))
+        "<b>",input$dataset_d,": ","</b>",format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
+        "<b>Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
     }else{
       current_map_spdf@data$text <- paste0(
         "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>", format(round(current_map_spdf@data[[rateInput_d()]],1),1))
+        "<b>",input$dataset_d,": ","</b>", format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
+        "<b>Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
   }
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
