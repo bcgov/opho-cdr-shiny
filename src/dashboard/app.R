@@ -36,12 +36,13 @@ ui <- fluidPage(
   leafletjs,
   
   navbarPage("BC Chronic Disease Dashboard",
-             
+             position = "fixed-top", 
       ################################
       # Information Tab UI Side Logic
       ################################
       navbarMenu("Information",
         tabPanel("About", 
+                 div(id="body",
                  p(HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")),
                  h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
                  h6("UBC Master of Data Science Capstone Project"),
@@ -49,26 +50,30 @@ ui <- fluidPage(
                  hr(),
                  helpText(HTML("For internal use only. Do not distribute.<br/>
                                For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
-                 ),
+                 )),
         tabPanel("Rate Types",
+                 div(id="body",
                  p(HTML("<u><h2>Rate Types</h2></u></br>")),
                  p(HTML(rate_info))
-                 ),
+                 )),
         tabPanel("Diseases",
+                 div(id="body",
                  position = c("fixed-top"),
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
                  p(HTML(disease_info))
-                 ),
+                 )),
         tabPanel("Data Dictionary",
+                 div(id="body",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
                  p(HTML(""))
-        ),
+                )),
         ),
       
       ################################
       # "By Disease" Tab UI Side Logic
       ################################
       tabPanel("By Disease",
+               div(id="body",
                sidebarLayout(
                  sidebarPanel(
                    id="filters_d",
@@ -121,14 +126,14 @@ ui <- fluidPage(
                           br(),br(),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           )))
-               )),
+               ))),
       
       ################################
       # "By Region" Tab UI Side Logic
       ################################
       tabPanel("By Region",
+               div(id="body",
                sidebarLayout(
-                 
                  sidebarPanel(
                    width = 3,
                    h2("Filters"),
@@ -179,14 +184,14 @@ ui <- fluidPage(
                      "region_tab_bar_chart"
                    )), column(4, leafletOutput("region_tab_map"))))
                  
-               )), 
+               ))), 
       
       ################################
       # Download Data Tab UI Side Logic
       ################################
       tabPanel("Data",
+               div(id="body",
                sidebarLayout(
-                 
                  #Filters
                  sidebarPanel(
                    id="filters_data",
@@ -226,8 +231,8 @@ ui <- fluidPage(
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
                    dataTableOutput("data_table"))
-               )),
-      # position = "fixed-top"          
+               )))
+     
   )
 )
 

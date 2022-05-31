@@ -108,9 +108,9 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                 PharmaNet (PNET), and  Client Roster (CR). Using the BCCDR data, it is possible 
                 to estimate the incidence and lifetime prevalence 
                 of 25 chronic conditions in BC, as well as active healthcare contact 
-                prevalence for 11 relapsing-remitting diseases (marked with a star in the list below):
-                <br/>
-                <b>Chronic Respiratory Diseases</b><br/>
+                prevalence for 11 relapsing-remitting diseases (marked with a star in the list below):<br/><br/>
+                
+                <b>Chronic Respiratory Diseases</b> <br/>
                 <p style='margin-left: 40px'> 
                       Asthma*<br/>
                       Chronic obstructive pulmonary disease<br/>
