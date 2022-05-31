@@ -36,7 +36,7 @@ ui <- fluidPage(
   leafletjs,
   
   navbarPage("BC Chronic Disease Dashboard",
-      
+             
       ################################
       # Information Tab UI Side Logic
       ################################
@@ -55,6 +55,8 @@ ui <- fluidPage(
                   p(HTML(rate_info))
                  ),
         tabPanel("Diseases",
+                 position = c("fixed-top"),
+                 p(HTML("<u><h2>Diseases</h2></u></br>")),
                  p(HTML(disease_info
                  )))),
       

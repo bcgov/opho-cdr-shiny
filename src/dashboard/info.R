@@ -105,9 +105,8 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                 of the Provincial Health Officer (OPHO) with new registries being brought on over time. 
                 The Chronic Disease Registries draws on data from several administrative data sources, 
                 including Medical Services Plan (MSP), Discharge Abstract Databases (DAD), 
-                PharmaNet (PNET), and  Client Roster (CR). 
-                <br/>
-                Using the CDR data, it is possible to estimate the incidence and lifetime prevalence 
+                PharmaNet (PNET), and  Client Roster (CR). Using the BCCDR data, it is possible 
+                to estimate the incidence and lifetime prevalence 
                 of 25 chronic conditions in BC, as well as active healthcare contact 
                 prevalence for 11 relapsing-remitting diseases (marked with a star in the list below):
                 <br/>
