@@ -658,6 +658,9 @@ server <- function(input, output,session) {
   observeEvent(input$map_shape_mouseover,{
     rv_shape(TRUE)
     event_info <- input$map_shape_mouseover
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+    bar_data<- filter(filter_df_d(),YEAR == input$year_d)
     ppl <-  plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
     rv_location$id <- event_info$id
@@ -687,7 +690,14 @@ server <- function(input, output,session) {
           method = "addTraces",
           list(
             x=list(event_info$id),
-            y=list(filter(filter_df_d(),YEAR == input$year_d)[[rateInput_d()]][match(event_info$id,filter(filter_df_d(),YEAR == input$year_d)$HEALTH_BOUND_NAME)]),
+            y=list(bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
+            error_y=list(
+              type = "data",
+              symmetric = FALSE,
+              arrayminus = list(bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
+              array = list(bar_data[[error$upper]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
+              color = '#000000',
+              width = 10),
             type='bar',
             marker = list(opacity = 1,
                           color = HA_colours$Colors[match(event_info$id,HA_colours$Regions)])
@@ -837,15 +847,14 @@ server <- function(input, output,session) {
             error_y=list(
               type = "data",
               symmetric = FALSE,
-              arrayminus = list(y- bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]),
-              array = list(bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]- y),
+              arrayminus = list(bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
+              array = list(bar_data[[error$upper]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
               color = '#000000',
               width = 10),
             type='bar',
             marker = list(opacity = 1,
                           color = HA_colours$Colors[match(event[["key"]],HA_colours$Regions)])
           ))
-      
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
