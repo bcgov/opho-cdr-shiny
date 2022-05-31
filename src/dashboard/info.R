@@ -1,5 +1,5 @@
 
-about<-"<br/><br/>
+about_info<-"<br/><br/>
   This dashboard facilitates the exploration and visualization of spatial and temporal
   trends of 25 different chronic diseases across the Province of British Columbia. The data 
   is sourced from the BC Chronic Disease Registry (BCCDR). Data is available for three different rate types, 
@@ -44,7 +44,8 @@ about<-"<br/><br/>
 "
 
 
-rates<-"Three different rate types are available. The definitions of each are as follows:
+rate_info<-"Three different rate types are available. The definitions of each are as follows. Note for each definition,
+        the value of n depends on whether the disease is rare or not and is typically set to 2 or 3 in the BCCDR.
        <ul>
          <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
          specified population during a specified time period. 
@@ -59,7 +60,13 @@ rates<-"Three different rate types are available. The definitions of each are as
          who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
          a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
          carried forward to count as a case every year thereafter until the person's death, their migration out of BC,
-         or the absence of follow-up. 
+         or the absence of follow-up. Lifetime prevalence is helpful for determining the prevalence of life-long chronic diseases, 
+         but less so for determining the prevalence of relapsing-remitting conditions 
+         (e.g., mood disorders, substance use problem, etc.). For BCCDR reporting, lifetime prevalence is calculated 
+         for both life-long conditions (e.g., diabetes) and relapsing-remitting conditions (e.g., anxiety and depressive disorders).
+         Users should note that lifetime prevalence proportions for those relapsing-remitting conditions are high and do not
+         represent the current burden of such conditions in the province. Caution is also needed when comparing to other 
+         reports where the proportions of a population with active symptoms or treatments for these conditions. 
          <br/><br/>
          <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
          in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
@@ -68,24 +75,87 @@ rates<-"Three different rate types are available. The definitions of each are as
          for a disease, continued to live and receive healthcare services for the disease again in BC during a
          later reporting period. That is, cases are counted for a reporting period if the patient seek healthcare 
          services for relapsing-remitting conditions again after the fiscal year when they were ascertained as a case. 
+         This prevalence measure is useful for describing the existing burden of service utilization directly 
+         related to relapsing-remitting diseases. 
          <br/><br/>
          <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
          healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
          </p></li>
        </ul>
-       <br/><br/>
-      Each of the rates is available as either a crude rate or age-standardized rate. The defintions of these two types are as follows:
+       <br/>
+      Each of the above rates is available as either a crude rate or age-standardized rate. 
+      The defintions of these two types are as follows:<br/><br/>
        <ul>
         <li><b>Age-Standardized</b>:
         To account for differences in the age structure of different geographical regions, rates are calculated 
         as if all regions shared the same age structure, that of the 2011 Canadian Census. Age-standardized rates 
         are appropriate for comparing regions or trends over time. They are not a good representation of the 
         burden of disease in the population.</li>
+        <br/><br/>
         <li><b>Crude</b>:
         These rates are not adjusted to the standard population, and represent the number of cases in a
         specific geographic region divided by the population/population-at-risk in that region. 
         Crude rates are representative of the burden of disease in the population.
         </li>
        </ul>
-       
     "
+
+
+disease_info <- "The BCCDR includes 25 chronic disease registries built and maintained by the Office 
+                of the Provincial Health Officer (OPHO) with new registries being brought on over time. 
+                The Chronic Disease Registries draws on data from several administrative data sources, 
+                including Medical Services Plan (MSP), Discharge Abstract Databases (DAD), 
+                PharmaNet (PNET), and  Client Roster (CR). 
+                <br/>
+                Using the CDR data, it is possible to estimate the incidence and lifetime prevalence 
+                of 25 chronic conditions in BC, as well as active healthcare contact 
+                prevalence for 11 relapsing-remitting diseases (marked with a star in the list below):
+                <br/>
+                <b>Chronic Respiratory Diseases</b><br/>
+                <p style='margin-left: 40px'> 
+                      Asthma*<br/>
+                      Chronic obstructive pulmonary disease<br/>
+                </p>                              
+                <b>Cardiovascular Diseases </b>  <br/> 
+                <p style='margin-left: 40px'> 
+                      Acute myocardial infarction*<br/>
+                      Heart failure <br/>
+                      Ischemic heart disease <br/>
+                      Stroke* <br/>
+                            Haemorrhagic stroke* <br/>
+                            Ischemic stroke* <br/>
+                            Transient ischemic attack* <br/>
+                </p>
+                <b>Neurological Disorders </b><br/> 
+                <p style='margin-left: 40px'> 
+                      Alzheimer's and other dementias <br/> 
+                      Epilepsy <br/> 
+                      Multiple sclerosis <br/> 
+                      Parkinson's disease <br/> 
+                </p>
+                <b>Mental and Substance Use Disorders</b><br/> 
+                 <p style='margin-left: 40px'> 
+                      Depressive disorders*<br/> 
+                      Anxiety and mood disorders*<br/> 
+                      Schizophrenia & delusional disorders*<br/> 
+                      Substance use disorders*<br/> 
+                </p>
+                <b>Musculoskeletal Disorders</b><br/> 
+                <p style='margin-left: 40px'>
+                      Gout*<br/> 
+                      Osteoarthritis<br/> 
+                      Osteoporosis<br/> 
+                      Rheumatoid arthritis<br/> 
+                      Juvenile idiopathic arthritis<br/> 
+                </p>
+                <b>Diabetes and Kidney Diseases </b>    
+                <p style='margin-left: 40px'>
+                      Diabetes mellitus<br/>
+                      Chronic kidney disease<br/>
+                      Hypertensive Diseases <br/>     
+                      High blood pressure (hypertension)<br/>
+                </p>
+                
+                For more information on these diseases, see here.
+
+"

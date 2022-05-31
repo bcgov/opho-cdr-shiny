@@ -45,17 +45,17 @@ ui <- fluidPage(
                  p(HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")),
                  h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
                  h6("UBC Master of Data Science Capstone Project"),
-                 p(HTML(about)),
+                 p(HTML(about_info)),
                  hr(),
                  helpText(HTML("For internal use only. Do not distribute.<br/>
                                For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
                  ),
         tabPanel("Rate Types",
-                 p(HTML("<u><h2>Rate Types</h2></u>")),
-                  p(HTML(rates))
+                 p(HTML("<u><h2>Rate Types</h2></u></br>")),
+                  p(HTML(rate_info))
                  ),
         tabPanel("Diseases",
-                 p(HTML(""
+                 p(HTML(disease_info
                  )))),
       
       ################################
