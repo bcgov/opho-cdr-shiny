@@ -82,11 +82,11 @@ inc_rate_df <- load_files(here("results", "model", "IncidenceRate"))
 life_prev_df <- load_files(here("results", "model", "LifePrevalence"))
 
 # Load original data set for 95% confidence interval comparison
-orig_hsc_prev_df <- load_files(here("General", "Data_T_CHSA", "HSCPrevalence")) |>
+orig_hsc_prev_df <- load_files(here("data", "Data_T_CHSA", "HSCPrevalence")) |>
   wrangle_orig_df()
-orig_inc_rate_df <- load_files(here("General", "Data_T_CHSA", "IncidenceRate")) |>
+orig_inc_rate_df <- load_files(here("data", "Data_T_CHSA", "IncidenceRate")) |>
   wrangle_orig_df()
-orig_life_prev_df <- load_files(here("General", "Data_T_CHSA", "LifePrevalence")) |>
+orig_life_prev_df <- load_files(here("data", "Data_T_CHSA", "LifePrevalence")) |>
   wrangle_orig_df()
 ```
 
@@ -172,6 +172,7 @@ renderText({
   paste("The selected model was:", inc_selected_data()$model[1])
 })
 ```
+Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
 
 ## Age-Standardized Life Prevalence Rate
 
@@ -213,3 +214,4 @@ renderText({
   paste("The selected model was:", life_selected_data()$model[1])
 })
 ```
+Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
