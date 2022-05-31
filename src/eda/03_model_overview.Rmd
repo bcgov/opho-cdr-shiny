@@ -1,6 +1,6 @@
 ---
 title: "BC Chronic Disease - Overview of Temporal Models Fit with INLA"
-date: "2022-05-30"
+date: "2022-05-31"
 output:
   html_document:
     df_print: paged
@@ -38,45 +38,17 @@ life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"),
 )
 ```
 
-```{r Functions}
+```{r Tabulate Function}
 tabulate_models_fit <- function(data) {
-  diseases <- unique(data$DISEASE)
-  regions <- unique(data$HEALTH_BOUNDARIES)
-  model_table <- tibble(HEALTH_BOUNDARIES = character(),
-                        DISEASE = character(),
-                        MODEL_FIT = logical())
-
-  for (d in diseases) {
-    for (chsa in regions) {
-      disease_data <- data |>
-        filter(DISEASE == d & HEALTH_BOUNDARIES == chsa)
-      
-      if (anyNA(disease_data$STD_RATE_PER_1000)) {
-        model_table <- model_table |> add_row(
-          HEALTH_BOUNDARIES = chsa,
-          DISEASE = d,
-          MODEL_FIT = NA
-        )
-      } else if (any(disease_data$STD_RATE_PER_1000 == 0)) {
-        model_table <- model_table |> add_row(
-          HEALTH_BOUNDARIES = chsa,
-          DISEASE = d,
-          MODEL_FIT = 0
-        )
-      } else {
-        model_table <- model_table |> add_row(
-          HEALTH_BOUNDARIES = chsa,
-          DISEASE = d,
-          MODEL_FIT = 1
-        )
-      }
-    }
-  }
-  model_table
+  data |>
+    group_by(DISEASE, HEALTH_BOUNDARIES) |>
+    summarise(MODEL_FIT = case_when(
+      anyNA(STD_RATE_PER_1000) ~ NA_real_,
+      any(STD_RATE_PER_1000 == 0) ~ 0,
+      TRUE ~ 1
+    ))
 }
-```
 
-```{r}
 inc_models <- tabulate_models_fit(inc_rate_df)
 hsc_models <- tabulate_models_fit(hsc_prev_df)
 life_models <- tabulate_models_fit(life_prev_df)
@@ -88,6 +60,7 @@ Standardized incidence rate models were fit on `r round(4122 / (4122 + 778) * 10
 
 ```{r}
 kable(inc_models |>
+  ungroup() |>
   count(MODEL_FIT),
   caption = "Table 1. Summary of Age-Standardized Incidence Rate Models."
 )
@@ -115,6 +88,7 @@ Standardized HSC prevalence models were fit on `r round(1966 / (1966 + 190) * 10
 
 ```{r}
 kable(hsc_models |>
+  ungroup() |>
   count(MODEL_FIT),
   caption = "Table 3. Summary of Age-Standardized HSC Prevalence Rate Models."
 )
@@ -140,6 +114,7 @@ Standardized life prevalence models were fit on `r round(4812 / (4812 + 88) * 10
 ```{r}
 kable(
   life_models |>
+    ungroup() |>
     count(MODEL_FIT),
   caption = "Table 5. Summary of Age-Standardized Life Prevalence Rate Models."
 )
