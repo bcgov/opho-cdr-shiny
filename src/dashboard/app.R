@@ -34,8 +34,9 @@ ui <- fluidPage(
   includeCSS("www/mytheme.css"), 
   shinyjs::useShinyjs(),
   leafletjs,
+  list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
   
-  navbarPage("BC Chronic Disease Dashboard",
+  navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
              position = "fixed-top", 
       ################################
       # Information Tab UI Side Logic
@@ -194,7 +195,6 @@ ui <- fluidPage(
                sidebarLayout(
                  #Filters
                  sidebarPanel(
-                   style = "position:fixed;width:23%;",
                    id="filters_data",
                    width = 3,
                    h2("Filters"),
