@@ -44,10 +44,13 @@ main <- function(opt) {
   }
   
   # Write Data
+  if (!dir.exists(here(opt$out_dir))) {
+    dir.create(here(opt$out_dir), recursive = TRUE)
+  }
   write_csv(inc_rate_df, here(opt$out_dir, "incidence_rate_combined.csv"))
   write_csv(hsc_prev_df, here(opt$out_dir, "hsc_prevalence_combined.csv"))
   write_csv(life_prev_df, here(opt$out_dir, "life_prevalence_combined.csv"))
-  
+
   print(paste("Files output to:", opt$out_dir))
 }
 

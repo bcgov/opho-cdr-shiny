@@ -25,7 +25,7 @@ library(knitr)
 ```
 
 ```{r Load Data, message=FALSE}
-path <- here("General", "Data")
+path <- here("data", "processed")
 
 inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"),
   col_types = cols(CLNT_GENDER_LABEL = col_factor())
@@ -38,7 +38,7 @@ life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"),
 )
 ```
 
-```{r Tabulate Function}
+```{r Tabulate Function, message=FALSE}
 tabulate_models_fit <- function(data) {
   data |>
     group_by(DISEASE, HEALTH_BOUNDARIES) |>

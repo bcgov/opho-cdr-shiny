@@ -14,7 +14,7 @@ library(here)
 ```
 
 ```{r Load Data, include=FALSE}
-path <- here("General", "Data")
+path <- here("data", "processed")
 
 inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
 ```
