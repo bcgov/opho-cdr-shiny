@@ -13,6 +13,7 @@ library(plotly)
 library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
+library(bslib)
 
 
 ################################
@@ -24,18 +25,31 @@ source('global.R', local = T)
 source('info.R', local = T)
 options(spinner.color="#003366")
 
+theme_test <- bs_theme(
+  version = 5,
+  # bg = "#f2f2f2",
+  bg ="#101010", 
+  fg = "#FDF7F7",
+  primary = "#003366",
+  # base_font = font_google("Prompt"),
+  # code_font = font_google("JetBrains Mono")
+) |>
+bs_add_rules(sass::sass_file("www/styles.scss"))
+  
+
 ################################
 # UI Side Logic
 # 
 # Define the ui of the four main tabs of the dashboard from left to right
 ################################
 ui <- fluidPage(
-  theme = shinytheme("sandstone"),
-  includeCSS("www/mytheme.css"), 
+  # theme = shinytheme("sandstone"),
+  theme = "mytheme.css",
+  # theme = bs_theme(bootswatch = "minty"),
+  # includeCSS("www/mytheme.css"),
   shinyjs::useShinyjs(),
   leafletjs,
   list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
-  
   navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
              position = "fixed-top", 
       ################################
