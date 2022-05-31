@@ -58,7 +58,12 @@ ui <- fluidPage(
                  position = c("fixed-top"),
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
                  p(HTML(disease_info))
-                 )),
+                 ),
+        tabPanel("Data Dictionary",
+                 p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
+                 p(HTML(""))
+        ),
+        ),
       
       ################################
       # "By Disease" Tab UI Side Logic

@@ -55,7 +55,7 @@ rate_info<-"Three different rate types are available. The definitions of each ar
          <br/><br/>
          <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
          (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
-         <li><b>Lifetime Prevalence</b>: proportion of individuals who have had the condition for at least part of 
+         <li><b>Lifetime Prevalence</b>: The proportion of individuals who have had the condition for at least part of 
          their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
          who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
          a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
@@ -155,6 +155,6 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                       High blood pressure (hypertension)<br/>
                 </p>
                 
-                For more information on these diseases, see here.
+                For more information on these diseases, see <a href='file:///./data/CDR_Case_Definitions.pdf'>here</a>.
 
 "
