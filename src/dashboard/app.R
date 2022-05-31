@@ -194,6 +194,7 @@ ui <- fluidPage(
                sidebarLayout(
                  #Filters
                  sidebarPanel(
+                   style = "position:fixed;width:23%;",
                    id="filters_data",
                    width = 3,
                    h2("Filters"),
@@ -230,7 +231,9 @@ ui <- fluidPage(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
+                   div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
                    dataTableOutput("data_table"))
+                 )
                )))
      
   )
