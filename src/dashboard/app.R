@@ -399,10 +399,10 @@ server <- function(input, output,session) {
              xaxis = list(title = list(text = 'Health Region', standoff = 15),
                           categoryorder = "category ascending",
                           showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
+             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
                           font = list(size = 16)),
              barmode = "overlay",
-             margin = list(t = 50),
+             margin = list(t = 50,b=50),
              # plot_bgcolor= '#d9dadb'
              showlegend = FALSE
             ) %>%
@@ -479,8 +479,9 @@ server <- function(input, output,session) {
                                      categoryorder = "category ascending",
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
-                          title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b>")),
-                                       font = list(size = 16))
+                          title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
+                                       font = list(size = 16)
+                                       )
                         ))
     
   })
@@ -518,7 +519,7 @@ server <- function(input, output,session) {
              xaxis = list(title = 'Year',
                           gridcolor = "#d9dadb",
                           showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
+             title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>\n   "),
                           font = list(size = 16)),
              margin = list(t = 50),
              legend=list(title=list(text='Health Region'))
@@ -583,7 +584,8 @@ server <- function(input, output,session) {
       lapply(htmltools::HTML)
     
     m<-leaflet(dummy_spdf) %>% 
-      setView( lat=55, lng=-127 , zoom=4.5) %>%
+      setView( lat=54, lng=-127 , zoom=4.5) %>%
+      addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
       addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
         fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
