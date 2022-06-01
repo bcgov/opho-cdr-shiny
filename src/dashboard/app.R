@@ -13,7 +13,6 @@ library(plotly)
 library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
-library(shinyWidgets)
 
 ################################
 # Source helper functions
@@ -38,7 +37,6 @@ ui <- fluidPage(
   shinyjs::useShinyjs(),
   leafletjs,
   tab_colsjs,
-  # setBackgroundColor("#cccccc"),
   id="body",
   list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
   navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
@@ -248,7 +246,7 @@ server <- function(input, output,session) {
     if(input$navbarID %in% c("About","Rate Types","Diseases","Data Dictionary")){
       session$sendCustomMessage("background-color", "white")
     } else {
-      session$sendCustomMessage("background-color", "lightblue")
+      session$sendCustomMessage("background-color", "#cccccc")
     }
   })
   
