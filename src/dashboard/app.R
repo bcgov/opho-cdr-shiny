@@ -285,7 +285,7 @@ server <- function(input, output,session) {
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
-                  else c("100 Mile House","Abbotsford Rural","Agassiz/Harrison","Alberni Valley/Bamfield")
+                  else c("100 Mile House","Alberni Valley/Bamfield","Mackenzie","Port Coquitlam","University of British Columbia")
                 ))
   })
   
@@ -380,7 +380,11 @@ server <- function(input, output,session) {
               # colors = if(input$health_bound_d == "Health Authorities")
               #           setNames(HA_colours$Colors,HA_colours$Regions) 
               #           else NULL,
-              marker = list(color = HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]),
+              marker = list(color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                                    else
+                                    CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                                      ),
               # hovertemplate = paste('<b>Health Region</b>: %{x}',
               #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
               #                       '<b>Year</b>:', input$year_d,
@@ -388,7 +392,7 @@ server <- function(input, output,session) {
               #                       )
               hoverinfo="skip"
               )%>%
-      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
+      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
                         title = paste0(input$dataset_d," Per 1000"),
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black'),
@@ -452,7 +456,12 @@ server <- function(input, output,session) {
                             array = newdata[[error$upper]]- newdata[[rateInput_d()]],
                             color = '#000000',
                             width = 10),
-                          color = list(newdata$HEALTH_BOUND_NAME)
+                          marker = list(color = if(input$health_bound_d == "Health Authorities")
+                            HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                            else
+                            CHSA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                          )
+                          # color = list(newdata$HEALTH_BOUND_NAME)
                           # colors = if(input$health_bound_d == "Health Authorities")
                           #           list(setNames(HA_colours$Colors,HA_colours$Regions))
                           #           else NULL
@@ -494,7 +503,8 @@ server <- function(input, output,session) {
       color = ~HEALTH_BOUND_NAME,
       colors = if(input$health_bound_d == "Health Authorities")
                   setNames(HA_colours$Colors,HA_colours$Regions) 
-              else NULL,
+               else 
+                setNames(CHSA_colours$Colors,CHSA_colours$Regions),
       
       hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
                             '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
@@ -669,8 +679,9 @@ server <- function(input, output,session) {
         list(line = list(width = 0.5),
              color = list(~HEALTH_BOUND_NAME),
              colors = list(if(input$health_bound_d == "Health Authorities")
-                           setNames(HA_colours$Colors,HA_colours$Regions) 
-                           else NULL)
+                            setNames(HA_colours$Colors,HA_colours$Regions) 
+                           else 
+                             setNames(CHSA_colours$Colors,CHSA_colours$Regions) )
              )
       ) %>%
       plotlyProxyInvoke(
@@ -699,7 +710,11 @@ server <- function(input, output,session) {
               width = 10),
             type='bar',
             marker = list(opacity = 1,
-                          color = HA_colours$Colors[match(event_info$id,HA_colours$Regions)])
+                          color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(event_info$id,HA_colours$Regions)]
+                                  else
+                                    CHSA_colours$Colors[match(event_info$id,CHSA_colours$Regions)]
+                          )
           ))
    }
   })
@@ -783,7 +798,12 @@ server <- function(input, output,session) {
                 color = '#000000',
                 width = 10),
               marker = list(opacity = 1,
-                            color = HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]),
+                            color = if(input$health_bound_d == "Health Authorities")
+                                      HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]
+                                    else
+                                      CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]
+                            
+                            ),
               hovertemplate = paste('<b>Health Region</b>: %{x}',
                                     '<br><b>Year</b>: ',input$year_d,
                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
@@ -852,7 +872,11 @@ server <- function(input, output,session) {
               width = 10),
             type='bar',
             marker = list(opacity = 1,
-                          color = HA_colours$Colors[match(event[["key"]],HA_colours$Regions)])
+                          color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(event[["key"]],HA_colours$Regions)]
+                                  else
+                                    CHSA_colours$Colors[match(event[["key"]],CHSA_colours$Regions)]
+                          )
           ))
       lp %>%
         addPolygons(

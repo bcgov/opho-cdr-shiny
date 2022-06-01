@@ -40,26 +40,6 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
-# Define dataframe of HA colours
-HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern"),
-                         Colors = c("#3891A7","#C3860D","#C42E2E", "#67A63C","#914FAB"))
-
-# Define dataframe of CHSA colours
-CHSA_colours<-data.frame()
-for (i in seq(1,5)){
-  chsas <- inc_rate_df|>
-    filter(GEOGRAPHY=="CHSA",
-           startsWith(HEALTH_BOUND_CODE,toString(i)))|>
-    select(HEALTH_BOUND_NAME)|>
-    unique()
-  colfunc <- colorRampPalette(c("gray30",HA_colours[i,2],"white"))
-  cols <- colfunc(nrow(chsas)+10)
-  cols <- cols[6:(length(cols)-5)]
-  chsas_colors <- chsas|>
-    mutate(Colors = cols)|>
-    rename(Regions = HEALTH_BOUND_NAME)
-  CHSA_colours<- rbind(CHSA_colours,chsas_colors)
-}
 
 # Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
@@ -138,6 +118,27 @@ wrangle_data_frame <- function(df) {
 inc_rate_df <- wrangle_data_frame(inc_rate_df)
 hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
 life_prev_df <- wrangle_data_frame(life_prev_df)
+
+# Define dataframe of HA colours
+HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern"),
+                         Colors = c("#3891A7","#C3860D","#C42E2E", "#67A63C","#914FAB"))
+
+# Define dataframe of CHSA colours
+CHSA_colours<-data.frame()
+for (i in seq(1,5)){
+  chsas <- inc_rate_df|>
+    filter(GEOGRAPHY=="CHSA",
+           startsWith(HEALTH_BOUND_CODE,toString(i)))|>
+    select(HEALTH_BOUND_NAME)|>
+    unique()
+  colfunc <- colorRampPalette(c("gray30",HA_colours[i,2],"white"))
+  cols <- colfunc(nrow(chsas)+10)
+  cols <- cols[6:(length(cols)-5)]
+  chsas_colors <- chsas|>
+    mutate(Colors = cols)|>
+    rename(Regions = HEALTH_BOUND_NAME)
+  CHSA_colours<- rbind(CHSA_colours,chsas_colors)
+}
 
 # Read the shape files for the Community Health Service Areas (CHSA) level
 chsa_spdf <- readOGR(
