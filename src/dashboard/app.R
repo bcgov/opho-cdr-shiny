@@ -126,7 +126,7 @@ ui <- fluidPage(
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
                           br(),
                           fluidRow(column(12,
-                                          prettySwitch(
+                                          materialSwitch(
                                             inputId = "yax_switch",
                                             label = "Y-axis from 0",
                                             # fill = TRUE, status = "primary"
