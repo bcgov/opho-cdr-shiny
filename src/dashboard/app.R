@@ -15,8 +15,6 @@ library(shinycssloaders)
 library(rgeos)
 library(shinyWidgets)
 
-
-
 ################################
 # Source helper functions
 # 
@@ -24,6 +22,7 @@ library(shinyWidgets)
 ################################
 source('global.R', local = T) 
 source('info.R', local = T)
+source('helpers.R', local = T)
 options(spinner.color="#003366")
 
 ################################
@@ -38,16 +37,18 @@ ui <- fluidPage(
   # includeCSS("www/mytheme.css"),
   shinyjs::useShinyjs(),
   leafletjs,
-  setBackgroundColor("#cccccc"),
+  tab_colsjs,
+  # setBackgroundColor("#cccccc"),
   id="body",
   list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
   navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
              position = "fixed-top", 
+             id = "navbarID",
       ################################
       # Information Tab UI Side Logic
       ################################
       navbarMenu("Information",
-                  setBackgroundColor("#cccccc"),
+                  
         tabPanel("About", 
                  p(HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")),
                  h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
@@ -119,8 +120,8 @@ ui <- fluidPage(
                  width = 9,
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                          # verbatimTextOutput("hover_stuff"),
-                          # verbatimTextOutput("hover_stuff2")
+                          verbatimTextOutput("hover_stuff"),
+                          verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
                           br(),
@@ -242,6 +243,14 @@ ui <- fluidPage(
 # Server Side Logic
 ################################
 server <- function(input, output,session) {
+  
+  observeEvent(input$navbarID, {
+    if(input$navbarID %in% c("About","Rate Types","Diseases","Data Dictionary")){
+      session$sendCustomMessage("background-color", "white")
+    } else {
+      session$sendCustomMessage("background-color", "lightblue")
+    }
+  })
   
   ################################
   # By Disease Tab Server Side Logic
@@ -455,7 +464,7 @@ server <- function(input, output,session) {
                                      categoryorder = "category ascending",
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
-                          title = list(text = htmltools::HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b>")),
+                          title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b>")),
                                        font = list(size = 16))
                         ))
     
@@ -553,8 +562,6 @@ server <- function(input, output,session) {
       paste0(input$dataset_d,":"), format(round(dummy_spdf@data[[rateInput_d()]],1),1),
       sep="") |>
       lapply(htmltools::HTML)
-    
-    # lapply(paste(),HTML)
     
     m<-leaflet(dummy_spdf) %>% 
       setView( lat=55, lng=-127 , zoom=4.5) %>%
@@ -706,7 +713,7 @@ server <- function(input, output,session) {
   
   # TEST
   output$hover_stuff <- renderPrint({
-    event_data("plotly_hover",source = "disease_graph_bar")
+    input$navbarID
 
   })
   

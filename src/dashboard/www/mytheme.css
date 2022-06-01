@@ -61,15 +61,12 @@
   background-color:var(--yellow);
 } 
 
+.nav-tabs {
+  background-color: #006747;
+    }
 
 
-/*
-.nav .open>a,
-.nav .open>a:focus,
-.nav .open>a:hover{
-  border-color: #c6d6ee;
-}
-*/
+
 
 img{
     max-height: 60px;
@@ -84,4 +81,8 @@ img{
 #body {
   padding-top: 75px;
 
+}
+
+#info_body{
+  background-color:var(--yellow) ;
 }
