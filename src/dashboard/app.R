@@ -396,13 +396,14 @@ server <- function(input, output,session) {
                         title = paste0(input$dataset_d," Per 1000"),
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black'),
-             xaxis = list(title = list(text = 'Health Region', standoff = 15),
+             xaxis = list(title = list(text = 'Health Region', standoff = 10),
                           categoryorder = "category ascending",
                           showline= T, linewidth=1, linecolor='black'),
              title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
+                          y=0.92,
                           font = list(size = 16)),
              barmode = "overlay",
-             margin = list(t = 50,b=50),
+             margin = list(t = 80,b=50),
              # plot_bgcolor= '#d9dadb'
              showlegend = FALSE
             ) %>%
@@ -475,7 +476,7 @@ server <- function(input, output,session) {
                                      gridcolor = "#d9dadb",
                                      showline= T, linewidth=1, linecolor='black'),
                           xaxis=list(fixedrange = TRUE,
-                                     title = list(text = 'Health Region', standoff = 15),
+                                     title = list(text = 'Health Region', standoff = 10),
                                      categoryorder = "category ascending",
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
@@ -519,9 +520,11 @@ server <- function(input, output,session) {
              xaxis = list(title = 'Year',
                           gridcolor = "#d9dadb",
                           showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>\n   "),
+             title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
+                          y=0.92,
                           font = list(size = 16)),
-             margin = list(t = 50),
+             margin = list(t=80,b=50
+                           ),
              legend=list(title=list(text='Health Region'))
              # plot_bgcolor= '#d9dadb'
              # hovermode = "x unified"
@@ -574,7 +577,7 @@ server <- function(input, output,session) {
     
     legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#d9dadb")
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="gray50")
     
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
@@ -584,7 +587,7 @@ server <- function(input, output,session) {
       lapply(htmltools::HTML)
     
     m<-leaflet(dummy_spdf) %>% 
-      setView( lat=54, lng=-127 , zoom=4.5) %>%
+      setView( lat=53.5, lng=-127 , zoom=4.5) %>%
       addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
       addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
@@ -643,7 +646,7 @@ server <- function(input, output,session) {
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#d9dadb")
+    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="gray50")
 
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
