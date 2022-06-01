@@ -41,6 +41,7 @@ about_info<-"<br/><br/>
   <br/>
   <b>Note:</b> The year selector is based on Ministry of Health fiscal years. For example, the year 2001 represents data 
   from April 1, 2001 to March 31, 2002. 
+  <br/>
 "
 
 

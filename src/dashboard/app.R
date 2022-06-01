@@ -13,7 +13,8 @@ library(plotly)
 library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
-library(bslib)
+library(shinyWidgets)
+
 
 
 ################################
@@ -24,18 +25,6 @@ library(bslib)
 source('global.R', local = T) 
 source('info.R', local = T)
 options(spinner.color="#003366")
-
-theme_test <- bs_theme(
-  version = 5,
-  # bg = "#f2f2f2",
-  bg ="#101010", 
-  fg = "#FDF7F7",
-  primary = "#003366",
-  # base_font = font_google("Prompt"),
-  # code_font = font_google("JetBrains Mono")
-) |>
-bs_add_rules(sass::sass_file("www/styles.scss"))
-  
 
 ################################
 # UI Side Logic
@@ -49,6 +38,8 @@ ui <- fluidPage(
   # includeCSS("www/mytheme.css"),
   shinyjs::useShinyjs(),
   leafletjs,
+  setBackgroundColor("#cccccc"),
+  id="body",
   list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
   navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
              position = "fixed-top", 
@@ -56,8 +47,8 @@ ui <- fluidPage(
       # Information Tab UI Side Logic
       ################################
       navbarMenu("Information",
+                  setBackgroundColor("#cccccc"),
         tabPanel("About", 
-                 div(id="body",
                  p(HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")),
                  h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
                  h6("UBC Master of Data Science Capstone Project"),
@@ -65,30 +56,26 @@ ui <- fluidPage(
                  hr(),
                  helpText(HTML("For internal use only. Do not distribute.<br/>
                                For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
-                 )),
+                 ),
         tabPanel("Rate Types",
-                 div(id="body",
                  p(HTML("<u><h2>Rate Types</h2></u></br>")),
                  p(HTML(rate_info))
-                 )),
+                 ),
         tabPanel("Diseases",
-                 div(id="body",
                  position = c("fixed-top"),
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
                  p(HTML(disease_info))
-                 )),
+                 ),
         tabPanel("Data Dictionary",
-                 div(id="body",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
                  p(HTML(""))
-                )),
+                ),
         ),
       
       ################################
       # "By Disease" Tab UI Side Logic
       ################################
       tabPanel("By Disease",
-               div(id="body",
                sidebarLayout(
                  sidebarPanel(
                    id="filters_d",
@@ -132,8 +119,8 @@ ui <- fluidPage(
                  width = 9,
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                          verbatimTextOutput("hover_stuff"),
-                          verbatimTextOutput("hover_stuff2")
+                          # verbatimTextOutput("hover_stuff"),
+                          # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
                           br(),
@@ -141,13 +128,12 @@ ui <- fluidPage(
                           br(),br(),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           )))
-               ))),
+               )),
       
       ################################
       # "By Region" Tab UI Side Logic
       ################################
       tabPanel("By Region",
-               div(id="body",
                sidebarLayout(
                  sidebarPanel(
                    width = 3,
@@ -199,13 +185,12 @@ ui <- fluidPage(
                      "region_tab_bar_chart"
                    )), column(4, leafletOutput("region_tab_map"))))
                  
-               ))), 
+              )), 
       
       ################################
       # Download Data Tab UI Side Logic
       ################################
       tabPanel("Data",
-               div(id="body",
                sidebarLayout(
                  #Filters
                  sidebarPanel(
@@ -248,7 +233,7 @@ ui <- fluidPage(
                    div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
                    dataTableOutput("data_table"))
                  )
-               )))
+               ))
      
   )
 )
@@ -399,8 +384,8 @@ server <- function(input, output,session) {
              xaxis = list(title = list(text = 'Health Region', standoff = 15),
                           categoryorder = "category ascending",
                           showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " in 2001 </b>"),
-                          font = list(size = 14)),
+             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
+                          font = list(size = 16)),
              barmode = "overlay",
              margin = list(t = 50)
              # plot_bgcolor= '#d9dadb'
@@ -470,8 +455,8 @@ server <- function(input, output,session) {
                                      categoryorder = "category ascending",
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
-                          title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " in ", input$year_d,"</b>"),
-                                       font = list(size = 14))
+                          title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in ", input$year_d,"</b>"),
+                                       font = list(size = 16))
                         ))
     
   })
@@ -505,8 +490,8 @@ server <- function(input, output,session) {
              xaxis = list(title = 'Year',
                           gridcolor = "#d9dadb",
                           showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of ",input$disease_d, " Over Time </b>"),
-                          font = list(size = 14)),
+             title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
+                          font = list(size = 16)),
              margin = list(t = 50),
              legend=list(title=list(text='Health Region'))
              # plot_bgcolor= '#d9dadb'

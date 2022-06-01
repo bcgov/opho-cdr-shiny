@@ -60,6 +60,10 @@
     background-color: var(--mediumblue);
 }  
 
+.dropdown-menu>.active>li>a:hover{
+  background-color:var(--yellow);
+}, 
+
 .navbar-default .navbar-nav>li>a{
   color: var(--white) ;
 }
@@ -71,8 +75,8 @@
 .navbar-default .navbar-nav>.open>a, 
 .navbar-default .navbar-nav>.open>a:focus, 
 .navbar-default .navbar-nav>.open>a:hover{
-    color:  var(--yellow);
-    background-color: var(--navy);
+    color:  var(--white);
+    background-color: var(--yellow);
 }
 
 
@@ -97,5 +101,5 @@ img{
 
 #body {
   padding-top: 75px;
-  background-color: #cccccc;
+
 }
