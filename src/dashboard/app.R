@@ -177,12 +177,12 @@ ui <- fluidPage(
                  
                  mainPanel(
                    width = 9,
-                   fluidRow(plotlyOutput(
-                   "region_tab_line_chart"
-                   )),
-                   fluidRow(column(8, plotlyOutput(
-                     "region_tab_bar_chart"
-                   )), column(4, leafletOutput("region_tab_map"))))
+                   fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()),
+                   br(),
+                   fluidRow(
+                     column(8, plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
+                     br(),
+                     column(4, leafletOutput("region_tab_map") %>% withSpinner())))
                  
               )), 
       
@@ -984,6 +984,7 @@ server <- function(input, output,session) {
   output$region_tab_map <- renderLeaflet({
     location_to_be_tagged <- region_tab_map_data()
     map <- leaflet(location_to_be_tagged$region_level) |> 
+      addTiles() |> 
       addPolygons(weight = 1, smoothFactor = 0.5,
                 opacity = 1.0, fillOpacity = 0.5,
                 highlightOptions = highlightOptions(color = "white", weight = 2,
