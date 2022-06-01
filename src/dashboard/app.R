@@ -118,11 +118,10 @@ ui <- fluidPage(
                  width = 9,
                  fluidRow(
                    column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                          verbatimTextOutput("hover_stuff"),
-                          verbatimTextOutput("hover_stuff2")
+                          # verbatimTextOutput("hover_stuff"),
+                          # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
-                          br(),
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
                           br(),br(),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
@@ -484,7 +483,10 @@ server <- function(input, output,session) {
       mode="lines",
       line = list(width=2),
       color = ~HEALTH_BOUND_NAME,
-      colors = setNames(HA_colours$Colors,HA_colours$Regions),
+      colors = if(input$health_bound_d == "Health Authorities")
+                  setNames(HA_colours$Colors,HA_colours$Regions) 
+              else NULL,
+      
       hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
                             '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                             '<br><b>Year</b>: %{x}',
@@ -657,7 +659,10 @@ server <- function(input, output,session) {
         method = "restyle",
         list(line = list(width = 0.5),
              color = list(~HEALTH_BOUND_NAME),
-             colors = list(setNames(HA_colours$Colors,HA_colours$Regions)))
+             colors = list(if(input$health_bound_d == "Health Authorities")
+                           setNames(HA_colours$Colors,HA_colours$Regions) 
+                           else NULL)
+             )
       ) %>%
       plotlyProxyInvoke(
         method = "restyle",
@@ -771,9 +776,9 @@ server <- function(input, output,session) {
               marker = list(opacity = 1,
                             color = HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]),
               hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                    '<b>Year</b>: ',input$year_d,
-                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
-                                    '<b>Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
+                                    '<br><b>Year</b>: ',input$year_d,
+                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                    '<br><b>Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
                                                                     bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)],')',
                                     '<extra></extra>')
             )
