@@ -455,7 +455,7 @@ server <- function(input, output,session) {
                                      categoryorder = "category ascending",
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
-                          title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in ", input$year_d,"</b>"),
+                          title = list(text = htmltools::HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b>")),
                                        font = list(size = 16))
                         ))
     
@@ -553,6 +553,8 @@ server <- function(input, output,session) {
       paste0(input$dataset_d,":"), format(round(dummy_spdf@data[[rateInput_d()]],1),1),
       sep="") |>
       lapply(htmltools::HTML)
+    
+    # lapply(paste(),HTML)
     
     m<-leaflet(dummy_spdf) %>% 
       setView( lat=55, lng=-127 , zoom=4.5) %>%
