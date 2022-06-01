@@ -363,7 +363,8 @@ server <- function(input, output,session) {
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
-      plot_ly(data=dummyData,
+      dummyData |>
+      plot_ly(
               x=dummyData$HEALTH_BOUND_NAME,
               y=dummyData[[rateInput_d()]],
               source = "disease_graph_bar",
@@ -375,6 +376,10 @@ server <- function(input, output,session) {
                 array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
                 color = '#000000',
                 width = 10),
+              # color = dummyData$HEALTH_BOUND_NAME,
+              # colors = if(input$health_bound_d == "Health Authorities")
+              #           setNames(HA_colours$Colors,HA_colours$Regions) 
+              #           else NULL,
               marker = list(color = HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]),
               # hovertemplate = paste('<b>Health Region</b>: %{x}',
               #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
@@ -393,9 +398,9 @@ server <- function(input, output,session) {
              title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
                           font = list(size = 16)),
              barmode = "overlay",
-             margin = list(t = 50)
+             margin = list(t = 50),
              # plot_bgcolor= '#d9dadb'
-             # showlegend = FALSE
+             showlegend = FALSE
             ) %>%
       event_register('plotly_hover')
     
@@ -447,12 +452,16 @@ server <- function(input, output,session) {
                             array = newdata[[error$upper]]- newdata[[rateInput_d()]],
                             color = '#000000',
                             width = 10),
-                          marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
+                          color = list(newdata$HEALTH_BOUND_NAME)
+                          # colors = if(input$health_bound_d == "Health Authorities")
+                          #           list(setNames(HA_colours$Colors,HA_colours$Regions))
+                          #           else NULL
+                          # marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
                         ))|>
       plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
+                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
                                      title = paste0(input$dataset_d," Per 1000"),
                                      gridcolor = "#d9dadb",
                                      showline= T, linewidth=1, linecolor='black'),

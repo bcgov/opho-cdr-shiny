@@ -44,6 +44,23 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
 HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern"),
                          Colors = c("#3891A7","#C3860D","#C42E2E", "#67A63C","#914FAB"))
 
+# Define dataframe of CHSA colours
+CHSA_colours<-data.frame()
+for (i in seq(1,5)){
+  chsas <- inc_rate_df|>
+    filter(GEOGRAPHY=="CHSA",
+           startsWith(HEALTH_BOUND_CODE,toString(i)))|>
+    select(HEALTH_BOUND_NAME)|>
+    unique()
+  colfunc <- colorRampPalette(c("gray30",HA_colours[i,2],"white"))
+  cols <- colfunc(nrow(chsas)+10)
+  cols <- cols[6:(length(cols)-5)]
+  chsas_colors <- chsas|>
+    mutate(Colors = cols)|>
+    rename(Regions = HEALTH_BOUND_NAME)
+  CHSA_colours<- rbind(CHSA_colours,chsas_colors)
+}
+
 # Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
 HA_CHOICES <- c("Fraser", "Interior", "Northern", "Vancouver Coastal", "Vancouver Island")
@@ -81,7 +98,7 @@ for (dir in list.dirs("data")[-1]) {
     new_df <- data.table::fread(paste0(dir, "/", file),
                                 verbose = FALSE,
                                 drop = c("STDPOP")) |>
-      drop_na(CRUDE_RATE_PER_1000)
+      drop_na(NUMERATOR)
     
     if (dir == "data/IncidenceRate") {
       inc_rate_df <- rbind(inc_rate_df, new_df)
