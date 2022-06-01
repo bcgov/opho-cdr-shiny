@@ -944,7 +944,7 @@ server <- function(input, output,session) {
                         fill = "DISEASE")) +
       geom_bar(stat = "identity") +
       labs(
-        y = input$region_tab_rate_type_selected,
+        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
         title = paste0(
           "Distribution of Diseases by ",
@@ -961,36 +961,35 @@ server <- function(input, output,session) {
   
   # a map highlighting the selected health region to provide context
   region_tab_map_data <- reactive({
-    region_level <- NULL
-    selected_region_lat <- 0
-    selected_region_lon <- 0
     
     if (input$region_tab_geography_selected == "Health Authorities") {
       region_level <- ha_spdf
-      region_index <- chmatch(input$region_tab_region_selected, region_level$HA_Name)
-      selected_region_lat <- region_level$Latitude[region_index]
-      selected_region_lon <- region_level$Longitude[region_index]
+      region_index <- chmatch(input$region_tab_region_selected, ha_spdf$HA_Name)
+      selected_region_lat <- ha_spdf$Latitude[region_index]
+      selected_region_lon <- ha_spdf$Longitude[region_index]
     }
     else {
       region_level <- chsa_spdf
-      region_index <- chmatch(input$region_tab_region_selected, region_level$HA_Name)
-      selected_region_lat <- region_level$Latitude[region_index]
-      selected_region_lon <- region_level$Longitude[region_index]
+      region_index <- chmatch(input$region_tab_region_selected, chsa_spdf$CHSA_Name)
+      selected_region_lat <- chsa_spdf$Latitude[region_index]
+      selected_region_lon <- chsa_spdf$Longitude[region_index]
     }
-    print(c(region_index, selected_region_lat, selected_region_lon, typeof(selected_region_lat)))
-    return(c(region_level, selected_region_lat, selected_region_lon))
+    to_return <- list(region_level = region_level,
+                      selected_region_lat = selected_region_lat, 
+                      selected_region_lon = selected_region_lon)
+    to_return
   })
   
   
-  
   output$region_tab_map <- renderLeaflet({
-    map <- leaflet(region_tab_map_data()[1]) |> 
+    location_to_be_tagged <- region_tab_map_data()
+    map <- leaflet(location_to_be_tagged$region_level) |> 
       addPolygons(weight = 1, smoothFactor = 0.5,
                 opacity = 1.0, fillOpacity = 0.5,
                 highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                    bringToFront = TRUE)) |> 
-      addMarkers(lng = region_tab_map_data()[3], 
-                 lat = region_tab_map_data()[2],
+                                                    bringToFront = TRUE)) |>
+      addMarkers(lng = location_to_be_tagged$selected_region_lon,
+                 lat = location_to_be_tagged$selected_region_lat,
                  label = input$region_tab_region_selected)
     map
     })
