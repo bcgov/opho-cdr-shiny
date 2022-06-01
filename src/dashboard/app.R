@@ -961,18 +961,37 @@ server <- function(input, output,session) {
   
   # a map highlighting the selected health region to provide context
   region_tab_map_data <- reactive({
-    (if (input$region_tab_geography_selected == "Health Authorities")
-      ha_spdf
-     else
-       chsa_spdf)
+    region_level <- NULL
+    selected_region_lat <- 0
+    selected_region_lon <- 0
+    
+    if (input$region_tab_geography_selected == "Health Authorities") {
+      region_level <- ha_spdf
+      region_index <- chmatch(input$region_tab_region_selected, region_level$HA_Name)
+      selected_region_lat <- region_level$Latitude[region_index]
+      selected_region_lon <- region_level$Longitude[region_index]
+    }
+    else {
+      region_level <- chsa_spdf
+      region_index <- chmatch(input$region_tab_region_selected, region_level$HA_Name)
+      selected_region_lat <- region_level$Latitude[region_index]
+      selected_region_lon <- region_level$Longitude[region_index]
+    }
+    print(c(region_index, selected_region_lat, selected_region_lon, typeof(selected_region_lat)))
+    return(c(region_level, selected_region_lat, selected_region_lon))
   })
   
+  
+  
   output$region_tab_map <- renderLeaflet({
-    map <- leaflet(region_tab_map_data()) %>%
-    addPolygons(weight = 1, smoothFactor = 0.5,
+    map <- leaflet(region_tab_map_data()[1]) |> 
+      addPolygons(weight = 1, smoothFactor = 0.5,
                 opacity = 1.0, fillOpacity = 0.5,
                 highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                    bringToFront = TRUE))
+                                                    bringToFront = TRUE)) |> 
+      addMarkers(lng = region_tab_map_data()[3], 
+                 lat = region_tab_map_data()[2],
+                 label = input$region_tab_region_selected)
     map
     })
   
