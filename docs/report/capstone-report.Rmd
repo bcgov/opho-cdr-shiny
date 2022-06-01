@@ -1,0 +1,44 @@
+---
+title: "BC Chronic Disease Capstone Report"
+subtitle: "Capstone Partner: BC Office of the Provincial Health Officer, Mentor: Daniel Chen"
+author: "Team: Jennifer Hoang, Jessie Wong, Mahmoodur Rahman, Irene Yan"
+date: "`r Sys.Date()`"
+output: 
+  bookdown::pdf_document2
+header-includes:
+ \usepackage{float}
+bibliography: capstone-report.bib
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+```
+\newpage
+
+# Executive Summary 
+
+
+\newpage
+
+# Introduction 
+
+
+## Dashboard
+
+## Temporal Modeling
+
+
+# Data Science Techniques
+
+
+# Data Product and Results
+
+## Dashboard
+
+## Temporal Modeling
+
+
+# Conclusion and Recommendations
+
+
+# References
