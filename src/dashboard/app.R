@@ -925,7 +925,7 @@ server <- function(input, output,session) {
       ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
       geom_line(stat = 'identity') +
       labs(
-        y = input$region_tab_rate_type_selected,
+        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
