@@ -62,7 +62,14 @@
     background-color: var(--yellow);
 }
 
+#text_d1,#text_d2,#text_d3,#text_d4{
+  background-color:white ;
+  text-align: center;
+}
 
+.col-sm-3{
+  padding-bottom: 15px;
+}
 
 
 img{
@@ -77,5 +84,11 @@ img{
 
 #body {
   padding-top: 85px;
+}
 
+#filters_d, #filters_data{
+  background-color: #FFFAEB;
+  border-radius: 15px;
+  border: 5px solid var(--yellow);
+  
 }

@@ -118,6 +118,12 @@ ui <- fluidPage(
                mainPanel(
                  width = 9,
                  fluidRow(
+                   column(3,htmlOutput("text_d1")),
+                   column(3,htmlOutput("text_d2")),
+                   column(3,htmlOutput("text_d3")),
+                   column(3,htmlOutput("text_d4"))
+                 ),
+                 fluidRow(
                    column(6, leafletOutput("map",height = 750)%>% withSpinner(),
                           # verbatimTextOutput("hover_stuff"),
                           # verbatimTextOutput("hover_stuff2")
@@ -129,7 +135,8 @@ ui <- fluidPage(
                                           materialSwitch(
                                             inputId = "yax_switch",
                                             label = "Y-axis from 0",
-                                            # fill = TRUE, status = "primary"
+                                            right = TRUE
+                                            # status = "primary"
                                           ),
                                           plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           )))
@@ -606,7 +613,7 @@ server <- function(input, output,session) {
     
     legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="gray50")
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#cccccc")
     
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
@@ -675,7 +682,7 @@ server <- function(input, output,session) {
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="gray50")
+    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
 
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
@@ -773,9 +780,34 @@ server <- function(input, output,session) {
   })
   
   # TEST
+  output$text_d1 <- renderText({
+    paste0(
+    "<b>ABCABC</b><br/>",
+    "SKDJF:LKE<br style='margin-bottom:240px;'/> ")
+
+  })
+  output$text_d2 <- renderText({
+    paste0(
+      "<p><br/><b>ABCABC</b><br/>",
+      "SKDJF:LKE</p><p>  ")
+    
+  })
+  output$text_d3 <- renderText({
+    paste0(
+      "<b>ABCABC</b><br/>",
+      "SKDJF:LKE  ")
+    
+  })
+  output$text_d4 <- renderText({
+    paste0(
+      "<b>ABCABC</b><br/>",
+      "SKDJF:LKE")
+    
+  })
+  
   output$hover_stuff <- renderPrint({
     input$yax-switch
-
+    
   })
   
   output$hover_stuff2 <- renderPrint({
