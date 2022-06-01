@@ -13,6 +13,7 @@ library(plotly)
 library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
+library(shinyWidgets)
 
 ################################
 # Source helper functions
@@ -117,14 +118,20 @@ ui <- fluidPage(
                mainPanel(
                  width = 9,
                  fluidRow(
-                   column(6, leafletOutput("map",height = 700)%>% withSpinner(),
+                   column(6, leafletOutput("map",height = 750)%>% withSpinner(),
                           # verbatimTextOutput("hover_stuff"),
                           # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
-                          br(),br(),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
+                          br(),
+                          fluidRow(column(12,
+                                          prettySwitch(
+                                            inputId = "yax_switch",
+                                            label = "Y-axis from 0",
+                                            # fill = TRUE, status = "primary"
+                                          ),
+                                          plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           )))
                )),
       
@@ -376,15 +383,11 @@ server <- function(input, output,session) {
                 array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
                 color = '#000000',
                 width = 10),
-              # color = dummyData$HEALTH_BOUND_NAME,
-              # colors = if(input$health_bound_d == "Health Authorities")
-              #           setNames(HA_colours$Colors,HA_colours$Regions) 
-              #           else NULL,
               marker = list(color = if(input$health_bound_d == "Health Authorities")
                                     HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]
                                     else
                                     CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
-                                      ),
+                              ),
               # hovertemplate = paste('<b>Health Region</b>: %{x}',
               #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
               #                       '<b>Year</b>:', input$year_d,
@@ -516,7 +519,8 @@ server <- function(input, output,session) {
     )%>%
       layout(yaxis=list(title = paste0(input$dataset_d," Per 1000"),
                         gridcolor = "#d9dadb",
-                        showline= T, linewidth=1, linecolor='black'),
+                        showline= T, linewidth=1, linecolor='black',
+                        rangemode="nonnegative"),
              xaxis = list(title = 'Year',
                           gridcolor = "#d9dadb",
                           showline= T, linewidth=1, linecolor='black'),
@@ -551,6 +555,31 @@ server <- function(input, output,session) {
     #         axis.title.y = element_text(size=10))
     # ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
     #   event_register('plotly_hover')
+
+  })
+  
+  observeEvent(input$yax_switch,{
+    p <- plotlyProxy("disease_graph_line", session)
+    if(input$yax_switch==TRUE){
+    p%>%
+      plotlyProxyInvoke("relayout",
+                        list(
+                          yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                     gridcolor = "#d9dadb",
+                                     showline= T, linewidth=1, linecolor='black',
+                                     rangemode = "tozero")
+                        ))
+    }else{
+      p%>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                       gridcolor = "#d9dadb",
+                                       showline= T, linewidth=1, linecolor='black',
+                                       rangemode = "nonneagtive")
+                          ))
+      
+    }
 
   })
 
@@ -745,7 +774,7 @@ server <- function(input, output,session) {
   
   # TEST
   output$hover_stuff <- renderPrint({
-    input$navbarID
+    input$yax-switch
 
   })
   
