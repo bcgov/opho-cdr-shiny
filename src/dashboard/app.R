@@ -14,6 +14,8 @@ library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
 library(shinyWidgets)
+library(DT)
+
 
 ################################
 # Source helper functions
@@ -68,7 +70,7 @@ ui <- fluidPage(
                  ),
         tabPanel("Data Dictionary",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
-                 p(HTML(""))
+                 p(HTML(data_dict_info))
                 ),
         ),
       
@@ -111,6 +113,8 @@ ui <- fluidPage(
                                ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
+                   
+                   br(),
         
                    actionButton("reset_d", "Reset")
                     
@@ -118,20 +122,26 @@ ui <- fluidPage(
                mainPanel(
                  width = 9,
                  fluidRow(
-                   column(6, leafletOutput("map",height = 750)%>% withSpinner(),
+                   column(3,htmlOutput("text_d1")),
+                   column(3,htmlOutput("text_d2")),
+                   column(3,htmlOutput("text_d3")),
+                   column(3,htmlOutput("text_d4"))
+                 ),
+                 fluidRow(
+                   column(6, leafletOutput("map",height=645)%>% withSpinner(),
                           # verbatimTextOutput("hover_stuff"),
                           # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
-                          br(),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
+                         
                           fluidRow(column(12,
                                           materialSwitch(
                                             inputId = "yax_switch",
                                             label = "Y-axis from 0",
-                                            # fill = TRUE, status = "primary"
+                                            right = TRUE
                                           ),
-                                          plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
+                                          plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
                           )))
                )),
       
@@ -228,6 +238,7 @@ ui <- fluidPage(
                                 choices = c("Male","Female","Total"), 
                                 selected = "Total",
                                 inline = TRUE),
+                   br(),br(),
                    
                    actionButton("reset_data", "Reset")
                  ),
@@ -235,8 +246,11 @@ ui <- fluidPage(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
-                   div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
-                   dataTableOutput("data_table"))
+                   
+                   # div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
+                   # shiny::dataTableOutput("data_table")
+                   DTOutput("data_table")
+                   # )
                  )
                ))
      
@@ -292,7 +306,7 @@ server <- function(input, output,session) {
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
-                  else c("100 Mile House","Alberni Valley/Bamfield","Mackenzie","Port Coquitlam","University of British Columbia")
+                  else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","University of British Columbia")
                 ))
   })
   
@@ -354,6 +368,60 @@ server <- function(input, output,session) {
     upper = NULL
   )
   
+  #Render disease stats
+  output$text_d1 <- renderText({
+    data <- filter_df_d()
+    reg_max <-data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(HEALTH_BOUND_NAME)
+    
+    paste0(
+      healthboundInput_d()," with Highest Maximum ",input$dataset_d,
+      "<br>", "<div id=stat>",reg_max,"</div>"
+    )
+    
+  })
+  output$text_d2 <- renderText({
+    data <- filter_df_d()|>
+      group_by(HEALTH_BOUND_NAME)|>
+      summarize_at(rateInput_d(), mean)
+    reg_avg<- data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(HEALTH_BOUND_NAME)
+    
+    paste0(
+      healthboundInput_d()," with Highest Average ",input$dataset_d,
+      "<br>","<div id=stat>", reg_avg,"</div>"
+    )
+    
+  })
+  output$text_d3 <- renderText({
+    avg_rate <- mean(filter_df_d()[[rateInput_d()]])
+    
+    paste0(
+      "Average Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
+      "<br>", "<div id=stat>",round(avg_rate,2),"</div>"
+    )
+    
+  })
+  output$text_d4 <- renderText({
+    data<-filter_df_d()|>
+      group_by(YEAR)|>
+      summarize_at(rateInput_d(),mean)
+    year_max <- data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(YEAR)
+  
+    paste0(
+      "Year of Highest Average Recorded ",input$dataset_d,
+      "<br>", "<div id=stat>", year_max,"</div>"
+    )
+    
+  })  
+  
   # Render bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
     
@@ -401,6 +469,7 @@ server <- function(input, output,session) {
                         showline= T, linewidth=1, linecolor='black'),
              xaxis = list(title = list(text = 'Health Region', standoff = 10),
                           categoryorder = "category ascending",
+                          tickfont = list(size = 10),
                           showline= T, linewidth=1, linecolor='black'),
              title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
                           y=0.92,
@@ -481,9 +550,11 @@ server <- function(input, output,session) {
                           xaxis=list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 10),
                                      categoryorder = "category ascending",
+                                     tickfont = list(size = 10),
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
                           title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
+                                       y=0.92,
                                        font = list(size = 16)
                                        )
                         ))
@@ -521,7 +592,7 @@ server <- function(input, output,session) {
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black',
                         rangemode="nonnegative"),
-             xaxis = list(title = 'Year',
+             xaxis = list(title = list(text = 'Year', standoff = 10),
                           gridcolor = "#d9dadb",
                           showline= T, linewidth=1, linecolor='black'),
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
@@ -606,7 +677,13 @@ server <- function(input, output,session) {
     
     legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="gray50")
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#cccccc")
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+              )
     
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
@@ -637,7 +714,10 @@ server <- function(input, output,session) {
         ),
       ) |>
       addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft" )
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })
     m
     
   })
@@ -664,24 +744,33 @@ server <- function(input, output,session) {
       current_map_spdf@data$text <- paste0(
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
         "<b>",input$dataset_d,": ","</b>",format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
-        "<b>Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
     }else{
       current_map_spdf@data$text <- paste0(
         "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
         "<b>",input$dataset_d,": ","</b>", format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
-        "<b>Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
   }
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="gray50")
-
+    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+    )
+    
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
       clearControls()%>%
       addLegend( pal=mypalette, values=current_map_spdf@data[[rateInput_d()]], opacity=0.9,
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft" )%>%
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })%>%
       setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
                     fillColor = mypalette(current_map_spdf@data[[rateInput_d()]]),
                     label = current_map_spdf@data$text
@@ -772,10 +861,13 @@ server <- function(input, output,session) {
     }
   })
   
+
+
+  
   # TEST
   output$hover_stuff <- renderPrint({
     input$yax-switch
-
+    
   })
   
   output$hover_stuff2 <- renderPrint({
@@ -841,7 +933,7 @@ server <- function(input, output,session) {
               hovertemplate = paste('<b>Health Region</b>: %{x}',
                                     '<br><b>Year</b>: ',input$year_d,
                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                    '<br><b>Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
+                                    '<br><b>95% Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
                                                                     bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)],')',
                                     '<extra></extra>')
             )
@@ -1137,21 +1229,34 @@ server <- function(input, output,session) {
   
   output$disease_data <- renderUI({
     selectInput("disease_data", 
-                label = "Select Disease",
+                label = "Select Disease(s)",
                 choices = append("All", unique(datasetInput_data()$DISEASE)),
                 multiple = TRUE,
                 selected = "All")
   })
   
   filter_df_data <- reactive({
-    datasetInput_data() |> 
+    data <- datasetInput_data() |> 
       filter (
         (GEOGRAPHY == healthboundInput_data()) & 
           (if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
           (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
           (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
           (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
-      select(-HEALTH_BOUND_CODE)
+      mutate(CRUDE_CI=paste0("(",CRUDE_LCL_95,",",CRUDE_UCL_95,")"),
+             STD_CI=paste0("(",STD_LCL_95,",",STD_UCL_95,")"))|>
+      rename(SEX =CLNT_GENDER_LABEL,
+             HEALTH_BOUNDARY=HEALTH_BOUND_NAME)|>
+      select(YEAR,DISEASE,SEX,GEOGRAPHY,HEALTH_BOUNDARY,NUMERATOR,DENOMINATOR,
+             CRUDE_RATE_PER_1000, CRUDE_CI,CRUDE_VARIANCE,STD_RATE_PER_1000,
+             STD_CI,STD_VARIANCE)
+    
+    names(data)<-snakecase::to_title_case(names(data))
+    
+    data|>
+      rename("Crude 95% CI" = "Crude Ci",
+             "Standardized 95% CI" = "Std Ci")
+    
   })
   
   
@@ -1164,9 +1269,22 @@ server <- function(input, output,session) {
     }
   )
   
-  output$data_table <- renderDataTable(filter_df_data())
+  # output$data_table <- shiny::renderDataTable(filter_df_data())
+  
+  output$data_table <- renderDT(filter_df_data(),
+                                rownames= FALSE,
+                                options = list(
+                                  scrollX = TRUE, 
+                                  scrollY = "520px",
+                                  autoWidth = TRUE,
+                                  columnDefs = list(list(width = '150px', targets = c(1)),
+                                                    list(className = 'dt-center', targets = "_all"),
+                                                    list(width = '100px', targets = c(7,10))
+                                                    )
+                                  ))
   
 }
+
 
 ################################
 # Run App

@@ -54,8 +54,8 @@ rate_info<-"Three different rate types are available. The definitions of each ar
          specified period of time divided by the person-time at risk or the number of persons at risk 
          (i.e., mid-year population in a reporting year minus previous year's prevalent cases) in the same period. 
          <br/><br/>
-         <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
-         (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
+         <p style='margin-left: 40px'><i>Incidence rate  = (number of newly identified cases in a reporting year) / 
+         (mid-year population at risk in the reporting year) * 10<sup>n</sup></i></p></li>
          <li><b>Lifetime Prevalence</b>: The proportion of individuals who have had the condition for at least part of 
          their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
          who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
@@ -69,8 +69,8 @@ rate_info<-"Three different rate types are available. The definitions of each ar
          represent the current burden of such conditions in the province. Caution is also needed when comparing to other 
          reports where the proportions of a population with active symptoms or treatments for these conditions. 
          <br/><br/>
-         <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
-         in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
+         <p style='margin-left: 40px'><i> Lifetime prevalence = (number of residents ever identified with a disease 
+         in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></i></p></li>
          <li><b>Active Healthcare Contact (HSC) Prevalence</b>: For relapsing-remitting diseases, the BCCDR measures 
          active healthcare contact prevalence. Cases are counted if they previously met case definition criteria 
          for a disease, continued to live and receive healthcare services for the disease again in BC during a
@@ -79,9 +79,9 @@ rate_info<-"Three different rate types are available. The definitions of each ar
          This prevalence measure is useful for describing the existing burden of service utilization directly 
          related to relapsing-remitting diseases. 
          <br/><br/>
-         <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
+         <p style='margin-left: 40px'><i> Active healthcare contact prevalence = (number of patients receiving
          healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
-         </p></li>
+         </i></p></li>
        </ul>
        <br/>
       Each of the above rates is available as either a crude rate or age-standardized rate. 
@@ -160,4 +160,50 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                 
                 For more information on these diseases, see <a href='file:///./src/dashboard/data/CDR_Case_Definitions.pdf'>here</a>.
 
+"
+
+
+data_dict_info <-"
+  <table border='1'>
+    <tr>
+      <th>Variable Name</th>
+      <th>Description</th>
+      <th>Sample Values</th>
+    </tr>
+    <tr>
+      <td>DISEASE</td>
+      <td>Name of the chronic condition.</td>
+      <td><q>ASTHMA</q>, <q>DEPRESSION</q>, <q>PARKINSONISM</q></td>
+    </tr>
+    <tr>
+      <td>FISC_YR_LABEL</td>
+      <td>Label for the fiscal year (April 1 to March 31 of the following year).</td>
+      <td><q>FY 2001.2002</q> up to <q>FY 2020.2021</q></td>
+    </tr>
+    <tr>
+      <td>CLNT_GENDER_LABEL</td>
+      <td>Gender category.</td>
+      <td><q>T</q>, <q>M</q>, or <q>F</q>. T includes Male, Female, and Unknown.</td>
+    </tr>
+    <tr>
+      <td>GEOGRAPHY</td>
+      <td>The type of health boundary used to separate geographic areas.</td>
+      <td><q>HA</q> or <q>CHSA</q></td>
+    </tr>
+    <tr>
+      <td>HEALTH_BOUNDARIES</td>
+      <td>The CHSA region of interest.</td>
+      <td><q>1440 100 Mile House<q>, </q>2323 Tsawwassen</q>, <q>3351 Squamish</q></td>
+    </tr>
+    <tr>
+      <td>STDPOP</td>
+      <td>Standard population used for calculating age-standardized rates.</td>
+      <td>All entries are <q>2011 Canadian Census</q></td>
+    </tr>
+    <tr>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+  </table>
 "
