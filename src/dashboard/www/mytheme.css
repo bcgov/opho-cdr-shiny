@@ -115,6 +115,14 @@ img{
   
 }
 
+.slider-animate-button { 
+  font-size: 15pt !important;
+  }
+  
+.slider-animate-container{
+  margin-top: 3px;
+}
+
 #map {
     background: white;
 }
