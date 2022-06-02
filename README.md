@@ -39,8 +39,11 @@ Our data product is currently available for internal use only. Please contact th
 To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are installed, then follow these instructions:
 
 1. Clone this Github repository.
-2. Create a folder named "data" in the root of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
-3. Open the `opho-cdr-shiny.Rproject` file then run `renv::restore()` in the R console to install the package dependencies. 
+2. Create a folder named "data" in the root directory of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
+3. Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the following command in the R console to install the package dependencies.
+    ```
+    renv::restore()
+    ```
     - To install INLA, run the following command in the R console:
     ```
     remotes::install_version("INLA", version="22.05.07",repos=c(getOption("repos"),INLA="https://inla.r-inla-download.org/R/testing"), dep=TRUE)
@@ -49,9 +52,9 @@ To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are ins
     ```
     make all
     ```
-5. To run the temporal model visualizations in a Shiny document, ensure all results have been output to "results/model". Run the following command in the root of the repo and open the prompted URL in a browser:
+5. To run the temporal model visualizations in a Shiny document, ensure all results have been output to "results/model". Run the following command in the R console:
     ```
-    Rscript -e "rmarkdown::run('src/model/02_visualize.Rmd')”
+    rmarkdown::run('src/model/02_visualize.Rmd')
     ```
 
 ### Project Status
