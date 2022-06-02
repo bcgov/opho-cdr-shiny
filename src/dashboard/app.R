@@ -979,28 +979,27 @@ server <- function(input, output,session) {
   region_tab_filtered_data <- reactive({
     region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
-                (if ("All" %in% input$region_tab_diseases_selected)
-                  TRUE
-                 else
-                   (DISEASE %in% input$region_tab_diseases_selected)
-                ) &
-                (
-                  YEAR %in% seq(input$region_tab_year_range_selected[1], input$region_tab_year_range_selected[2], by = 1)
-                 ) &
-                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1))
-                )
+                (DISEASE %in% input$region_tab_diseases_selected) &
+                (YEAR %in% seq(input$region_tab_year_range_selected[1], 
+                               input$region_tab_year_range_selected[2], 
+                               by = 1)) &
+                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1))) |> 
+      mutate(tooltip_values = paste0(input$region_tab_rate_type_selected, 
+                                     " Per 1000: ",
+                                     round(ifelse(region_tab_rate_as_variable() == "CRUDE_RATE_PER_1000",
+                                                  CRUDE_RATE_PER_1000,
+                                                  STD_RATE_PER_1000), 1)))
   })
   
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
   output$region_tab_line_chart <- renderPlotly({
+    print(region_tab_filtered_data()$tooltip_values[1:100])
     line_chart <- region_tab_filtered_data() |>
       ggplot(aes_string(y = region_tab_rate_as_variable(),
                         x = "YEAR",
                         color = "DISEASE",
-                        text = paste0(input$region_tab_rate_type_selected, 
-                                      " Per 1000: ",
-                                      round(region_tab_rate_as_variable(), 1)))) +
+                        text = quote(tooltip_values))) +
       geom_line(stat = 'identity') +
       labs(
         y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
@@ -1041,7 +1040,7 @@ server <- function(input, output,session) {
                 legend.position = "none") +
       scale_x_discrete(labels = wrap_format(10))
     
-    ggplotly(bar_chart)
+    ggplotly(bar_chart, tooltip = c("y"))
   })
   
   # This function finds the information to highlight the selected region on the map
@@ -1072,9 +1071,12 @@ server <- function(input, output,session) {
   # Plot a map highlighting the selected health region to provide context for users
   output$region_tab_map <- renderLeaflet({
     location_to_be_tagged <- region_tab_map_data()
-    map <- leaflet(location_to_be_tagged$region_level) |> 
-      addProviderTiles(provider = providers$OpenStreetMap) |> 
-      addPolygons(weight = 1, smoothFactor = 0.5,
+    
+    map <- leaflet() |> 
+      setView(lat = 53.5, lng = -127, zoom = 4.5) |> 
+      addProviderTiles(providers$CartoDB.PositronNoLabels) |> 
+      addPolygons(data = location_to_be_tagged$region_level,
+                  weight = 1, smoothFactor = 0.5,
                 opacity = 1.0, fillOpacity = 0.5,
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) |>
