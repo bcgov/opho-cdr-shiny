@@ -15,6 +15,7 @@ library(shinycssloaders)
 library(rgeos)
 library(shinyWidgets)
 library(DT)
+library(shinyBS)
 
 
 ################################
@@ -105,7 +106,13 @@ ui <- fluidPage(
                                 inline=TRUE),
                 
                    sliderInput("year_d", 
-                               label = "Select Fiscal Year",
+                               label = tags$span(
+                                 "Select Year  ", 
+                                 tags$i(
+                                   id = "year_info",
+                                   class = "glyphicon glyphicon-info-sign", 
+                                   style = "color:#0072B2;"
+                                 )),
                                min = 2001,
                                max=2020,
                                value = 2001,
@@ -113,6 +120,11 @@ ui <- fluidPage(
                                ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
+                   bsTooltip(id = "year_info", 
+                             title = "Years are based on Ministry of Health fiscal years. 
+                             For example, the year 2001 represents data 
+                             from April 1, 2001 to March 31, 2002",
+                             placement = "right"),
                    
                    br(),
         
@@ -229,7 +241,13 @@ ui <- fluidPage(
                    uiOutput("region_data"),
                    
                    sliderInput("year_range_data", 
-                               label = "Select Year Range",
+                               label = tags$span(
+                                 "Select Year Range  ", 
+                                 tags$i(
+                                   id = "year_info",
+                                   class = "glyphicon glyphicon-info-sign", 
+                                   style = "color:#0072B2;"
+                                 )),
                                min = 2001, max = 2020, value = c(2001, 2020),
                                sep = ""),
                    
