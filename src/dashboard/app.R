@@ -729,13 +729,13 @@ server <- function(input, output,session) {
       current_map_spdf@data$text <- paste0(
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
         "<b>",input$dataset_d,": ","</b>",format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
-        "<b>Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
     }else{
       current_map_spdf@data$text <- paste0(
         "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
         "<b>",input$dataset_d,": ","</b>", format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
-        "<b>Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
   }
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
@@ -909,7 +909,7 @@ server <- function(input, output,session) {
               hovertemplate = paste('<b>Health Region</b>: %{x}',
                                     '<br><b>Year</b>: ',input$year_d,
                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                    '<br><b>Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
+                                    '<br><b>95% Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
                                                                     bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)],')',
                                     '<extra></extra>')
             )
@@ -1203,7 +1203,9 @@ server <- function(input, output,session) {
           (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
           (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
       select(-HEALTH_BOUND_CODE)|>
-      rename(Sex = CLNT_GENDER_LABEL)
+      rename(Sex = CLNT_GENDER_LABEL,
+             "Health Boundary"=HEALTH_BOUND_NAME)|>
+      mutate()
   })
   
   
@@ -1221,8 +1223,12 @@ server <- function(input, output,session) {
   output$data_table <- renderDT(filter_df_data(),
                                 rownames= FALSE,
                                 options = list(
+                                  scrollX = TRUE, 
+                                  scrollY = "550px",
                                   autoWidth = TRUE,
-                                  columnDefs = list(list(width = '30px', targets = 2))
+                                  columnDefs = list(list(width = '150px', targets = c(1)),
+                                                    list(className = 'dt-center', targets = "_all")
+                                                    )
                                   ))
   
 }
