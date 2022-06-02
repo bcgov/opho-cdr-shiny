@@ -109,7 +109,7 @@ ui <- fluidPage(
                                label = tags$span(
                                  "Select Year  ", 
                                  tags$i(
-                                   id = "year_info",
+                                   id = "year_info_d",
                                    class = "glyphicon glyphicon-info-sign", 
                                    style = "color:#0072B2;"
                                  )),
@@ -120,7 +120,7 @@ ui <- fluidPage(
                                ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
-                   bsTooltip(id = "year_info", 
+                   bsTooltip(id = "year_info_d", 
                              title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
                              placement = "right"
                              ),
@@ -239,14 +239,14 @@ ui <- fluidPage(
                                label = tags$span(
                                  "Select Year Range  ",
                                  tags$i(
-                                   id = "year_info",
+                                   id = "year_info_data",
                                    class = "glyphicon glyphicon-info-sign",
                                    style = "color:#0072B2;"
                                  )),
                                min = 2001, max = 2020, value = c(2001, 2020),
                                sep = ""),
                    
-                   bsTooltip(id = "year_info", 
+                   bsTooltip(id = "year_info_data", 
                              title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
                              placement = "right"
                    ),
