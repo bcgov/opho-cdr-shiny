@@ -121,10 +121,9 @@ ui <- fluidPage(
                                animate = animationOptions(interval = 1000)
                               ),
                    bsTooltip(id = "year_info", 
-                             title = "Years are based on Ministry of Health fiscal years. 
-                             For example, the year 2001 represents data 
-                             from April 1, 2001 to March 31, 2002",
-                             placement = "right"),
+                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+                             placement = "right"
+                             ),
                    
                    br(),
         
@@ -242,14 +241,19 @@ ui <- fluidPage(
                    
                    sliderInput("year_range_data", 
                                label = tags$span(
-                                 "Select Year Range  ", 
+                                 "Select Year Range  ",
                                  tags$i(
                                    id = "year_info",
-                                   class = "glyphicon glyphicon-info-sign", 
+                                   class = "glyphicon glyphicon-info-sign",
                                    style = "color:#0072B2;"
                                  )),
                                min = 2001, max = 2020, value = c(2001, 2020),
                                sep = ""),
+                   
+                   bsTooltip(id = "year_info", 
+                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+                             placement = "right"
+                   ),
                    
                    radioButtons("gender_data", 
                                 label = ("Select Sex"),
@@ -264,11 +268,7 @@ ui <- fluidPage(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
-                   
-                   # div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
-                   # shiny::dataTableOutput("data_table")
                    DTOutput("data_table")
-                   # )
                  )
                ))
      
@@ -396,7 +396,7 @@ server <- function(input, output,session) {
     
     paste0(
       healthboundInput_d()," with Highest Maximum ",input$dataset_d,
-      "<br>", "<div id=stat>",reg_max,"</div>"
+      " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
     
   })
@@ -411,7 +411,7 @@ server <- function(input, output,session) {
     
     paste0(
       healthboundInput_d()," with Highest Average ",input$dataset_d,
-      "<br>","<div id=stat>", reg_avg,"</div>"
+      " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
     
   })

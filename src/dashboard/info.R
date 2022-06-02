@@ -39,6 +39,8 @@ about_info<-"<br/><br/>
    data wil be displayed, and there is an option for the user to download the selected data.<br/><br/>
   </ul>
   <br/>
+  <br/>
+  <br/>
 
 "
 
