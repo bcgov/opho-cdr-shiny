@@ -48,7 +48,7 @@ tab_colsjs <- tags$head(
   )
 
 # To draw vertical lines on line graph
-vline <- function(x = 0, color = "#cccccc") {
+vline <- function(x = 0, color = "gray40") {
   list(
     type = "line",
     y0 = 0,
