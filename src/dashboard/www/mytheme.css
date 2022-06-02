@@ -34,10 +34,6 @@
   color: var(--white) ;
 }
 
-.dropdown-menu>.active>li>a:hover{
-  background-color:var(--yellow);
-} 
-
 .navbar-default .navbar-nav>.active>a, 
 .navbar-default .navbar-nav>.active>a:focus, 
 .navbar-default .navbar-nav>.active>a:hover {
@@ -57,13 +53,14 @@
     background-color: var(--yellow);
 }
 
-.dropdown-menu>.active>li>a:hover{
-  background-color:var(--yellow);
-} 
+.navbar-default .navbar-nav>li>a:focus, 
+.navbar-default .navbar-nav>li>a:hover {
+  color:  var(--yellow);
+}
 
-.nav-tabs {
-  background-color: #006747;
-    }
+.label-default {
+    background-color: var(--yellow);
+}
 
 
 
@@ -79,10 +76,6 @@ img{
 }
 
 #body {
-  padding-top: 75px;
+  padding-top: 85px;
 
-}
-
-#info_body{
-  background-color:var(--yellow) ;
 }

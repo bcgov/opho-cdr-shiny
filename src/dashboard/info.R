@@ -111,7 +111,7 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                 of 25 chronic conditions in BC, as well as active healthcare contact 
                 prevalence for 11 relapsing-remitting diseases (marked with a star in the list below):<br/><br/>
                 
-                <b>Chronic Respiratory Diseases</b> <br/>
+                <b>Chronic Respiratory Diseases</b><br/>
                 <p style='margin-left: 40px'> 
                       Asthma*<br/>
                       Chronic obstructive pulmonary disease<br/>
@@ -122,9 +122,11 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                       Heart failure <br/>
                       Ischemic heart disease <br/>
                       Stroke* <br/>
+                      <p style='margin-left: 40px'> 
                             Haemorrhagic stroke* <br/>
                             Ischemic stroke* <br/>
                             Transient ischemic attack* <br/>
+                            </p>
                 </p>
                 <b>Neurological Disorders </b><br/> 
                 <p style='margin-left: 40px'> 
@@ -156,6 +158,6 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                       High blood pressure (hypertension)<br/>
                 </p>
                 
-                For more information on these diseases, see <a href='file:///./data/CDR_Case_Definitions.pdf'>here</a>.
+                For more information on these diseases, see <a href='file:///./src/dashboard/data/CDR_Case_Definitions.pdf'>here</a>.
 
 "

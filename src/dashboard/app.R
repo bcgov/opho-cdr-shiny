@@ -13,6 +13,7 @@ library(plotly)
 library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
+library(shinyWidgets)
 
 ################################
 # Source helper functions
@@ -117,15 +118,20 @@ ui <- fluidPage(
                mainPanel(
                  width = 9,
                  fluidRow(
-                   column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                          verbatimTextOutput("hover_stuff"),
-                          verbatimTextOutput("hover_stuff2")
+                   column(6, leafletOutput("map",height = 750)%>% withSpinner(),
+                          # verbatimTextOutput("hover_stuff"),
+                          # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
-                          br(),
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
-                          br(),br(),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
+                          br(),
+                          fluidRow(column(12,
+                                          materialSwitch(
+                                            inputId = "yax_switch",
+                                            label = "Y-axis from 0",
+                                            # fill = TRUE, status = "primary"
+                                          ),
+                                          plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
                           )))
                )),
       
@@ -286,7 +292,7 @@ server <- function(input, output,session) {
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
-                  else c("100 Mile House","Abbotsford Rural","Agassiz/Harrison","Alberni Valley/Bamfield")
+                  else c("100 Mile House","Alberni Valley/Bamfield","Mackenzie","Port Coquitlam","University of British Columbia")
                 ))
   })
   
@@ -364,7 +370,8 @@ server <- function(input, output,session) {
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
-      plot_ly(data=dummyData,
+      dummyData |>
+      plot_ly(
               x=dummyData$HEALTH_BOUND_NAME,
               y=dummyData[[rateInput_d()]],
               source = "disease_graph_bar",
@@ -376,7 +383,11 @@ server <- function(input, output,session) {
                 array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
                 color = '#000000',
                 width = 10),
-              marker = list(color = HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]),
+              marker = list(color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                                    else
+                                    CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                              ),
               # hovertemplate = paste('<b>Health Region</b>: %{x}',
               #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
               #                       '<b>Year</b>:', input$year_d,
@@ -384,19 +395,20 @@ server <- function(input, output,session) {
               #                       )
               hoverinfo="skip"
               )%>%
-      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
+      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
                         title = paste0(input$dataset_d," Per 1000"),
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black'),
-             xaxis = list(title = list(text = 'Health Region', standoff = 15),
+             xaxis = list(title = list(text = 'Health Region', standoff = 10),
                           categoryorder = "category ascending",
                           showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
+             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
+                          y=0.92,
                           font = list(size = 16)),
              barmode = "overlay",
-             margin = list(t = 50)
+             margin = list(t = 80,b=50),
              # plot_bgcolor= '#d9dadb'
-             # showlegend = FALSE
+             showlegend = FALSE
             ) %>%
       event_register('plotly_hover')
     
@@ -448,22 +460,32 @@ server <- function(input, output,session) {
                             array = newdata[[error$upper]]- newdata[[rateInput_d()]],
                             color = '#000000',
                             width = 10),
-                          marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
+                          marker = list(color = if(input$health_bound_d == "Health Authorities")
+                            HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                            else
+                            CHSA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                          )
+                          # color = list(newdata$HEALTH_BOUND_NAME)
+                          # colors = if(input$health_bound_d == "Health Authorities")
+                          #           list(setNames(HA_colours$Colors,HA_colours$Regions))
+                          #           else NULL
+                          # marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
                         ))|>
       plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[rateInput_d()]])*1.1),
+                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
                                      title = paste0(input$dataset_d," Per 1000"),
                                      gridcolor = "#d9dadb",
                                      showline= T, linewidth=1, linecolor='black'),
                           xaxis=list(fixedrange = TRUE,
-                                     title = list(text = 'Health Region', standoff = 15),
+                                     title = list(text = 'Health Region', standoff = 10),
                                      categoryorder = "category ascending",
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
-                          title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b>")),
-                                       font = list(size = 16))
+                          title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
+                                       font = list(size = 16)
+                                       )
                         ))
     
   })
@@ -484,7 +506,11 @@ server <- function(input, output,session) {
       mode="lines",
       line = list(width=2),
       color = ~HEALTH_BOUND_NAME,
-      colors = setNames(HA_colours$Colors,HA_colours$Regions),
+      colors = if(input$health_bound_d == "Health Authorities")
+                  setNames(HA_colours$Colors,HA_colours$Regions) 
+               else 
+                setNames(CHSA_colours$Colors,CHSA_colours$Regions),
+      
       hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
                             '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                             '<br><b>Year</b>: %{x}',
@@ -493,13 +519,16 @@ server <- function(input, output,session) {
     )%>%
       layout(yaxis=list(title = paste0(input$dataset_d," Per 1000"),
                         gridcolor = "#d9dadb",
-                        showline= T, linewidth=1, linecolor='black'),
+                        showline= T, linewidth=1, linecolor='black',
+                        rangemode="nonnegative"),
              xaxis = list(title = 'Year',
                           gridcolor = "#d9dadb",
                           showline= T, linewidth=1, linecolor='black'),
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
+                          y=0.92,
                           font = list(size = 16)),
-             margin = list(t = 50),
+             margin = list(t=80,b=50
+                           ),
              legend=list(title=list(text='Health Region'))
              # plot_bgcolor= '#d9dadb'
              # hovermode = "x unified"
@@ -528,6 +557,31 @@ server <- function(input, output,session) {
     #   event_register('plotly_hover')
 
   })
+  
+  observeEvent(input$yax_switch,{
+    p <- plotlyProxy("disease_graph_line", session)
+    if(input$yax_switch==TRUE){
+    p%>%
+      plotlyProxyInvoke("relayout",
+                        list(
+                          yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                     gridcolor = "#d9dadb",
+                                     showline= T, linewidth=1, linecolor='black',
+                                     rangemode = "tozero")
+                        ))
+    }else{
+      p%>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                       gridcolor = "#d9dadb",
+                                       showline= T, linewidth=1, linecolor='black',
+                                       rangemode = "nonneagtive")
+                          ))
+      
+    }
+
+  })
 
   
   # Render map once per Input Rate/Disease
@@ -552,7 +606,7 @@ server <- function(input, output,session) {
     
     legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#d9dadb")
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="gray50")
     
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
@@ -562,7 +616,8 @@ server <- function(input, output,session) {
       lapply(htmltools::HTML)
     
     m<-leaflet(dummy_spdf) %>% 
-      setView( lat=55, lng=-127 , zoom=4.5) %>%
+      setView( lat=53.5, lng=-127 , zoom=4.5) %>%
+      addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
       addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
         fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
@@ -620,7 +675,7 @@ server <- function(input, output,session) {
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#d9dadb")
+    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="gray50")
 
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
@@ -657,7 +712,11 @@ server <- function(input, output,session) {
         method = "restyle",
         list(line = list(width = 0.5),
              color = list(~HEALTH_BOUND_NAME),
-             colors = list(setNames(HA_colours$Colors,HA_colours$Regions)))
+             colors = list(if(input$health_bound_d == "Health Authorities")
+                            setNames(HA_colours$Colors,HA_colours$Regions) 
+                           else 
+                             setNames(CHSA_colours$Colors,CHSA_colours$Regions) )
+             )
       ) %>%
       plotlyProxyInvoke(
         method = "restyle",
@@ -685,7 +744,11 @@ server <- function(input, output,session) {
               width = 10),
             type='bar',
             marker = list(opacity = 1,
-                          color = HA_colours$Colors[match(event_info$id,HA_colours$Regions)])
+                          color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(event_info$id,HA_colours$Regions)]
+                                  else
+                                    CHSA_colours$Colors[match(event_info$id,CHSA_colours$Regions)]
+                          )
           ))
    }
   })
@@ -711,7 +774,7 @@ server <- function(input, output,session) {
   
   # TEST
   output$hover_stuff <- renderPrint({
-    input$navbarID
+    input$yax-switch
 
   })
   
@@ -769,11 +832,16 @@ server <- function(input, output,session) {
                 color = '#000000',
                 width = 10),
               marker = list(opacity = 1,
-                            color = HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]),
+                            color = if(input$health_bound_d == "Health Authorities")
+                                      HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]
+                                    else
+                                      CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]
+                            
+                            ),
               hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                    '<b>Year</b>: ',input$year_d,
-                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
-                                    '<b>Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
+                                    '<br><b>Year</b>: ',input$year_d,
+                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                    '<br><b>Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
                                                                     bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)],')',
                                     '<extra></extra>')
             )
@@ -838,7 +906,11 @@ server <- function(input, output,session) {
               width = 10),
             type='bar',
             marker = list(opacity = 1,
-                          color = HA_colours$Colors[match(event[["key"]],HA_colours$Regions)])
+                          color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(event[["key"]],HA_colours$Regions)]
+                                  else
+                                    CHSA_colours$Colors[match(event[["key"]],CHSA_colours$Regions)]
+                          )
           ))
       lp %>%
         addPolygons(
