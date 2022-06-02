@@ -991,27 +991,37 @@ server <- function(input, output,session) {
                 )
   })
   
-  # plot the line chart showing trends of diseases over time
+  # Plot a line chart showing trends of diseases over time
+  # x is YEAR, y is the selected rate type, color is DISEASE
   output$region_tab_line_chart <- renderPlotly({
     line_chart <- region_tab_filtered_data() |>
-      ggplot(aes_string(y = region_tab_rate_as_variable(), 
-                        x = "YEAR", 
-                        color = "DISEASE")) +
+      ggplot(aes_string(y = region_tab_rate_as_variable(),
+                        x = "YEAR",
+                        color = "DISEASE",
+                        text = paste0(input$region_tab_rate_type_selected, 
+                                      " Per 1000: ",
+                                      round(region_tab_rate_as_variable(), 1)))) +
       geom_line(stat = 'identity') +
       labs(
         y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
-      ) + 
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+      ) +
+      theme(axis.text.x = element_text(
+        angle = 45,
+        hjust = 1,
+        vjust = 1
+      )) +
       scale_x_continuous(breaks = breaks_width(1))
-    # , tooltip = c(DISEASE, YEAR, region_tab_rate_as_variable()
-    ggplotly(line_chart) |> 
+    
+    ggplotly(line_chart, 
+             tooltip = "text") |>
       layout(hovermode = "x unified")
   })
   
-  # plot a bar chart showing the distribution of cumulative rates for diseases
+  # Plot a bar chart comparing rates for diseases in a year
+  # x is DISEASE, y is the selected rate type, color is DISEASE
   output$region_tab_bar_chart <- renderPlotly({
     bar_chart <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_range_selected[1]) |>
@@ -1034,18 +1044,22 @@ server <- function(input, output,session) {
     ggplotly(bar_chart)
   })
   
-  # a map highlighting the selected health region to provide context
+  # This function finds the information to highlight the selected region on the map
+  # It finds the index of the selected region from the corresponding list 
+  #   and uses that index to get the region's latitude and longitude.
+  # These two values are needed in the addMarker() function later to pinpoint the area
+  # 
+  # Note that three values are returned as a list
   region_tab_map_data <- reactive({
-    
     if (input$region_tab_geography_selected == "Health Authorities") {
       region_level <- ha_spdf
-      region_index <- chmatch(input$region_tab_region_selected, ha_spdf$HA_Name)
+      region_index <- data.table::chmatch(input$region_tab_region_selected, ha_spdf$HA_Name)
       selected_region_lat <- ha_spdf$Latitude[region_index]
       selected_region_lon <- ha_spdf$Longitude[region_index]
     }
     else {
       region_level <- chsa_spdf
-      region_index <- chmatch(input$region_tab_region_selected, chsa_spdf$CHSA_Name)
+      region_index <- data.table::chmatch(input$region_tab_region_selected, chsa_spdf$CHSA_Name)
       selected_region_lat <- chsa_spdf$Latitude[region_index]
       selected_region_lon <- chsa_spdf$Longitude[region_index]
     }
@@ -1055,7 +1069,7 @@ server <- function(input, output,session) {
     to_return
   })
   
-  
+  # Plot a map highlighting the selected health region to provide context for users
   output$region_tab_map <- renderLeaflet({
     location_to_be_tagged <- region_tab_map_data()
     map <- leaflet(location_to_be_tagged$region_level) |> 
@@ -1067,6 +1081,7 @@ server <- function(input, output,session) {
       addMarkers(lng = location_to_be_tagged$selected_region_lon,
                  lat = location_to_be_tagged$selected_region_lat,
                  label = input$region_tab_region_selected)
+    
     map
     })
   
