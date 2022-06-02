@@ -40,6 +40,7 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
                   "SCHIZOPHRENIA" = "Schizophrenia and Delusional Disorders",
                   "SUD" = "Substance Use Disorders")
 
+
 # Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
 HA_CHOICES <- c("Fraser", "Interior", "Northern", "Vancouver Coastal", "Vancouver Island")
@@ -77,7 +78,7 @@ for (dir in list.dirs("data")[-1]) {
     new_df <- data.table::fread(paste0(dir, "/", file),
                                 verbose = FALSE,
                                 drop = c("STDPOP")) |>
-      drop_na(CRUDE_RATE_PER_1000)
+      drop_na(NUMERATOR)
     
     if (dir == "data/IncidenceRate") {
       inc_rate_df <- rbind(inc_rate_df, new_df)
@@ -118,6 +119,27 @@ inc_rate_df <- wrangle_data_frame(inc_rate_df)
 hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
 life_prev_df <- wrangle_data_frame(life_prev_df)
 
+# Define dataframe of HA colours
+HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern"),
+                         Colors = c("#3891A7","#C3860D","#C42E2E", "#67A63C","#914FAB"))
+
+# Define dataframe of CHSA colours
+CHSA_colours<-data.frame()
+for (i in seq(1,5)){
+  chsas <- inc_rate_df|>
+    filter(GEOGRAPHY=="CHSA",
+           startsWith(HEALTH_BOUND_CODE,toString(i)))|>
+    select(HEALTH_BOUND_NAME)|>
+    unique()
+  colfunc <- colorRampPalette(c("gray30",HA_colours[i,2],"white"))
+  cols <- colfunc(nrow(chsas)+10)
+  cols <- cols[6:(length(cols)-5)]
+  chsas_colors <- chsas|>
+    mutate(Colors = cols)|>
+    dplyr::rename(Regions = HEALTH_BOUND_NAME)
+  CHSA_colours<- rbind(CHSA_colours,chsas_colors)
+}
+
 # Read the shape files for the Community Health Service Areas (CHSA) level
 chsa_spdf <- readOGR(
   dsn = paste0(getwd(), "/geo_data/chsa_2018"),
@@ -138,6 +160,7 @@ ha_spdf <- readOGR(
   verbose = FALSE
 ) |>
   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
 
 # Simplify Spatial Polygons for faster rendering
 regions_df <- ha_spdf@data
@@ -175,42 +198,3 @@ setShapeStyle <- function( map, data = getMapData(map), layerId,
   }
   leaflet::invokeMethod(map, data, "setStyle", "shape", layerId, style);
 }
-
-#helper function in JS for choropleth animation
-leafletjs <-  tags$head(
-  tags$script(HTML('
-  
-window.LeafletWidget.methods.setStyle = function(category, layerId, style){
-  var map = this;
-  if (!layerId){
-    return;
-  } else if (!(typeof(layerId) === "object" && layerId.length)){
-    layerId = [layerId];
-  }
-  style = HTMLWidgets.dataframeToD3(style);
-  layerId.forEach(function(d,i){
-    var layer = map.layerManager.getLayer(category, d);
-    if (layer){
-      layer.setStyle(style[i]);
-    }
-  });
-};
-window.LeafletWidget.methods.setLabel = function(category, layerId, label){
-  var map = this;
-  if (!layerId){
-    return;
-  } else if (!(typeof(layerId) === "object" && layerId.length)){
-    layerId = [layerId];
-  }
-  layerId.forEach(function(d,i){
-    var layer = map.layerManager.getLayer(category, d);
-    if (layer){
-      layer.unbindTooltip();
-      layer.bindTooltip(label[i])
-    }
-  });
-};
-'
-  ))
-)
-

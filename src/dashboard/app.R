@@ -3,15 +3,18 @@
 # ################################
 library(shiny)
 library(shinyjs)
-library(tidyverse)
 library(plyr)
+library(tidyverse)
 library(leaflet)
+library(sp)
 library(rgdal)
 library(shinythemes)
 library(plotly)
 library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
+library(shinyWidgets)
+library(DT)
 
 
 ################################
@@ -20,6 +23,8 @@ library(rgeos)
 # Define and load all the global variables, including the data frames and shape files
 ################################
 source('global.R', local = T) 
+source('info.R', local = T)
+source('helpers.R', local = T)
 options(spinner.color="#003366")
 
 ################################
@@ -28,74 +33,46 @@ options(spinner.color="#003366")
 # Define the ui of the four main tabs of the dashboard from left to right
 ################################
 ui <- fluidPage(
-  theme = shinytheme("sandstone"),
-  includeCSS("www/mytheme.css"), 
+  # theme = shinytheme("sandstone"),
+  theme = "mytheme.css",
+  # theme = bs_theme(bootswatch = "minty"),
+  # includeCSS("www/mytheme.css"),
   shinyjs::useShinyjs(),
   leafletjs,
-  
-  navbarPage("BC Chronic Disease Dashboard",
-      
+  tab_colsjs,
+  id="body",
+  list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
+  navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
+             position = "fixed-top", 
+             id = "navbarID",
       ################################
       # Information Tab UI Side Logic
       ################################
       navbarMenu("Information",
+                  
         tabPanel("About", 
-                 h2("Welcome to the BC Chronic Disease Dashboard"),
+                 p(HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")),
                  h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
-                 helpText(HTML("<br/><br/>
-                               This dashboard facilitates the exploration and visualization of spatial and temporal
-                               trends of 25 different chronic diseases across the Province of British Columbia. The data 
-                               is sourced from the Chronic Disease Registry (BCCDR).
-                               <br/><br/>
-                               The three tabs in the dashboard and their respective features are described below.<br/>
-                               <ul>
-                                 <li><b>By Disease</b></li>
-                                 This tab allows for the trend comparisons of one disease over several Health Authorities(HA)  
-                                 or Community Health Service Areas (CHSA). In this tab the user should select a rate type, 
-                                 a disease, geography type, year, and gender. The user can also optionally specify 
-                                 multiple HAs or CHSAs. <br/><br/>
-                                 <li><b>By Region</b></li>
-                                 This tab allows for the trend comparisons of several diseases in one particular HA or CHSA.
-                                 In this tab the user should select a rate type, disease(s) of interest, geography type,
-                                 year, and gender. <br/><br/>
-                                 <li><b>Data</b></li>
-                                 This tab retrieves all data specified by the user. In this tab the user should select a rate type,
-                                 disease(s), health region(s), year range, and gender. There is also an option for the user to
-                                 download the selected data.<br/><br/>
-                               </ul>"))),
-           tabPanel("Rate Types",
-                    helpText(HTML(
-                               "The definitions of the rate types are provided below.
-                               <ul>
-                                 <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
-                                 specified population during a specified time period. 
-                                 It is calculated as the number of new cases in the population at-risk in a 
-                                 specified period of time divided by the person-time at risk or the number of persons at risk 
-                                 (i.e., mid-year population in a reporting year minus previous year's prevalent cases) in the same period. 
-                                 <br/><br/>
-                                 <p style='margin-left: 40px'>Incidence rate  = (number of newly identified cases in a reporting year) / 
-                                 (mid-year population at risk in the reporting year) * 10<sup>n</sup></p></li>
-                                 <li><b>Lifetime Prevalence</b>: proportion of individuals who have had the condition for at least part of 
-                                 their lives at any time during their life course. In the BCCDR, this refers to the proportion of residents 
-                                 who were diagnosed/identified as a case at least once and were still alive and residing in the province during 
-                                 a reporting time period (fiscal year). Once the case definition criteria are met in a year, cases are then
-                                 carried forward to count as a case every year thereafter until the person's death, their migration out of BC,
-                                 or the absence of follow-up. 
-                                 <br/><br/>
-                                 <p style='margin-left: 40px'> Lifetime prevalence = (number of residents ever identified with a disease 
-                                 in a reporting year) / (mid-year population in the reporting year) * 10<sup>n</sup></p></li>
-                                 <li><b>Active Healthcare Contact (HSC) Prevalence</b>: For relapsing-remitting diseases, the BCCDR measures 
-                                 active healthcare contact prevalence. Cases are counted if they previously met case definition criteria 
-                                 for a disease, continued to live and receive healthcare services for the disease again in BC during a
-                                 later reporting period. That is, cases are counted for a reporting period if the patient seek healthcare 
-                                 services for relapsing-remitting conditions again after the fiscal year when they were ascertained as a case. 
-                                 <br/><br/>
-                                 <p style='margin-left: 40px'> Active healthcare contact prevalence = (number of patients receiving
-                                 healthcare services for a disease in a reporting year) /(mid-year population in the reporting year) * 10<sup>n</sup>
-                                 </p></li>
-                               </ul>
-                          note about fiscal year  "))),
-        tabPanel("Diseases")),
+                 h6("UBC Master of Data Science Capstone Project"),
+                 p(HTML(about_info)),
+                 hr(),
+                 helpText(HTML("For internal use only. Do not distribute.<br/>
+                               For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
+                 ),
+        tabPanel("Rate Types",
+                 p(HTML("<u><h2>Rate Types</h2></u></br>")),
+                 p(HTML(rate_info))
+                 ),
+        tabPanel("Diseases",
+                 position = c("fixed-top"),
+                 p(HTML("<u><h2>Diseases</h2></u></br>")),
+                 p(HTML(disease_info))
+                 ),
+        tabPanel("Data Dictionary",
+                 p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
+                 p(HTML(data_dict_info))
+                ),
+        ),
       
       ################################
       # "By Disease" Tab UI Side Logic
@@ -136,6 +113,8 @@ ui <- fluidPage(
                                ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
+                   
+                   br(),
         
                    actionButton("reset_d", "Reset")
                     
@@ -143,14 +122,26 @@ ui <- fluidPage(
                mainPanel(
                  width = 9,
                  fluidRow(
-                   column(6, leafletOutput("map",height = 700)%>% withSpinner(),
-                          verbatimTextOutput("hover_stuff"),
-                          verbatimTextOutput("hover_stuff2")
+                   column(3,htmlOutput("text_d1")),
+                   column(3,htmlOutput("text_d2")),
+                   column(3,htmlOutput("text_d3")),
+                   column(3,htmlOutput("text_d4"))
+                 ),
+                 fluidRow(
+                   column(6, leafletOutput("map",height=645)%>% withSpinner(),
+                          # verbatimTextOutput("hover_stuff"),
+                          # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
-                          br(),br(),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
+                         
+                          fluidRow(column(12,
+                                          materialSwitch(
+                                            inputId = "yax_switch",
+                                            label = "Y-axis from 0",
+                                            right = TRUE
+                                          ),
+                                          plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
                           )))
                )),
       
@@ -159,7 +150,6 @@ ui <- fluidPage(
       ################################
       tabPanel("By Region",
                sidebarLayout(
-                 
                  sidebarPanel(
                    width = 3,
                    h2("Filters"),
@@ -203,20 +193,20 @@ ui <- fluidPage(
                  
                  mainPanel(
                    width = 9,
-                   fluidRow(plotlyOutput(
-                   "region_tab_line_chart"
-                   )),
-                   fluidRow(plotlyOutput(
-                     "region_tab_bar_chart"
-                   )))
-               )), 
+                   fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()),
+                   br(),
+                   fluidRow(
+                     column(8, plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
+                     # br(),
+                     column(4, leafletOutput("region_tab_map") %>% withSpinner())))
+                 
+              )), 
       
       ################################
       # Download Data Tab UI Side Logic
       ################################
       tabPanel("Data",
                sidebarLayout(
-                 
                  #Filters
                  sidebarPanel(
                    id="filters_data",
@@ -240,22 +230,30 @@ ui <- fluidPage(
                    
                    sliderInput("year_range_data", 
                                label = "Select Year Range",
-                               min = 2001, max = 2020, value = c(2001, 2020)),
+                               min = 2001, max = 2020, value = c(2001, 2020),
+                               sep = ""),
                    
                    radioButtons("gender_data", 
                                 label = ("Select Sex"),
                                 choices = c("Male","Female","Total"), 
                                 selected = "Total",
                                 inline = TRUE),
+                   br(),br(),
+                   
                    actionButton("reset_data", "Reset")
                  ),
                  mainPanel(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
-                   dataTableOutput("data_table"))
+                   
+                   # div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
+                   # shiny::dataTableOutput("data_table")
+                   DTOutput("data_table")
+                   # )
+                 )
                ))
-               
+     
   )
 )
 
@@ -263,6 +261,14 @@ ui <- fluidPage(
 # Server Side Logic
 ################################
 server <- function(input, output,session) {
+  
+  observeEvent(input$navbarID, {
+    if(input$navbarID %in% c("About","Rate Types","Diseases","Data Dictionary")){
+      session$sendCustomMessage("background-color", "white")
+    } else {
+      session$sendCustomMessage("background-color", "#cccccc")
+    }
+  })
   
   ################################
   # By Disease Tab Server Side Logic
@@ -300,7 +306,7 @@ server <- function(input, output,session) {
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
-                  else c("100 Mile House","Abbotsford Rural","Agassiz/Harrison","Alberni Valley/Bamfield")
+                  else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","University of British Columbia")
                 ))
   })
   
@@ -331,6 +337,7 @@ server <- function(input, output,session) {
   })
   
   healthboundInput_d <- reactive ({
+    shiny::validate(need(input$health_bound_d, message=F))
     if(!is.null(input$health_bound_d)){
     switch(input$health_bound_d,
            "Health Authorities" = "HA",
@@ -339,6 +346,7 @@ server <- function(input, output,session) {
   })
   
   spdf_d <- reactive ({
+    shiny::validate(need(input$health_bound_d, message=F))
     if(!is.null(input$health_bound_d)){
     switch(input$health_bound_d,
            "Health Authorities" = ha_spdf,
@@ -355,75 +363,299 @@ server <- function(input, output,session) {
       )
   })
   
+  error <- reactiveValues(
+    lower = NULL,
+    upper = NULL
+  )
+  
+  #Render disease stats
+  output$text_d1 <- renderText({
+    data <- filter_df_d()
+    reg_max <-data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(HEALTH_BOUND_NAME)
+    
+    paste0(
+      healthboundInput_d()," with Highest Maximum ",input$dataset_d,
+      "<br>", "<div id=stat>",reg_max,"</div>"
+    )
+    
+  })
+  output$text_d2 <- renderText({
+    data <- filter_df_d()|>
+      group_by(HEALTH_BOUND_NAME)|>
+      summarize_at(rateInput_d(), mean)
+    reg_avg<- data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(HEALTH_BOUND_NAME)
+    
+    paste0(
+      healthboundInput_d()," with Highest Average ",input$dataset_d,
+      "<br>","<div id=stat>", reg_avg,"</div>"
+    )
+    
+  })
+  output$text_d3 <- renderText({
+    avg_rate <- mean(filter_df_d()[[rateInput_d()]])
+    
+    paste0(
+      "Average Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
+      "<br>", "<div id=stat>",round(avg_rate,2),"</div>"
+    )
+    
+  })
+  output$text_d4 <- renderText({
+    data<-filter_df_d()|>
+      group_by(YEAR)|>
+      summarize_at(rateInput_d(),mean)
+    year_max <- data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(YEAR)
+  
+    paste0(
+      "Year of Highest Average Recorded ",input$dataset_d,
+      "<br>", "<div id=stat>", year_max,"</div>"
+    )
+    
+  })  
+  
+  # Render bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
-    # d<-datasetInput_d()|>
-    #   highlight_key(~HEALTH_BOUND_NAME)
-    d<-filter_df_d()|>
-          filter((YEAR == input$year_d)&
-                   (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
-          highlight_key(~HEALTH_BOUND_NAME)
-    p <- d |>
-      ggplot(aes_string(x="HEALTH_BOUND_NAME",y= rateInput_d(),color = "HEALTH_BOUND_NAME",fill = "HEALTH_BOUND_NAME"))+
-      geom_bar(stat='identity')+
-      labs(x="Health Region",
-           y=paste0(input$dataset_d," Per 1000"),
-           title = paste0(input$dataset_d," of ",input$disease_d, " in ",input$year_d))+
-      theme(legend.position="none",
-            axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
-            plot.title = element_text(size=12),
-            axis.title.x = element_text(size=10),
-            axis.title.y = element_text(size=10))
-    ggplotly(p,source = "disease_graph_bar",tooltip=("YEAR"))|>
+    
+    # dummyData <- datasetInput_d() |>
+    #   filter(CLNT_GENDER_LABEL=='T',
+    #          GEOGRAPHY =="HA",
+    #          DISEASE == "Acute Myocardial Infarction",
+    #          YEAR==2001)
+    
+    dummyData <- filter_df_d()|>
+      filter(HEALTH_BOUND_NAME %in% input$region_d,
+             YEAR == 2001
+             )
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+
+      dummyData |>
+      plot_ly(
+              x=dummyData$HEALTH_BOUND_NAME,
+              y=dummyData[[rateInput_d()]],
+              source = "disease_graph_bar",
+              type = 'bar',
+              error_y=list(
+                type = "data",
+                symmetric = FALSE,
+                arrayminus =dummyData[[rateInput_d()]]- dummyData[[error$lower]],
+                array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
+                color = '#000000',
+                width = 10),
+              marker = list(color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                                    else
+                                    CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                              ),
+              # hovertemplate = paste('<b>Health Region</b>: %{x}',
+              #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
+              #                       '<b>Year</b>:', input$year_d,
+              #                       '<extra></extra>'
+              #                       )
+              hoverinfo="skip"
+              )%>%
+      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
+                        title = paste0(input$dataset_d," Per 1000"),
+                        gridcolor = "#d9dadb",
+                        showline= T, linewidth=1, linecolor='black'),
+             xaxis = list(title = list(text = 'Health Region', standoff = 10),
+                          categoryorder = "category ascending",
+                          tickfont = list(size = 10),
+                          showline= T, linewidth=1, linecolor='black'),
+             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
+                          y=0.92,
+                          font = list(size = 16)),
+             barmode = "overlay",
+             margin = list(t = 80,b=50),
+             # plot_bgcolor= '#d9dadb'
+             showlegend = FALSE
+            ) %>%
       event_register('plotly_hover')
+    
+    # d<-filter_df_d()|>
+    #       filter((YEAR == input$year_d)&
+    #                (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
+    #       highlight_key(~HEALTH_BOUND_NAME)
+    # 
+    # p <- dummyData |>
+    #   ggplot(aes_string(x="HEALTH_BOUND_NAME",y= "CRUDE_RATE_PER_1000",fill="HEALTH_BOUND_NAME"
+    #                     # frame = "YEAR"
+    #                     ))+
+    #   geom_col(position = "identity")+
+    #   # scale_fill_manual("legend", values = c("A" = "black", "B" = "orange", "C" = "blue"))+
+    #   labs(x="Health Region",
+    #        y=paste0(input$dataset_d," Per 1000"),
+    #        title = paste0(input$dataset_d," of "," in 2001" ))+
+    #   theme(
+    #     # legend.position="none",
+    #         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+    #         plot.title = element_text(size=12),
+    #         axis.title.x = element_text(size=10),
+    #         axis.title.y = element_text(size=10))
+    # ggplotly(p,source = "disease_graph_bar",tooltip=c("YEAR","HEALTH_BOUND_NAME"))|>
+    #   event_register('plotly_hover')
   })
   
-  # observe({
-  #   p <- plotlyProxy("disease_graph_bar",session)
-  # 
-  #   d<-filter_df_d()|>
-  #     filter((YEAR == input$year_d)&
-  #              (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
-  #     highlight_key(~HEALTH_BOUND_NAME)
-  #   p %>%
-  #     plotlyProxyInvoke("deleteTraces")
-  #     # plotlyProxyInvoke("addTraces",list(y = d[[rateInput_d()]],
-  #     #                                    x = d$HEALTH_BOUND_NAME ))
-  # })
+  # Update Disease Bar Graph with filter changes
+  observe({
+    
+    newdata <- filter_df_d()|>
+      filter((YEAR == input$year_d)&
+               ((HEALTH_BOUND_NAME %in% input$region_d)))
+    
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95") 
+    
+    p <- plotlyProxy("disease_graph_bar", session)
+    
+    p %>%
+      plotlyProxyInvoke("restyle",
+                        list(
+                          x = list(newdata$HEALTH_BOUND_NAME),
+                          y= list(newdata[[rateInput_d()]]),
+                          error_y=list(
+                            type = "data",
+                            symmetric = FALSE,
+                            arrayminus =newdata[[rateInput_d()]]- newdata[[error$lower]],
+                            array = newdata[[error$upper]]- newdata[[rateInput_d()]],
+                            color = '#000000',
+                            width = 10),
+                          marker = list(color = if(input$health_bound_d == "Health Authorities")
+                            HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                            else
+                            CHSA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                          )
+                          # color = list(newdata$HEALTH_BOUND_NAME)
+                          # colors = if(input$health_bound_d == "Health Authorities")
+                          #           list(setNames(HA_colours$Colors,HA_colours$Regions))
+                          #           else NULL
+                          # marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
+                        ))|>
+      plotlyProxyInvoke("relayout",
+                        list(
+                          autosize = F,
+                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
+                                     title = paste0(input$dataset_d," Per 1000"),
+                                     gridcolor = "#d9dadb",
+                                     showline= T, linewidth=1, linecolor='black'),
+                          xaxis=list(fixedrange = TRUE,
+                                     title = list(text = 'Health Region', standoff = 10),
+                                     categoryorder = "category ascending",
+                                     tickfont = list(size = 10),
+                                     automargin = TRUE,
+                                     showline= T, linewidth=1, linecolor='black'),
+                          title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
+                                       y=0.92,
+                                       font = list(size = 16)
+                                       )
+                        ))
+    
+  })
   
+  # Render line graph 
   output$disease_graph_line <- renderPlotly({
+    
     d <- filter_df_d()|>
-      filter(HEALTH_BOUND_NAME %in% input$region_d)|>
-      highlight_key(~HEALTH_BOUND_NAME)
-    p2<- d|>
-      ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
-                        # text = paste(
-                        #   input$dataset_d, rateInput_d(), "\n",
-                        #   "Year: ", "YEAR", "\n",
-                        #   sep = ""
-                        # )
-    ))+
-      geom_line(stat="identity")+
-      labs(y=paste0(input$dataset_d, " Per 1000"),
-           x="Year",
-           title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
-           col = "Health Region")+
-      theme(plot.title = element_text(size=12),
-            axis.title.x = element_text(size=10),
-            axis.title.y = element_text(size=10))
-    ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR"))|>
+      filter(HEALTH_BOUND_NAME %in% input$region_d)
+    
+    d |>
+    highlight_key(~HEALTH_BOUND_NAME)|>
+    plot_ly(
+      x= d$YEAR,
+      y=d[[rateInput_d()]],
+      source = "disease_graph_line",
+      type = "scatter",
+      mode="lines",
+      line = list(width=2),
+      color = ~HEALTH_BOUND_NAME,
+      colors = if(input$health_bound_d == "Health Authorities")
+                  setNames(HA_colours$Colors,HA_colours$Regions) 
+               else 
+                setNames(CHSA_colours$Colors,CHSA_colours$Regions),
+      
+      hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
+                            '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                            '<br><b>Year</b>: %{x}',
+                            '<extra></extra>'
+                            )
+    )%>%
+      layout(yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                        gridcolor = "#d9dadb",
+                        showline= T, linewidth=1, linecolor='black',
+                        rangemode="nonnegative"),
+             xaxis = list(title = list(text = 'Year', standoff = 10),
+                          gridcolor = "#d9dadb",
+                          showline= T, linewidth=1, linecolor='black'),
+             title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
+                          y=0.92,
+                          font = list(size = 16)),
+             margin = list(t=80,b=50
+                           ),
+             legend=list(title=list(text='Health Region'))
+             # plot_bgcolor= '#d9dadb'
+             # hovermode = "x unified"
+             # showlegend = FALSE
+      ) %>%
       event_register('plotly_hover')
+    
+    # p2<- d_hl|>
+    #   ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
+    #                     # text = paste(
+    #                     #   input$dataset_d, rateInput_d(), "\n",
+    #                     #   "Year: ", "YEAR", "\n",
+    #                     #   sep = ""
+    #                     # )
+    # ))+
+    #   geom_line(stat="identity")+
+    #   scale_color_manual(values= setNames(HA_colours$Colors,HA_colours$Regions))+
+    #   labs(y=paste0(input$dataset_d, " Per 1000"),
+    #        x="Year",
+    #        title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
+    #        col = "Health Region")+
+    #   theme(plot.title = element_text(size=12),
+    #         axis.title.x = element_text(size=10),
+    #         axis.title.y = element_text(size=10))
+    # ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
+    #   event_register('plotly_hover')
+
   })
   
+  observeEvent(input$yax_switch,{
+    p <- plotlyProxy("disease_graph_line", session)
+    if(input$yax_switch==TRUE){
+    p%>%
+      plotlyProxyInvoke("relayout",
+                        list(
+                          yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                     gridcolor = "#d9dadb",
+                                     showline= T, linewidth=1, linecolor='black',
+                                     rangemode = "tozero")
+                        ))
+    }else{
+      p%>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                       gridcolor = "#d9dadb",
+                                       showline= T, linewidth=1, linecolor='black',
+                                       rangemode = "nonneagtive")
+                          ))
+      
+    }
+
+  })
+
   
-  # map_spdf<- reactive({
-  #   spdf_d()|>
-  #     merge(filter(filter_df_d(),(YEAR == input$year_d)),
-  #           by.x= (if(input$health_bound_d == "Health Authorities")"HA_Name" else "CHSA_Name"),
-  #           by.y="HEALTH_BOUND_NAME")
-  #   
-  # })
-  
-  
+  # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
     
     #select dummy data
@@ -435,28 +667,34 @@ server <- function(input, output,session) {
     
     dummy_spdf <- data.table::copy(spdf_d())
     
-    dummy_spdf@data <- spdf_d()@data|>
-      mutate(CRUDE_RATE_PER_1000=dummyData$CRUDE_RATE_PER_1000[match(
-                if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
-                dummyData$HEALTH_BOUND_NAME)],
-             STD_RATE_PER_1000= dummyData$STD_RATE_PER_1000[match(
-                if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
-                dummyData$HEALTH_BOUND_NAME)]
-             )
+    if(input$health_bound_d == "Health Authorities"){
+      dummy_spdf@data <- spdf_d()@data|>
+          left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
+    }else{
+      dummy_spdf@data <- spdf_d()@data|>
+        left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
+    }
     
-    legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.5)
-    mybins <- append(seq(floor(min(dummyData[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="lightgray")
+    legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
+    mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#cccccc")
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+              )
     
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
       "<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
-      paste0(input$dataset_d,":"), dummy_spdf@data[[rateInput_d()]],
+      paste0(input$dataset_d,":"), format(round(dummy_spdf@data[[rateInput_d()]],1),1),
       sep="") |>
       lapply(htmltools::HTML)
     
     m<-leaflet(dummy_spdf) %>% 
-      setView( lat=55, lng=-127 , zoom=4.5) %>%
+      setView( lat=53.5, lng=-127 , zoom=4.5) %>%
+      addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
       addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
         fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
@@ -476,42 +714,63 @@ server <- function(input, output,session) {
         ),
       ) |>
       addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
-                 title = input$dataset_d, position = "bottomleft" )
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })
     m
     
   })
   
-
+#Update map with filter changes
   observe({
-
+  
     year_filtered_map_df <- filter(filter_df_d(),YEAR == input$year_d)
+    
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
     current_map_spdf <- data.table::copy(spdf_d())
+    
+    if(input$health_bound_d == "Health Authorities"){
+      current_map_spdf@data <- spdf_d()@data|>
+        left_join(year_filtered_map_df,by=c("HA_Name"="HEALTH_BOUND_NAME"))
+    }else{
+      current_map_spdf@data <- spdf_d()@data|>
+        left_join(year_filtered_map_df,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
+    }
 
-    current_map_spdf@data <- spdf_d()@data|>
-      mutate(CRUDE_RATE_PER_1000= year_filtered_map_df$CRUDE_RATE_PER_1000[match(
-                spdf_d()@data[[if(input$health_bound_d == "Health Authorities") "HA_Name" else "CHSA_Name"]],
-                 year_filtered_map_df$HEALTH_BOUND_NAME)],
-             STD_RATE_PER_1000= year_filtered_map_df$STD_RATE_PER_1000[match(
-                 if(input$health_bound_d == "Health Authorities") ha_spdf$HA_Name else chsa_spdf$CHSA_Name,
-                 year_filtered_map_df$HEALTH_BOUND_NAME)])
+    if(input$health_bound_d == "Health Authorities"){
+      current_map_spdf@data$text <- paste0(
+        "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
+        "<b>",input$dataset_d,": ","</b>",format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
+        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+    }else{
+      current_map_spdf@data$text <- paste0(
+        "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
+        "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
+        "<b>",input$dataset_d,": ","</b>", format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
+        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+  }
 
-    current_map_spdf@data$text <- paste0(
-      "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else current_map_spdf@data$CHSA_Name),"<br/>",
-      "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-      "<b>",paste0(input$dataset_d,":"),"</b>", current_map_spdf@data[[rateInput_d()]]) 
-
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,0.5)
-    mybins <- append(seq(floor(min(filter_df_d()[[rateInput_d()]])),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins,na.color="lightgray")
-
-    print(head(current_map_spdf@data))
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
+    mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+    )
     
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
       clearControls()%>%
       addLegend( pal=mypalette, values=current_map_spdf@data[[rateInput_d()]], opacity=0.9,
-                 title = input$dataset_d, position = "bottomleft" )%>%
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })%>%
       setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
                     fillColor = mypalette(current_map_spdf@data[[rateInput_d()]]),
                     label = current_map_spdf@data$text
@@ -528,6 +787,9 @@ server <- function(input, output,session) {
   observeEvent(input$map_shape_mouseover,{
     rv_shape(TRUE)
     event_info <- input$map_shape_mouseover
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+    bar_data<- filter(filter_df_d(),YEAR == input$year_d)
     ppl <-  plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
     rv_location$id <- event_info$id
@@ -537,7 +799,13 @@ server <- function(input, output,session) {
     ppl%>%
       plotlyProxyInvoke(
         method = "restyle",
-        list(line = list(width = 0.5))
+        list(line = list(width = 0.5),
+             color = list(~HEALTH_BOUND_NAME),
+             colors = list(if(input$health_bound_d == "Health Authorities")
+                            setNames(HA_colours$Colors,HA_colours$Regions) 
+                           else 
+                             setNames(CHSA_colours$Colors,CHSA_colours$Regions) )
+             )
       ) %>%
       plotlyProxyInvoke(
         method = "restyle",
@@ -546,16 +814,32 @@ server <- function(input, output,session) {
         as.integer(match(event_info$id,
                          my_traces())-1)
       )
-    ppb %>%
-      plotlyProxyInvoke(
-        method = "restyle",
-        list(opacity=0.2)
-      ) %>%
-      plotlyProxyInvoke(
-        method = "restyle",
-        list(opacity=1),
-        as.integer(match(event_info$id,my_traces())-1)
-      )}
+      ppb %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(opacity=0.2)
+        ) %>%
+        plotlyProxyInvoke(
+          method = "addTraces",
+          list(
+            x=list(event_info$id),
+            y=list(bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
+            error_y=list(
+              type = "data",
+              symmetric = FALSE,
+              arrayminus = list(bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
+              array = list(bar_data[[error$upper]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
+              color = '#000000',
+              width = 10),
+            type='bar',
+            marker = list(opacity = 1,
+                          color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(event_info$id,HA_colours$Regions)]
+                                  else
+                                    CHSA_colours$Colors[match(event_info$id,CHSA_colours$Regions)]
+                          )
+          ))
+   }
   })
   
   # Track mouseout activity
@@ -567,8 +851,9 @@ server <- function(input, output,session) {
     
     if (all(unlist(event_info[c('lat','lng')]) == unlist(event_info_old[c('lat','lng')]))){
       rv_shape(FALSE)
-      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 1)))
-      plotlyProxyInvoke(ppb,method = "restyle",list(opacity = 1))
+      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 2)))
+      plotlyProxyInvoke(ppb, "deleteTraces",list(as.integer(1)))%>%
+        plotlyProxyInvoke(method = "restyle",list(opacity = 1))
 
     }else{
       rv_location_move_old$lat <- event_info$lat
@@ -576,14 +861,17 @@ server <- function(input, output,session) {
     }
   })
   
+
+
+  
   # TEST
   output$hover_stuff <- renderPrint({
-    input$map_shape_mouseover$id
-    # my_traces()
+    input$yax-switch
+    
   })
   
   output$hover_stuff2 <- renderPrint({
-    input$dataset_d
+    event_data("plotly_hover",source = "disease_graph_line")
   })
   
 
@@ -594,12 +882,16 @@ server <- function(input, output,session) {
   ## Link highlighting when hovering on bar graph
   observe({
       event <- event_data("plotly_hover",source = "disease_graph_bar")
+      error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+      error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+      bar_data<- filter(filter_df_d(),YEAR == input$year_d)
       ppl <-plotlyProxy("disease_graph_line", session)
       ppb <- plotlyProxy("disease_graph_bar", session)
       lp <- leafletProxy("map",session)
       if (is.null(event)){
-        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=1)))
-        ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
+        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+        ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
+                plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
         lp %>% clearGroup('selected')
       }else{
        ppl %>%
@@ -611,7 +903,7 @@ server <- function(input, output,session) {
           method = "restyle",
           "line",
           list(width = 3),
-          as.integer(match(event[["key"]],my_traces())-1)
+          as.integer(match(event[["x"]],my_traces())-1)
         )
         ppb %>%
           plotlyProxyInvoke(
@@ -619,16 +911,39 @@ server <- function(input, output,session) {
             list(opacity=0.2)
           ) %>%
           plotlyProxyInvoke(
-            method = "restyle",
-            list(opacity=1),
-            as.integer(match(event[["key"]],my_traces())-1)
+            method = "addTraces",
+            list(
+              x=list(event[["x"]]),
+              y=list(event[["y"]]),
+              type='bar',
+              error_y=list(
+                type = "data",
+                symmetric = FALSE,
+                arrayminus = list(event[["y"]]- bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]),
+                array = list(bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]- event[["y"]]),
+                color = '#000000',
+                width = 10),
+              marker = list(opacity = 1,
+                            color = if(input$health_bound_d == "Health Authorities")
+                                      HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]
+                                    else
+                                      CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]
+                            
+                            ),
+              hovertemplate = paste('<b>Health Region</b>: %{x}',
+                                    '<br><b>Year</b>: ',input$year_d,
+                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                    '<br><b>95% Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
+                                                                    bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)],')',
+                                    '<extra></extra>')
+            )
           )
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
                       (if(input$health_bound_d == "Health Authorities") HA_Name 
                        else CHSA_Name) 
-                      == event[["key"]]),
+                      == event[["x"]]),
           stroke= TRUE,
           weight = 2,
           color = "black",
@@ -640,12 +955,16 @@ server <- function(input, output,session) {
   ## Linked highlighting when hovering on line graph
   observe({
     event <- event_data("plotly_hover",source = "disease_graph_line")
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+    bar_data<- filter(filter_df_d(),YEAR == input$year_d)
     ppl <-plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
     lp <- leafletProxy("map",session)
     if (is.null(event)){
-      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=1)))
-      ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
+      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+      ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
+              plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
       lp %>% clearGroup('selected')
     }else{
       ppl %>%
@@ -659,16 +978,32 @@ server <- function(input, output,session) {
           list(width = 3),
           as.integer(match(event[["key"]],my_traces())-1)
         )
+      
       ppb %>%
         plotlyProxyInvoke(
           method = "restyle",
           list(opacity=0.2)
         ) %>%
         plotlyProxyInvoke(
-          method = "restyle",
-          list(opacity=1),
-          as.integer(match(event[["key"]],my_traces())-1)
-        )
+          method = "addTraces",
+          list(
+            x=list(event[["key"]]),
+            y=list(bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
+            error_y=list(
+              type = "data",
+              symmetric = FALSE,
+              arrayminus = list(bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
+              array = list(bar_data[[error$upper]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
+              color = '#000000',
+              width = 10),
+            type='bar',
+            marker = list(opacity = 1,
+                          color = if(input$health_bound_d == "Health Authorities")
+                                    HA_colours$Colors[match(event[["key"]],HA_colours$Regions)]
+                                  else
+                                    CHSA_colours$Colors[match(event[["key"]],CHSA_colours$Regions)]
+                          )
+          ))
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
@@ -719,7 +1054,7 @@ server <- function(input, output,session) {
           sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
       ),
       multiple = FALSE,
-      selected = "Interior"
+      selected = HA_CHOICES[1]
     )
   })
   
@@ -751,36 +1086,81 @@ server <- function(input, output,session) {
   # plot the line chart showing trends of diseases over time
   output$region_tab_line_chart <- renderPlotly({
     line_chart <- region_tab_filtered_data() |>
-      ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
+      ggplot(aes_string(y = region_tab_rate_as_variable(), 
+                        x = "YEAR", 
+                        color = "DISEASE")) +
       geom_line(stat = 'identity') +
       labs(
-        y = input$region_tab_rate_type_selected,
-        x = "Year",
+        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+        x = NULL,
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
-      ) +
+      ) + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
-    
-    ggplotly(line_chart)
+    # , tooltip = c(DISEASE, YEAR, region_tab_rate_as_variable()
+    ggplotly(line_chart) |> 
+      layout(hovermode = "x unified")
   })
   
   # plot a bar chart showing the distribution of cumulative rates for diseases
   output$region_tab_bar_chart <- renderPlotly({
-    bar_chart <- region_tab_filtered_data() |> 
-      filter(YEAR == input$region_tab_year_range_selected[1]) |> 
-      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(), fill = "DISEASE")) +
+    bar_chart <- region_tab_filtered_data() |>
+      filter(YEAR == input$region_tab_year_range_selected[1]) |>
+      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(),
+                        fill = "DISEASE")) +
       geom_bar(stat = "identity") +
       labs(
-        y = input$region_tab_rate_type_selected,
-        legend = "Disease",
-        title = paste0("Distribution of Diseases by ", input$region_tab_rate_type_selected,
-                       " in ", input$region_tab_year_range_selected[1])
-      ) + 
+        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+        x = NULL,
+        title = paste0(
+          "Distribution of Diseases by ",
+          input$region_tab_rate_type_selected,
+          " in ",
+          input$region_tab_year_range_selected[1]
+        )
+      ) + theme(plot.title = element_text(size = 8),
+                legend.position = "none") +
       scale_x_discrete(labels = wrap_format(10))
+    
     ggplotly(bar_chart)
   })
   
   # a map highlighting the selected health region to provide context
+  region_tab_map_data <- reactive({
+    
+    if (input$region_tab_geography_selected == "Health Authorities") {
+      region_level <- ha_spdf
+      region_index <- chmatch(input$region_tab_region_selected, ha_spdf$HA_Name)
+      selected_region_lat <- ha_spdf$Latitude[region_index]
+      selected_region_lon <- ha_spdf$Longitude[region_index]
+    }
+    else {
+      region_level <- chsa_spdf
+      region_index <- chmatch(input$region_tab_region_selected, chsa_spdf$CHSA_Name)
+      selected_region_lat <- chsa_spdf$Latitude[region_index]
+      selected_region_lon <- chsa_spdf$Longitude[region_index]
+    }
+    to_return <- list(region_level = region_level,
+                      selected_region_lat = selected_region_lat, 
+                      selected_region_lon = selected_region_lon)
+    to_return
+  })
+  
+  
+  output$region_tab_map <- renderLeaflet({
+    location_to_be_tagged <- region_tab_map_data()
+    map <- leaflet(location_to_be_tagged$region_level) |> 
+      addProviderTiles(provider = providers$OpenStreetMap) |> 
+      addPolygons(weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) |>
+      addMarkers(lng = location_to_be_tagged$selected_region_lon,
+                 lat = location_to_be_tagged$selected_region_lat,
+                 label = input$region_tab_region_selected)
+    map
+    })
   
   
   ################################
@@ -832,21 +1212,34 @@ server <- function(input, output,session) {
   
   output$disease_data <- renderUI({
     selectInput("disease_data", 
-                label = "Select Disease",
+                label = "Select Disease(s)",
                 choices = append("All", unique(datasetInput_data()$DISEASE)),
                 multiple = TRUE,
                 selected = "All")
   })
   
   filter_df_data <- reactive({
-    datasetInput_data() |> 
+    data <- datasetInput_data() |> 
       filter (
         (GEOGRAPHY == healthboundInput_data()) & 
           (if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
           (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
           (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
           (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
-      select(-HEALTH_BOUND_CODE)
+      mutate(CRUDE_CI=paste0("(",CRUDE_LCL_95,",",CRUDE_UCL_95,")"),
+             STD_CI=paste0("(",STD_LCL_95,",",STD_UCL_95,")"))|>
+      rename(SEX =CLNT_GENDER_LABEL,
+             HEALTH_BOUNDARY=HEALTH_BOUND_NAME)|>
+      select(YEAR,DISEASE,SEX,GEOGRAPHY,HEALTH_BOUNDARY,NUMERATOR,DENOMINATOR,
+             CRUDE_RATE_PER_1000, CRUDE_CI,CRUDE_VARIANCE,STD_RATE_PER_1000,
+             STD_CI,STD_VARIANCE)
+    
+    names(data)<-snakecase::to_title_case(names(data))
+    
+    data|>
+      rename("Crude 95% CI" = "Crude Ci",
+             "Standardized 95% CI" = "Std Ci")
+    
   })
   
   
@@ -859,9 +1252,22 @@ server <- function(input, output,session) {
     }
   )
   
-  output$data_table <- renderDataTable(filter_df_data())
+  # output$data_table <- shiny::renderDataTable(filter_df_data())
+  
+  output$data_table <- renderDT(filter_df_data(),
+                                rownames= FALSE,
+                                options = list(
+                                  scrollX = TRUE, 
+                                  scrollY = "520px",
+                                  autoWidth = TRUE,
+                                  columnDefs = list(list(width = '150px', targets = c(1)),
+                                                    list(className = 'dt-center', targets = "_all"),
+                                                    list(width = '100px', targets = c(7,10))
+                                                    )
+                                  ))
   
 }
+
 
 ################################
 # Run App
