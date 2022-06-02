@@ -151,6 +151,7 @@ ui <- fluidPage(
       tabPanel("By Region",
                sidebarLayout(
                  sidebarPanel(
+                   id="filters_d",
                    width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
@@ -1034,13 +1035,9 @@ server <- function(input, output,session) {
   })
   
   region_tab_rate_as_variable <- reactive({
-    switch(input$region_tab_rate_type_selected,
-           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
-           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
-           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
+    ifelse(startsWith(input$region_tab_rate_type_selected, "Age Standardized"),
+           "STD_RATE_PER_1000",
+           "CRUDE_RATE_PER_1000")
   })
   
   output$region_tab_region_selected <- renderUI({
@@ -1076,46 +1073,44 @@ server <- function(input, output,session) {
                                input$region_tab_year_range_selected[2], 
                                by = 1)) &
                 (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1))) |> 
-      mutate(tooltip_values = paste0(input$region_tab_rate_type_selected, 
-                                     " Per 1000: ",
-                                     round(ifelse(region_tab_rate_as_variable() == "CRUDE_RATE_PER_1000",
-                                                  CRUDE_RATE_PER_1000,
-                                                  STD_RATE_PER_1000), 1)))
+      mutate(CRUDE_RATE_PER_1000_rounded = round(CRUDE_RATE_PER_1000, 1),
+             STD_RATE_PER_1000_rounded = round(STD_RATE_PER_1000, 1))
   })
   
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
   output$region_tab_line_chart <- renderPlotly({
-    print(region_tab_filtered_data()$tooltip_values[1:100])
     line_chart <- region_tab_filtered_data() |>
       ggplot(aes_string(y = region_tab_rate_as_variable(),
                         x = "YEAR",
-                        color = "DISEASE",
-                        text = quote(tooltip_values))) +
+                        color = "DISEASE")) +
       geom_line(stat = 'identity') +
       labs(
         y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
-        legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
       ) +
       theme(axis.text.x = element_text(
         angle = 45,
         hjust = 1,
-        vjust = 1
-      )) +
+        vjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
     
-    ggplotly(line_chart, 
-             tooltip = "text") |>
-      layout(hovermode = "x unified")
+    ggplotly(line_chart, tooltip = "text") |>
+      layout(hovermode = "x unified") |> 
+      style(text = paste0("Disease: ", region_tab_filtered_data()[["DISEASE"]],
+                          "</br></br>",
+                          input$region_tab_rate_type_selected, " Per 1000: ",
+                          region_tab_filtered_data()[[paste0(region_tab_rate_as_variable(), "_rounded")]]))
   })
   
   # Plot a bar chart comparing rates for diseases in a year
   # x is DISEASE, y is the selected rate type, color is DISEASE
   output$region_tab_bar_chart <- renderPlotly({
-    bar_chart <- region_tab_filtered_data() |>
-      filter(YEAR == input$region_tab_year_range_selected[1]) |>
+    bar_chart_data <- region_tab_filtered_data() |>
+      filter(YEAR == input$region_tab_year_range_selected[1])
+    
+    bar_chart <- bar_chart_data |>
       ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(),
                         fill = "DISEASE")) +
       geom_bar(stat = "identity") +
@@ -1129,10 +1124,12 @@ server <- function(input, output,session) {
           input$region_tab_year_range_selected[1]
         )
       ) + theme(plot.title = element_text(size = 8),
-                legend.position = "none") +
+                legend.position="none") +
       scale_x_discrete(labels = wrap_format(10))
     
-    ggplotly(bar_chart, tooltip = c("y"))
+    ggplotly(bar_chart) |> 
+      style(text = paste0(input$region_tab_rate_type_selected, " Per 1000: ",
+                          bar_chart_data[[paste0(region_tab_rate_as_variable(), "_rounded")]]))
   })
   
   # This function finds the information to highlight the selected region on the map
