@@ -369,8 +369,8 @@ server <- function(input, output,session) {
       pull(HEALTH_BOUND_NAME)
     
     paste0(
-      "<b>",healthboundInput_d()," with Highest Maximum ",input$dataset_d,
-      "</b><br><br>", reg_max
+      healthboundInput_d()," with Highest Maximum ",input$dataset_d,
+      "<br>", "<div id=stat>",reg_max,"</div>"
     )
     
   })
@@ -384,8 +384,8 @@ server <- function(input, output,session) {
       pull(HEALTH_BOUND_NAME)
     
     paste0(
-      "<b>",healthboundInput_d()," with Highest Average ",input$dataset_d,
-      "</b><br><br>", reg_avg
+      healthboundInput_d()," with Highest Average ",input$dataset_d,
+      "<br>","<div id=stat>", reg_avg,"</div>"
     )
     
   })
@@ -393,17 +393,25 @@ server <- function(input, output,session) {
     avg_rate <- mean(filter_df_d()[[rateInput_d()]])
     
     paste0(
-      "<b>","Average Recorded ",input$dataset_d,"Over All", healthboundInput_d(),"s",
-      "</b><br><br>", avg_rate
+      "Average Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
+      "<br>", "<div id=stat>",round(avg_rate,2),"</div>"
     )
     
   })
   output$text_d4 <- renderText({
-    
-    
+    data<-filter_df_d()|>
+      group_by(YEAR)|>
+      summarize_at(rateInput_d(),mean)
+    year_max <- data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(YEAR)
+  
     paste0(
-      "<b>ABCABC</b><br>",
-      "SKDJF:LKE")
+      "Year of Highest Average Recorded ",input$dataset_d,
+      "<br>", "<div id=stat>", year_max,"</div>"
+    )
+    
   })  
   
   # Render bar graph for each rate/disease 

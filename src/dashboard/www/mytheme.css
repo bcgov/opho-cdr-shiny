@@ -64,13 +64,23 @@
 
 #text_d1,#text_d2,#text_d3,#text_d4{
   background-color:var(--white) ;
-  text-align: center;
+  text-align: left;
   padding-right: 5px;
   padding-left: 5px;
   padding-top: 5px;
   padding-bottom: 20px;
   height: 100px;
 }
+
+#stat{
+  color:var(--navy);
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 5px;
+  text-align: center;
+  
+}
+
 
 .col-sm-3{
   padding-bottom: 15px;
@@ -95,5 +105,5 @@ img{
   background-color: #FFFAEB;
   border-radius: 15px;
   border: 5px solid var(--yellow);
-  
 }
+
