@@ -124,12 +124,12 @@ ui <- fluidPage(
                    column(3,htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height = 700)%>% withSpinner(),
+                   column(6, leafletOutput("map",height = 650)%>% withSpinner(),
                           # verbatimTextOutput("hover_stuff"),
                           # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=350)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
                           br(),
                           fluidRow(column(12,
                                           materialSwitch(
@@ -138,7 +138,7 @@ ui <- fluidPage(
                                             right = TRUE
                                             # status = "primary"
                                           ),
-                                          plotlyOutput("disease_graph_line",height=350)%>% withSpinner())),
+                                          plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
                           )))
                )),
       
@@ -1188,7 +1188,7 @@ server <- function(input, output,session) {
           (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
           (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
       select(-HEALTH_BOUND_CODE)|>
-      rename(Sex == CLNT_GENDER_LABEL)
+      rename(Sex = CLNT_GENDER_LABEL)
   })
   
   
@@ -1202,10 +1202,6 @@ server <- function(input, output,session) {
   )
   
   output$data_table <- renderDataTable(filter_df_data())
-  
-  observe({
-    print(head(hsc_prev_df))
-  })
   
 }
 
