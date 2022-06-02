@@ -136,7 +136,6 @@ ui <- fluidPage(
                                             inputId = "yax_switch",
                                             label = "Y-axis from 0",
                                             right = TRUE
-                                            # status = "primary"
                                           ),
                                           plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
                           )))
@@ -391,14 +390,17 @@ server <- function(input, output,session) {
     
   })
   output$text_d3 <- renderText({
-    
+    avg_rate <- mean(filter_df_d()[[rateInput_d()]])
     
     paste0(
-      "<b>ABCABC</b><br><br>",
-      "SKDJF:LKE  ")
+      "<b>","Average Recorded ",input$dataset_d,"Over All", healthboundInput_d(),"s",
+      "</b><br><br>", avg_rate
+    )
     
   })
   output$text_d4 <- renderText({
+    
+    
     paste0(
       "<b>ABCABC</b><br>",
       "SKDJF:LKE")
