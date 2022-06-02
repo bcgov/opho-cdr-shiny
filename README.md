@@ -26,7 +26,9 @@ To render our proposal locally, clone this GitHub repository, install R
 and the required dependencies, and run the following command at the
 command line/terminal from the root directory:
 
-    Rscript -e "rmarkdown::render('docs/proposal/capstone-proposal.Rmd')"
+```
+Rscript -e "rmarkdown::render('docs/proposal/capstone-proposal.Rmd')"
+```
 
 ### Usage
 
@@ -89,19 +91,18 @@ to abide by its terms.
 
 ### License
 
-    Copyright 2022 Province of British Columbia
+```
+Copyright 2022 Province of British Columbia
 
-    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and limitations under the License.
-
-------------------------------------------------------------------------
-
-*This project was created using the
-[bcgovr](https://github.com/bcgov/bcgovr) package.*
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+```
+---
+*This project was created using the [bcgovr](https://github.com/bcgov/bcgovr) package.* 

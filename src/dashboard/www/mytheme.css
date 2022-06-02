@@ -1,0 +1,160 @@
+/* Color Constants*/
+:root {
+  --yellow: #fcba19;
+  --navy:#003366;
+  --white:#ffffff;
+  --mediumblue:#4c81af;
+}
+
+/* Navbar Styles */
+
+.navbar {margin-bottom: 0px;}
+.navbar-default {background-color:  var(--navy);
+                border-bottom-color: var(--yellow);
+                }
+                
+.navbar-fixed-top { border-bottom-width: 3px;}
+
+.navbar-default .navbar-brand, 
+.navbar-default .navbar-brand:hover  { font-size: 38px; 
+                                      color:var(--white) ;
+                                      vertical-align: middle;
+                                      font-weight: bold;
+                                      }
+.navbar-brand{ height: 60px;
+               padding: 0px;
+               padding-right: 25px;} 
+
+.navbar .navbar-nav{ font-size: 14px;
+                      height: 60px;
+                      font-weight: bold;}
+.navbar-nav>li>a {
+  line-height:2.2;
+}
+
+.navbar-default .navbar-nav>li>a{
+  color: var(--white) ;
+}
+
+.navbar-default .navbar-nav>.active>a, 
+.navbar-default .navbar-nav>.active>a:focus, 
+.navbar-default .navbar-nav>.active>a:hover {
+                color: var(--white);
+                background-color:var(--yellow);}
+                
+.dropdown-menu>.active>a, 
+.dropdown-menu>.active>a:focus, 
+.dropdown-menu>.active>a:hover{
+    background-color: var(--mediumblue);
+}  
+
+.navbar-default .navbar-nav>.open>a, 
+.navbar-default .navbar-nav>.open>a:focus, 
+.navbar-default .navbar-nav>.open>a:hover{
+    color:  var(--white);
+    background-color: var(--yellow);
+}
+
+.navbar-default .navbar-nav>li>a:focus, 
+.navbar-default .navbar-nav>li>a:hover {
+  color:  var(--yellow);
+}
+
+img{
+    max-height: 60px;
+    width: auto;
+    margin-top: 0px;
+}
+
+
+/* Disease Tab Styles */
+
+#disease_graph_line .plot-container .plotly{
+  padding-bottom: 10px;
+}
+
+#disease_graph_bar{
+  margin-bottom:5px;
+}
+
+#text_d1,#text_d2,#text_d3,#text_d4{
+  background-color:var(--white) ;
+  text-align: left;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  height: 100px;
+  font-size: 14px;
+}
+
+#stat{
+  color:var(--navy);
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 3px;
+  text-align: center;
+}
+
+.col-sm-3{
+  padding-bottom: 15px;
+}
+
+.label-default {
+    background-color: var(--yellow);
+}
+
+.form-group {
+    margin-bottom: 5px;
+    margin-top: 15px;
+}
+
+.form-group .material-switch {
+  margin-bottom: 5px;
+  margin-top: 5px;
+  
+}
+
+#map {
+    background: white;
+}
+
+/* Body and Filter Sidebar Styles */
+
+#body {
+  padding-top: 85px;
+}
+
+#filters_d, #filters_data{
+  background-color: #FFFAEB;
+  border-radius: 15px;
+  border: 5px solid var(--yellow);
+}
+
+hr {
+    margin-top: 10px;
+}
+
+/* Data Tab Styles */
+#download_data{
+  background-color: var(--yellow);
+  padding:12px;
+}
+
+#data_table{
+
+  background-color:var(--white);
+  padding-top:10px;
+  padding-left:10px;
+  padding-right: 10px;
+}
+/*
+table.dataTable.display tbody tr.odd{
+  background-color:var(--white)
+}
+
+table.dataTable.display tbody tr.even{
+  background-color:var(--white)
+}
+*/
+                    
