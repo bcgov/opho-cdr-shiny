@@ -85,7 +85,7 @@ img{
   padding-top: 5px;
   padding-bottom: 20px;
   height: 100px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 #stat{
@@ -115,6 +115,14 @@ img{
   
 }
 
+.slider-animate-button { 
+  font-size: 15pt !important;
+  }
+  
+.slider-animate-container{
+  margin-top: 3px;
+}
+
 #map {
     background: white;
 }
@@ -133,6 +141,10 @@ img{
 
 hr {
     margin-top: 10px;
+}
+
+.irs-grid-text{
+  transform: rotate(45deg) translate(3px);
 }
 
 /* Data Tab Styles */

@@ -15,6 +15,7 @@ library(shinycssloaders)
 library(rgeos)
 library(shinyWidgets)
 library(DT)
+library(shinyBS)
 
 
 ################################
@@ -105,7 +106,13 @@ ui <- fluidPage(
                                 inline=TRUE),
                 
                    sliderInput("year_d", 
-                               label = "Select Fiscal Year",
+                               label = tags$span(
+                                 "Select Year  ", 
+                                 tags$i(
+                                   id = "year_info_d",
+                                   class = "glyphicon glyphicon-info-sign", 
+                                   style = "color:#0072B2;"
+                                 )),
                                min = 2001,
                                max=2020,
                                value = 2001,
@@ -113,11 +120,12 @@ ui <- fluidPage(
                                ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
-                   
+                   bsTooltip(id = "year_info_d", 
+                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+                             placement = "right"
+                             ),
                    br(),
-        
                    actionButton("reset_d", "Reset")
-                    
                ),
                mainPanel(
                  width = 9,
@@ -134,7 +142,6 @@ ui <- fluidPage(
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
-                         
                           fluidRow(column(12,
                                           materialSwitch(
                                             inputId = "yax_switch",
@@ -230,9 +237,20 @@ ui <- fluidPage(
                    uiOutput("region_data"),
                    
                    sliderInput("year_range_data", 
-                               label = "Select Year Range",
+                               label = tags$span(
+                                 "Select Year Range  ",
+                                 tags$i(
+                                   id = "year_info_data",
+                                   class = "glyphicon glyphicon-info-sign",
+                                   style = "color:#0072B2;"
+                                 )),
                                min = 2001, max = 2020, value = c(2001, 2020),
                                sep = ""),
+                   
+                   bsTooltip(id = "year_info_data", 
+                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+                             placement = "right"
+                   ),
                    
                    radioButtons("gender_data", 
                                 label = ("Select Sex"),
@@ -240,21 +258,15 @@ ui <- fluidPage(
                                 selected = "Total",
                                 inline = TRUE),
                    br(),br(),
-                   
                    actionButton("reset_data", "Reset")
                  ),
                  mainPanel(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
-                   
-                   # div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
-                   # shiny::dataTableOutput("data_table")
                    DTOutput("data_table")
-                   # )
                  )
                ))
-     
   )
 )
 
@@ -263,6 +275,7 @@ ui <- fluidPage(
 ################################
 server <- function(input, output,session) {
   
+  # Change bg color depending on tab
   observeEvent(input$navbarID, {
     if(input$navbarID %in% c("About","Rate Types","Diseases","Data Dictionary")){
       session$sendCustomMessage("background-color", "white")
@@ -275,10 +288,12 @@ server <- function(input, output,session) {
   # By Disease Tab Server Side Logic
   ################################
   
+  # Reset filters
   observeEvent(input$reset_d, {
     reset("filters_d")
   })
 
+  # Dynamic UI for rate selection
   output$dataset_d <- renderUI({
     selectInput("dataset_d", 
                 label = "Select Rate Type",
@@ -296,6 +311,7 @@ server <- function(input, output,session) {
     )
   })
   
+  # Dynamic UI for region selection
   output$region_d <- renderUI({
     selectInput("region_d",
                 label = "Select Health Region(s)",
@@ -311,6 +327,7 @@ server <- function(input, output,session) {
                 ))
   })
   
+  # Dataset selection based on user input
   datasetInput_d <- reactive({
     shiny::validate(need(input$dataset_d, message=F))
     if(!is.null(input$dataset_d)){
@@ -324,6 +341,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # Rate selection based on user input
   rateInput_d <- reactive({
     shiny::validate(need(input$dataset_d, message=F))
     if(!is.null(input$dataset_d)){
@@ -337,6 +355,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # Geography selection based on user input
   healthboundInput_d <- reactive ({
     shiny::validate(need(input$health_bound_d, message=F))
     if(!is.null(input$health_bound_d)){
@@ -346,6 +365,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # Map geography selection based on user input
   spdf_d <- reactive ({
     shiny::validate(need(input$health_bound_d, message=F))
     if(!is.null(input$health_bound_d)){
@@ -355,7 +375,7 @@ server <- function(input, output,session) {
     }
   })
   
-  
+  # Filter dataset based on user input
   filter_df_d <- reactive({
     datasetInput_d() |> 
       filter ((GEOGRAPHY == healthboundInput_d())&
@@ -379,7 +399,7 @@ server <- function(input, output,session) {
     
     paste0(
       healthboundInput_d()," with Highest Maximum ",input$dataset_d,
-      "<br>", "<div id=stat>",reg_max,"</div>"
+      " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
     
   })
@@ -394,7 +414,7 @@ server <- function(input, output,session) {
     
     paste0(
       healthboundInput_d()," with Highest Average ",input$dataset_d,
-      "<br>","<div id=stat>", reg_avg,"</div>"
+      " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
     
   })
@@ -423,14 +443,8 @@ server <- function(input, output,session) {
     
   })  
   
-  # Render bar graph for each rate/disease 
+  # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
-    
-    # dummyData <- datasetInput_d() |>
-    #   filter(CLNT_GENDER_LABEL=='T',
-    #          GEOGRAPHY =="HA",
-    #          DISEASE == "Acute Myocardial Infarction",
-    #          YEAR==2001)
     
     dummyData <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d,
@@ -457,11 +471,6 @@ server <- function(input, output,session) {
                                     else
                                     CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
                               ),
-              # hovertemplate = paste('<b>Health Region</b>: %{x}',
-              #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
-              #                       '<b>Year</b>:', input$year_d,
-              #                       '<extra></extra>'
-              #                       )
               hoverinfo="skip"
               )%>%
       layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
@@ -481,29 +490,6 @@ server <- function(input, output,session) {
              showlegend = FALSE
             ) %>%
       event_register('plotly_hover')
-    
-    # d<-filter_df_d()|>
-    #       filter((YEAR == input$year_d)&
-    #                (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
-    #       highlight_key(~HEALTH_BOUND_NAME)
-    # 
-    # p <- dummyData |>
-    #   ggplot(aes_string(x="HEALTH_BOUND_NAME",y= "CRUDE_RATE_PER_1000",fill="HEALTH_BOUND_NAME"
-    #                     # frame = "YEAR"
-    #                     ))+
-    #   geom_col(position = "identity")+
-    #   # scale_fill_manual("legend", values = c("A" = "black", "B" = "orange", "C" = "blue"))+
-    #   labs(x="Health Region",
-    #        y=paste0(input$dataset_d," Per 1000"),
-    #        title = paste0(input$dataset_d," of "," in 2001" ))+
-    #   theme(
-    #     # legend.position="none",
-    #         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
-    #         plot.title = element_text(size=12),
-    #         axis.title.x = element_text(size=10),
-    #         axis.title.y = element_text(size=10))
-    # ggplotly(p,source = "disease_graph_bar",tooltip=c("YEAR","HEALTH_BOUND_NAME"))|>
-    #   event_register('plotly_hover')
   })
   
   # Update Disease Bar Graph with filter changes
@@ -535,11 +521,6 @@ server <- function(input, output,session) {
                             else
                             CHSA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
                           )
-                          # color = list(newdata$HEALTH_BOUND_NAME)
-                          # colors = if(input$health_bound_d == "Health Authorities")
-                          #           list(setNames(HA_colours$Colors,HA_colours$Regions))
-                          #           else NULL
-                          # marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
                         ))|>
       plotlyProxyInvoke("relayout",
                         list(
@@ -562,7 +543,7 @@ server <- function(input, output,session) {
     
   })
   
-  # Render line graph 
+  # Render disease line graph 
   output$disease_graph_line <- renderPlotly({
     
     d <- filter_df_d()|>
@@ -599,37 +580,26 @@ server <- function(input, output,session) {
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
                           y=0.92,
                           font = list(size = 16)),
-             margin = list(t=80,b=50
-                           ),
-             legend=list(title=list(text='Health Region'))
-             # plot_bgcolor= '#d9dadb'
-             # hovermode = "x unified"
-             # showlegend = FALSE
+             margin = list(t=80,b=50),
+             legend = list(title=list(text='Health Region')),
+             shapes = list(vline(2001))
       ) %>%
       event_register('plotly_hover')
-    
-    # p2<- d_hl|>
-    #   ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
-    #                     # text = paste(
-    #                     #   input$dataset_d, rateInput_d(), "\n",
-    #                     #   "Year: ", "YEAR", "\n",
-    #                     #   sep = ""
-    #                     # )
-    # ))+
-    #   geom_line(stat="identity")+
-    #   scale_color_manual(values= setNames(HA_colours$Colors,HA_colours$Regions))+
-    #   labs(y=paste0(input$dataset_d, " Per 1000"),
-    #        x="Year",
-    #        title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
-    #        col = "Health Region")+
-    #   theme(plot.title = element_text(size=12),
-    #         axis.title.x = element_text(size=10),
-    #         axis.title.y = element_text(size=10))
-    # ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
-    #   event_register('plotly_hover')
-
   })
   
+  # Update disease line graph with year 
+  observe({
+    p <- plotlyProxy("disease_graph_line", session)
+    
+    p %>%
+      plotlyProxyInvoke("relayout",
+                        list(
+                          shapes = list(vline(input$year_d))
+                        ))
+  })
+  
+  
+  # Switch to change line graph to start at 0 
   observeEvent(input$yax_switch,{
     p <- plotlyProxy("disease_graph_line", session)
     if(input$yax_switch==TRUE){
@@ -652,10 +622,8 @@ server <- function(input, output,session) {
                           ))
       
     }
-
   })
 
-  
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
     
@@ -863,8 +831,6 @@ server <- function(input, output,session) {
   })
   
 
-
-  
   # TEST
   output$hover_stuff <- renderPrint({
     input$yax-switch
@@ -876,11 +842,12 @@ server <- function(input, output,session) {
   })
   
 
+  # Define graph traces 
   my_traces <- reactive({
     sort(input$region_d)
   })
   
-  ## Link highlighting when hovering on bar graph
+  # Link highlighting when hovering on bar graph
   observe({
       event <- event_data("plotly_hover",source = "disease_graph_bar")
       error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
@@ -1188,10 +1155,12 @@ server <- function(input, output,session) {
   # Download Data Tab Server Side Logic
   ################################
   
+  # Reset filters
   observeEvent(input$reset_data, {
     reset("filters_data")
   })
   
+  # Select dataset based on user input
   datasetInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = inc_rate_df,
@@ -1202,6 +1171,7 @@ server <- function(input, output,session) {
            "Age Standardized HSC Prevalence" = hsc_prev_df)
   })
   
+  # Select rate based on user input
   rateInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
@@ -1212,13 +1182,14 @@ server <- function(input, output,session) {
            "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
   })
   
+  # Select geography based on user input
   healthboundInput_data <- reactive ({
     switch(input$health_bound_data,
            "Health Authorities" = "HA",
            "Community Health Service Areas" = "CHSA")
   })
   
-  
+  # Dynamic UI for region selection
   output$region_data <- renderUI({
     selectInput("region_data",
                 label = "Select Health Region(s)",
@@ -1231,6 +1202,7 @@ server <- function(input, output,session) {
                 selected = "All")
   })
   
+  # Dynamic UI for disease selection
   output$disease_data <- renderUI({
     selectInput("disease_data", 
                 label = "Select Disease(s)",
@@ -1239,6 +1211,7 @@ server <- function(input, output,session) {
                 selected = "All")
   })
   
+  # Filter data and reformat dataframe
   filter_df_data <- reactive({
     data <- datasetInput_data() |> 
       filter (
@@ -1263,7 +1236,7 @@ server <- function(input, output,session) {
     
   })
   
-  
+  # Render download data button
   output$download_data <- downloadHandler(
     filename = function() {
       paste("BC_Chronic_Disease_Data-", Sys.Date(), ".csv", sep="")
@@ -1272,9 +1245,8 @@ server <- function(input, output,session) {
       write.csv(filter_df_data(), file)
     }
   )
-  
-  # output$data_table <- shiny::renderDataTable(filter_df_data())
-  
+
+  # Render data table  
   output$data_table <- renderDT(filter_df_data(),
                                 rownames= FALSE,
                                 options = list(
@@ -1288,7 +1260,6 @@ server <- function(input, output,session) {
                                   ))
   
 }
-
 
 ################################
 # Run App
