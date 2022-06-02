@@ -161,3 +161,49 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                 For more information on these diseases, see <a href='file:///./src/dashboard/data/CDR_Case_Definitions.pdf'>here</a>.
 
 "
+
+
+data_dict_info <-"
+  <table>
+    <tr>
+      <th>Variable Name</th>
+      <th>Description</th>
+      <th>Sample Values</th>
+    </tr>
+    <tr>
+      <td>DISEASE</td>
+      <td>Name of the chronic condition.</td>
+      <td><q>ASTHMA</q>, <q>DEPRESSION</q>, <q>PARKINSONISM</q></td>
+    </tr>
+    <tr>
+      <td>FISC_YR_LABEL</td>
+      <td>Label for the fiscal year (April 1 to March 31 of the following year).</td>
+      <td><q>FY 2001.2002</q> up to <q>FY 2020.2021</q></td>
+    </tr>
+    <tr>
+      <td>CLNT_GENDER_LABEL</td>
+      <td>Gender category.</td>
+      <td><q>T</q>, <q>M</q>, or <q>F</q>. T includes Male, Female, and Unknown.</td>
+    </tr>
+    <tr>
+      <td>GEOGRAPHY</td>
+      <td>The type of health boundary used to separate geographic areas.</td>
+      <td><q>HA</q> or <q>CHSA</q></td>
+    </tr>
+    <tr>
+      <td>HEALTH_BOUNDARIES</td>
+      <td>The CHSA region of interest.</td>
+      <td><q>1440 100 Mile House<q>, </q>2323 Tsawwassen</q>, <q>3351 Squamish</q></td>
+    </tr>
+    <tr>
+      <td>STDPOP</td>
+      <td>Standard population used for calculating age-standardized rates.</td>
+      <td>All entries are <q>2011 Canadian Census</q></td>
+    </tr>
+    <tr>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+  </table>
+"

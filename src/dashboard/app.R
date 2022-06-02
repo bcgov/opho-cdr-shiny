@@ -70,7 +70,7 @@ ui <- fluidPage(
                  ),
         tabPanel("Data Dictionary",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
-                 p(HTML(""))
+                 p(HTML(data_dict_info))
                 ),
         ),
       
@@ -306,7 +306,7 @@ server <- function(input, output,session) {
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
-                  else c("100 Mile House","Alberni Valley/Bamfield","Mackenzie","Port Coquitlam","University of British Columbia")
+                  else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","University of British Columbia")
                 ))
   })
   
