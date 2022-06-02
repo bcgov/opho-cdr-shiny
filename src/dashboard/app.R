@@ -371,7 +371,7 @@ server <- function(input, output,session) {
     
     paste0(
       "<b>",healthboundInput_d()," with Highest Maximum ",input$dataset_d,
-      "</b><br style = 'margin-bottom:10px;' >", reg_max
+      "</b><br><br>", reg_max
     )
     
   })
@@ -391,6 +391,8 @@ server <- function(input, output,session) {
     
   })
   output$text_d3 <- renderText({
+    
+    
     paste0(
       "<b>ABCABC</b><br><br>",
       "SKDJF:LKE  ")
@@ -1185,7 +1187,8 @@ server <- function(input, output,session) {
           (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
           (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
           (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
-      select(-HEALTH_BOUND_CODE)
+      select(-HEALTH_BOUND_CODE)|>
+      rename(Sex == CLNT_GENDER_LABEL)
   })
   
   
@@ -1200,7 +1203,12 @@ server <- function(input, output,session) {
   
   output$data_table <- renderDataTable(filter_df_data())
   
+  observe({
+    print(head(hsc_prev_df))
+  })
+  
 }
+
 
 ################################
 # Run App
