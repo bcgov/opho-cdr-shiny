@@ -1234,10 +1234,11 @@ server <- function(input, output,session) {
                                 rownames= FALSE,
                                 options = list(
                                   scrollX = TRUE, 
-                                  scrollY = "550px",
+                                  scrollY = "520px",
                                   autoWidth = TRUE,
                                   columnDefs = list(list(width = '150px', targets = c(1)),
-                                                    list(className = 'dt-center', targets = "_all")
+                                                    list(className = 'dt-center', targets = "_all"),
+                                                    list(width = '100px', targets = c(7,10))
                                                     )
                                   ))
   

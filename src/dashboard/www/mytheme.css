@@ -124,5 +124,13 @@ img{
   padding-left:10px;
   padding-right: 10px;
 }
+/*
+table.dataTable.display tbody tr.odd{
+  background-color:var(--white)
+}
 
+table.dataTable.display tbody tr.even{
+  background-color:var(--white)
+}
+*/
                     
