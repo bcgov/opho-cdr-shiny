@@ -181,7 +181,7 @@ ui <- fluidPage(
                    br(),
                    fluidRow(
                      column(8, plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
-                     br(),
+                     # br(),
                      column(4, leafletOutput("region_tab_map") %>% withSpinner())))
                  
               )), 
@@ -890,7 +890,7 @@ server <- function(input, output,session) {
           sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
       ),
       multiple = FALSE,
-      selected = "Interior"
+      selected = HA_CHOICES[1]
     )
   })
   
@@ -922,7 +922,9 @@ server <- function(input, output,session) {
   # plot the line chart showing trends of diseases over time
   output$region_tab_line_chart <- renderPlotly({
     line_chart <- region_tab_filtered_data() |>
-      ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
+      ggplot(aes_string(y = region_tab_rate_as_variable(), 
+                        x = "YEAR", 
+                        color = "DISEASE")) +
       geom_line(stat = 'identity') +
       labs(
         y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
@@ -932,8 +934,9 @@ server <- function(input, output,session) {
       ) + 
       theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
-    
-    ggplotly(line_chart)
+    # , tooltip = c(DISEASE, YEAR, region_tab_rate_as_variable()
+    ggplotly(line_chart) |> 
+      layout(hovermode = "x unified")
   })
   
   # plot a bar chart showing the distribution of cumulative rates for diseases
@@ -984,7 +987,7 @@ server <- function(input, output,session) {
   output$region_tab_map <- renderLeaflet({
     location_to_be_tagged <- region_tab_map_data()
     map <- leaflet(location_to_be_tagged$region_level) |> 
-      addTiles() |> 
+      addProviderTiles(provider = providers$OpenStreetMap) |> 
       addPolygons(weight = 1, smoothFactor = 0.5,
                 opacity = 1.0, fillOpacity = 0.5,
                 highlightOptions = highlightOptions(color = "white", weight = 2,
