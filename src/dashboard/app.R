@@ -190,12 +190,12 @@ ui <- fluidPage(
                  
                  mainPanel(
                    width = 9,
-                   fluidRow(plotlyOutput(
-                   "region_tab_line_chart"
-                   )),
-                   fluidRow(column(8, plotlyOutput(
-                     "region_tab_bar_chart"
-                   )), column(4, leafletOutput("region_tab_map"))))
+                   fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()),
+                   br(),
+                   fluidRow(
+                     column(8, plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
+                     # br(),
+                     column(4, leafletOutput("region_tab_map") %>% withSpinner())))
                  
               )), 
       
@@ -1013,7 +1013,7 @@ server <- function(input, output,session) {
           sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
       ),
       multiple = FALSE,
-      selected = "Interior"
+      selected = HA_CHOICES[1]
     )
   })
   
@@ -1045,18 +1045,21 @@ server <- function(input, output,session) {
   # plot the line chart showing trends of diseases over time
   output$region_tab_line_chart <- renderPlotly({
     line_chart <- region_tab_filtered_data() |>
-      ggplot(aes_string(y = region_tab_rate_as_variable(), x = "YEAR", color = "DISEASE")) +
+      ggplot(aes_string(y = region_tab_rate_as_variable(), 
+                        x = "YEAR", 
+                        color = "DISEASE")) +
       geom_line(stat = 'identity') +
       labs(
-        y = input$region_tab_rate_type_selected,
+        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
         legend = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
       ) + 
       theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
-    
-    ggplotly(line_chart)
+    # , tooltip = c(DISEASE, YEAR, region_tab_rate_as_variable()
+    ggplotly(line_chart) |> 
+      layout(hovermode = "x unified")
   })
   
   # plot a bar chart showing the distribution of cumulative rates for diseases
@@ -1067,7 +1070,7 @@ server <- function(input, output,session) {
                         fill = "DISEASE")) +
       geom_bar(stat = "identity") +
       labs(
-        y = input$region_tab_rate_type_selected,
+        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
         title = paste0(
           "Distribution of Diseases by ",
@@ -1084,18 +1087,37 @@ server <- function(input, output,session) {
   
   # a map highlighting the selected health region to provide context
   region_tab_map_data <- reactive({
-    (if (input$region_tab_geography_selected == "Health Authorities")
-      ha_spdf
-     else
-       chsa_spdf)
+    
+    if (input$region_tab_geography_selected == "Health Authorities") {
+      region_level <- ha_spdf
+      region_index <- chmatch(input$region_tab_region_selected, ha_spdf$HA_Name)
+      selected_region_lat <- ha_spdf$Latitude[region_index]
+      selected_region_lon <- ha_spdf$Longitude[region_index]
+    }
+    else {
+      region_level <- chsa_spdf
+      region_index <- chmatch(input$region_tab_region_selected, chsa_spdf$CHSA_Name)
+      selected_region_lat <- chsa_spdf$Latitude[region_index]
+      selected_region_lon <- chsa_spdf$Longitude[region_index]
+    }
+    to_return <- list(region_level = region_level,
+                      selected_region_lat = selected_region_lat, 
+                      selected_region_lon = selected_region_lon)
+    to_return
   })
   
+  
   output$region_tab_map <- renderLeaflet({
-    map <- leaflet(region_tab_map_data()) %>%
-    addPolygons(weight = 1, smoothFactor = 0.5,
+    location_to_be_tagged <- region_tab_map_data()
+    map <- leaflet(location_to_be_tagged$region_level) |> 
+      addProviderTiles(provider = providers$OpenStreetMap) |> 
+      addPolygons(weight = 1, smoothFactor = 0.5,
                 opacity = 1.0, fillOpacity = 0.5,
                 highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                    bringToFront = TRUE))
+                                                    bringToFront = TRUE)) |>
+      addMarkers(lng = location_to_be_tagged$selected_region_lon,
+                 lat = location_to_be_tagged$selected_region_lat,
+                 label = input$region_tab_region_selected)
     map
     })
   
