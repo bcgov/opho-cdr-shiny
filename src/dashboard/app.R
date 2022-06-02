@@ -616,12 +616,9 @@ server <- function(input, output,session) {
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
                           y=0.92,
                           font = list(size = 16)),
-             margin = list(t=80,b=50
-                           ),
-             legend=list(title=list(text='Health Region'))
-             # plot_bgcolor= '#d9dadb'
-             # hovermode = "x unified"
-             # showlegend = FALSE
+             margin = list(t=80,b=50),
+             legend = list(title=list(text='Health Region')),
+             shapes = list(vline(2001))
       ) %>%
       event_register('plotly_hover')
     
@@ -647,6 +644,19 @@ server <- function(input, output,session) {
 
   })
   
+  
+  observe({
+    p <- plotlyProxy("disease_graph_line", session)
+    
+    p %>%
+      plotlyProxyInvoke("relayout",
+                        list(
+                          shapes = list(vline(input$year_d))
+                        ))
+  })
+  
+  
+  # Switch to change line graph to start at 0 
   observeEvent(input$yax_switch,{
     p <- plotlyProxy("disease_graph_line", session)
     if(input$yax_switch==TRUE){
