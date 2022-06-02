@@ -14,6 +14,8 @@ library(scales) # used to format the axis values
 library(shinycssloaders)
 library(rgeos)
 library(shinyWidgets)
+library(DT)
+
 
 ################################
 # Source helper functions
@@ -241,8 +243,11 @@ ui <- fluidPage(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    hr(),
-                   div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
-                   dataTableOutput("data_table"))
+                   
+                   # div(style = "overflow-x:scroll;max-height: 80vh;overflow-y:scroll",
+                   # shiny::dataTableOutput("data_table")
+                   DTOutput("data_table")
+                   # )
                  )
                ))
      
@@ -459,7 +464,7 @@ server <- function(input, output,session) {
                         title = paste0(input$dataset_d," Per 1000"),
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black'),
-             xaxis = list(title = list(text = 'Health Region', standoff = 10),
+             xaxis = list(title = list(text = 'Health Region', standoff = 5),
                           categoryorder = "category ascending",
                           showline= T, linewidth=1, linecolor='black'),
              title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
@@ -539,7 +544,7 @@ server <- function(input, output,session) {
                                      gridcolor = "#d9dadb",
                                      showline= T, linewidth=1, linecolor='black'),
                           xaxis=list(fixedrange = TRUE,
-                                     title = list(text = 'Health Region', standoff = 10),
+                                     title = list(text = 'Health Region', standoff = 5),
                                      categoryorder = "category ascending",
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
@@ -1183,7 +1188,7 @@ server <- function(input, output,session) {
   
   output$disease_data <- renderUI({
     selectInput("disease_data", 
-                label = "Select Disease",
+                label = "Select Disease(s)",
                 choices = append("All", unique(datasetInput_data()$DISEASE)),
                 multiple = TRUE,
                 selected = "All")
@@ -1211,7 +1216,14 @@ server <- function(input, output,session) {
     }
   )
   
-  output$data_table <- renderDataTable(filter_df_data())
+  # output$data_table <- shiny::renderDataTable(filter_df_data())
+  
+  output$data_table <- renderDT(filter_df_data(),
+                                rownames= FALSE,
+                                options = list(
+                                  autoWidth = TRUE,
+                                  columnDefs = list(list(width = '30px', targets = 2))
+                                  ))
   
 }
 

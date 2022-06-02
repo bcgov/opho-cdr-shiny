@@ -1,10 +1,12 @@
-
+/* Color Constants*/
 :root {
   --yellow: #fcba19;
   --navy:#003366;
   --white:#ffffff;
   --mediumblue:#4c81af;
 }
+
+/* Navbar Styles */
 
 .navbar {margin-bottom: 0px;}
 .navbar-default {background-color:  var(--navy);
@@ -58,10 +60,14 @@
   color:  var(--yellow);
 }
 
-.label-default {
-    background-color: var(--yellow);
+img{
+    max-height: 60px;
+    width: auto;
+    margin-top: 0px;
 }
 
+
+/* Disease Tab Styles */
 #text_d1,#text_d2,#text_d3,#text_d4{
   background-color:var(--white) ;
   text-align: left;
@@ -78,24 +84,21 @@
   font-weight: bold;
   padding-top: 5px;
   text-align: center;
-  
 }
-
 
 .col-sm-3{
   padding-bottom: 15px;
 }
 
-
-img{
-    max-height: 60px;
-    width: auto;
-    margin-top: 0px;
+.label-default {
+    background-color: var(--yellow);
 }
 
 #map {
     background: white;
 }
+
+/* Body and Filter Sidebar Styles */
 
 #body {
   padding-top: 85px;
@@ -107,3 +110,21 @@ img{
   border: 5px solid var(--yellow);
 }
 
+/* Data Tab Styles */
+#download_data{
+  background-color: var(--yellow);
+  padding:12px;
+}
+
+#data_table{
+  overflow-x:scroll;
+  max-height: 80vh;
+  overflow-y:scroll;
+  background-color:var(--white);
+  padding-top:10px;
+  padding-left:5px;
+}
+.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+                    color: #ffffff;
+                    }
+                    
