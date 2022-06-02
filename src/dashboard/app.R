@@ -1083,11 +1083,14 @@ server <- function(input, output,session) {
     line_chart <- region_tab_filtered_data() |>
       ggplot(aes_string(y = region_tab_rate_as_variable(),
                         x = "YEAR",
-                        color = "DISEASE")) +
+                        color = "DISEASE"
+                        # ,tooltip = paste0(region_tab_rate_as_variable(), "_rounded")
+                        )) +
       geom_line(stat = 'identity') +
       labs(
         y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
+        color = "Disease",
         title = paste0(input$region_tab_rate_type_selected, " Over Time")
       ) +
       theme(axis.text.x = element_text(
@@ -1096,13 +1099,13 @@ server <- function(input, output,session) {
         vjust = 1)) +
       scale_x_continuous(breaks = breaks_width(1))
     
-    ggplotly(line_chart, tooltip = "text") |>
-      layout(hovermode = "x unified") |> 
-      style(text = paste0("Disease: ", region_tab_filtered_data()[["DISEASE"]],
-                          "</br></br>",
-                          input$region_tab_rate_type_selected, " Per 1000: ",
-                          region_tab_filtered_data()[[paste0(region_tab_rate_as_variable(), "_rounded")]]))
-  })
+    ggplotly(line_chart) |>
+      layout(hovermode = "x unified",
+             hovertemplate = paste0('<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                     '<extra></extra>')) 
+    
+    
+    })
   
   # Plot a bar chart comparing rates for diseases in a year
   # x is DISEASE, y is the selected rate type, color is DISEASE
@@ -1114,6 +1117,10 @@ server <- function(input, output,session) {
       ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(),
                         fill = "DISEASE")) +
       geom_bar(stat = "identity") +
+      geom_errorbar(aes_string(ymin = paste0(substr(region_tab_rate_as_variable(), 1, 5),
+                                      "_LCL_95"),
+                        ymax = paste0(substr(region_tab_rate_as_variable(), 1, 5),
+                                      "_UCL_95"))) +
       labs(
         y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
         x = NULL,
@@ -1163,7 +1170,7 @@ server <- function(input, output,session) {
     
     map <- leaflet() |> 
       setView(lat = 53.5, lng = -127, zoom = 4.5) |> 
-      addProviderTiles(providers$CartoDB.PositronNoLabels) |> 
+      addProviderTiles(providers$OpenStreetMap) |> 
       addPolygons(data = location_to_be_tagged$region_level,
                   weight = 1, smoothFactor = 0.5,
                 opacity = 1.0, fillOpacity = 0.5,
