@@ -1,0 +1,103 @@
+---
+title: 'BC Chronic Disease: Temporal Modeling EDA'
+date: "May 17, 2022"
+author: 'Jennifer Hoang'
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r Load Libraries, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(here)
+```
+
+```{r Load Data, include=FALSE}
+path <- here("data", "processed")
+
+inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+```
+
+## Overview of Disease Incidence Trends with Local Polynomial Regression (LOESS)
+
+To get an overview of the trends for different diseases, 
+I'll look at the mean standardized incidence rate among all the available CHSA first. 
+I'll use LOESS as a smoothing model with the default span parameter.
+
+```{r Calculate Mean Incidence per Disease, echo=FALSE, message=FALSE}
+mean_inc <- inc_rate_df |>
+  group_by(DISEASE, YEAR) |>
+  summarise(
+    mean_crude_rate = mean(CRUDE_RATE_PER_1000, na.rm = TRUE),
+    mean_std_rate = mean(STD_RATE_PER_1000, na.rm = TRUE)
+  )
+
+diseases <- unique(mean_inc$DISEASE)
+```
+
+```{r Plot per Disease, echo=FALSE, fig.show="hold", out.width="25%"}
+disease_plots = list()
+
+for (d in diseases) {
+  disease_data <- mean_inc |> 
+    filter(DISEASE == d) 
+  
+  disease_plots[[d]] = ggplot(disease_data, aes(x = YEAR, y = mean_std_rate, group = 1)) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Year", y = "Mean Std Incidence Rate", title = toString(d)) +
+    geom_smooth(formula = y ~ x, method = "loess", fill = "lightblue")
+  
+  print(disease_plots[[d]])
+}
+```
+
+We can see that each disease has unique trends that are often non-linear. 
+Local regression (loess) does a good job of identifying local trends and could be a good baseline model.
+
+Taking a closer look, however, loess occasionally produces confidence intervals 
+with values less 0 that do not make sense, such as a negative incidence rate. 
+For MS, the disease incidence rate is quite low, and this sometimes produces negative CIs.
+
+### Region-Specific and Disease-Specific Trends
+
+Let's compare the confidence intervals of the loess model to the 95% CIs calculated in the dataset. 
+We'll check two different CHSA with a smaller and a larger population.
+
+```{r Plot Trend in Specific Disease and Region, echo=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+plot_trend <- function(data, disease, chsa, span = 0.75) {
+  plot_data <- inc_rate_df |> 
+    filter(DISEASE == disease & HEALTH_BOUNDARIES == chsa)
+  
+  ggplot(plot_data, aes(x = YEAR, y = STD_RATE_PER_1000, group = 1)) +
+    geom_point() +
+    geom_line() +
+    geom_ribbon(aes(ymin = STD_LCL_95, ymax = STD_UCL_95), alpha = 0.5) +
+    labs(x = "Year", y = "Standardized Incidence Rate",
+         title = paste(disease, "in", chsa)) +
+    geom_smooth(formula = y ~ x, method = "loess", fill = "lightblue", span = span)
+  
+}
+
+plot_trend(inc_rate_df, "MS", "1110 Fernie")
+plot_trend(inc_rate_df, "MS", "2223 Burnaby Southwest")
+plot_trend(inc_rate_df, "GOUT", "1110 Fernie")
+plot_trend(inc_rate_df, "GOUT", "2223 Burnaby Southwest")
+
+```
+
+The confidence interval bands tend to be more narrow. 
+The loess model uses t-based confidence interval approximation based on the `geom_smooth` documentation.
+
+### Incidence Rates in one CHSA
+
+Here are the incidence rates for all diseases in 1110 Fernie. 
+Again, loess seems to work well except for rare diseases.
+
+```{r Region-Specific Plots, echo=FALSE, fig.show="hold", out.width="25%"}
+for (d in diseases) {
+  p <- plot_trend(inc_rate_df, d, "1110 Fernie")
+  print(p)
+}
+```
