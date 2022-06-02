@@ -132,7 +132,6 @@ ui <- fluidPage(
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
-                          br(),
                           fluidRow(column(12,
                                           materialSwitch(
                                             inputId = "yax_switch",
@@ -466,6 +465,7 @@ server <- function(input, output,session) {
                         showline= T, linewidth=1, linecolor='black'),
              xaxis = list(title = list(text = 'Health Region', standoff = 5),
                           categoryorder = "category ascending",
+                          tickfont = list(size = 10),
                           showline= T, linewidth=1, linecolor='black'),
              title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
                           y=0.92,
@@ -546,6 +546,7 @@ server <- function(input, output,session) {
                           xaxis=list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 5),
                                      categoryorder = "category ascending",
+                                     tickfont = list(size = 10),
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
                           title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
