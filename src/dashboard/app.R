@@ -520,11 +520,6 @@ server <- function(input, output,session) {
                             else
                             CHSA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
                           )
-                          # color = list(newdata$HEALTH_BOUND_NAME)
-                          # colors = if(input$health_bound_d == "Health Authorities")
-                          #           list(setNames(HA_colours$Colors,HA_colours$Regions))
-                          #           else NULL
-                          # marker = list(color = HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)])
                         ))|>
       plotlyProxyInvoke("relayout",
                         list(
@@ -589,27 +584,6 @@ server <- function(input, output,session) {
              shapes = list(vline(2001))
       ) %>%
       event_register('plotly_hover')
-    
-    # p2<- d_hl|>
-    #   ggplot( aes_string(y=rateInput_d(),x="YEAR",color = "HEALTH_BOUND_NAME",group = "HEALTH_BOUND_NAME"
-    #                     # text = paste(
-    #                     #   input$dataset_d, rateInput_d(), "\n",
-    #                     #   "Year: ", "YEAR", "\n",
-    #                     #   sep = ""
-    #                     # )
-    # ))+
-    #   geom_line(stat="identity")+
-    #   scale_color_manual(values= setNames(HA_colours$Colors,HA_colours$Regions))+
-    #   labs(y=paste0(input$dataset_d, " Per 1000"),
-    #        x="Year",
-    #        title = paste0(input$dataset_d," of ",input$disease_d," Over Time"),
-    #        col = "Health Region")+
-    #   theme(plot.title = element_text(size=12),
-    #         axis.title.x = element_text(size=10),
-    #         axis.title.y = element_text(size=10))
-    # ggplotly(p2, source = "disease_graph_line",tooltip=c("YEAR",rateInput_d(),"HEALTH_BOUND_NAME"))|>
-    #   event_register('plotly_hover')
-
   })
   
   # Update disease line graph with year 
@@ -647,10 +621,8 @@ server <- function(input, output,session) {
                           ))
       
     }
-
   })
 
-  
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
     
@@ -858,8 +830,6 @@ server <- function(input, output,session) {
   })
   
 
-
-  
   # TEST
   output$hover_stuff <- renderPrint({
     input$yax-switch
@@ -871,11 +841,12 @@ server <- function(input, output,session) {
   })
   
 
+  # Define graph traces 
   my_traces <- reactive({
     sort(input$region_d)
   })
   
-  ## Link highlighting when hovering on bar graph
+  # Link highlighting when hovering on bar graph
   observe({
       event <- event_data("plotly_hover",source = "disease_graph_bar")
       error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
@@ -1163,10 +1134,12 @@ server <- function(input, output,session) {
   # Download Data Tab Server Side Logic
   ################################
   
+  # Reset filters
   observeEvent(input$reset_data, {
     reset("filters_data")
   })
   
+  # Select dataset based on user input
   datasetInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = inc_rate_df,
@@ -1177,6 +1150,7 @@ server <- function(input, output,session) {
            "Age Standardized HSC Prevalence" = hsc_prev_df)
   })
   
+  # Select rate based on user input
   rateInput_data <- reactive({
     switch(input$dataset_data,
            "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
@@ -1187,13 +1161,14 @@ server <- function(input, output,session) {
            "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
   })
   
+  # Select geography based on user input
   healthboundInput_data <- reactive ({
     switch(input$health_bound_data,
            "Health Authorities" = "HA",
            "Community Health Service Areas" = "CHSA")
   })
   
-  
+  # Dynamic UI for region selection
   output$region_data <- renderUI({
     selectInput("region_data",
                 label = "Select Health Region(s)",
@@ -1206,6 +1181,7 @@ server <- function(input, output,session) {
                 selected = "All")
   })
   
+  # Dynamic UI for disease selection
   output$disease_data <- renderUI({
     selectInput("disease_data", 
                 label = "Select Disease(s)",
@@ -1214,6 +1190,7 @@ server <- function(input, output,session) {
                 selected = "All")
   })
   
+  # Filter data and reformat dataframe
   filter_df_data <- reactive({
     data <- datasetInput_data() |> 
       filter (
@@ -1238,7 +1215,7 @@ server <- function(input, output,session) {
     
   })
   
-  
+  # Render download data button
   output$download_data <- downloadHandler(
     filename = function() {
       paste("BC_Chronic_Disease_Data-", Sys.Date(), ".csv", sep="")
@@ -1247,9 +1224,8 @@ server <- function(input, output,session) {
       write.csv(filter_df_data(), file)
     }
   )
-  
-  # output$data_table <- shiny::renderDataTable(filter_df_data())
-  
+
+  # Render data table  
   output$data_table <- renderDT(filter_df_data(),
                                 rownames= FALSE,
                                 options = list(
@@ -1263,7 +1239,6 @@ server <- function(input, output,session) {
                                   ))
   
 }
-
 
 ################################
 # Run App
