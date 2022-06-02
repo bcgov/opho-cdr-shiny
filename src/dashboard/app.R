@@ -554,6 +554,7 @@ server <- function(input, output,session) {
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
                           title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
+                                       y=0.92,
                                        font = list(size = 16)
                                        )
                         ))
