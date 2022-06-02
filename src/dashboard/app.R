@@ -124,11 +124,8 @@ ui <- fluidPage(
                              title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
                              placement = "right"
                              ),
-                   
                    br(),
-        
                    actionButton("reset_d", "Reset")
-                    
                ),
                mainPanel(
                  width = 9,
@@ -145,7 +142,6 @@ ui <- fluidPage(
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
-                         
                           fluidRow(column(12,
                                           materialSwitch(
                                             inputId = "yax_switch",
@@ -261,7 +257,6 @@ ui <- fluidPage(
                                 selected = "Total",
                                 inline = TRUE),
                    br(),br(),
-                   
                    actionButton("reset_data", "Reset")
                  ),
                  mainPanel(
@@ -271,7 +266,6 @@ ui <- fluidPage(
                    DTOutput("data_table")
                  )
                ))
-     
   )
 )
 
@@ -280,6 +274,7 @@ ui <- fluidPage(
 ################################
 server <- function(input, output,session) {
   
+  # Change bg color depending on tab
   observeEvent(input$navbarID, {
     if(input$navbarID %in% c("About","Rate Types","Diseases","Data Dictionary")){
       session$sendCustomMessage("background-color", "white")
@@ -292,10 +287,12 @@ server <- function(input, output,session) {
   # By Disease Tab Server Side Logic
   ################################
   
+  # Reset filters
   observeEvent(input$reset_d, {
     reset("filters_d")
   })
 
+  # Dynamic UI for rate selection
   output$dataset_d <- renderUI({
     selectInput("dataset_d", 
                 label = "Select Rate Type",
@@ -313,6 +310,7 @@ server <- function(input, output,session) {
     )
   })
   
+  # Dynamic UI for region selection
   output$region_d <- renderUI({
     selectInput("region_d",
                 label = "Select Health Region(s)",
@@ -328,6 +326,7 @@ server <- function(input, output,session) {
                 ))
   })
   
+  # Dataset selection based on user input
   datasetInput_d <- reactive({
     shiny::validate(need(input$dataset_d, message=F))
     if(!is.null(input$dataset_d)){
@@ -341,6 +340,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # Rate selection based on user input
   rateInput_d <- reactive({
     shiny::validate(need(input$dataset_d, message=F))
     if(!is.null(input$dataset_d)){
@@ -354,6 +354,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # Geography selection based on user input
   healthboundInput_d <- reactive ({
     shiny::validate(need(input$health_bound_d, message=F))
     if(!is.null(input$health_bound_d)){
@@ -363,6 +364,7 @@ server <- function(input, output,session) {
     }
   })
   
+  # Map geography selection based on user input
   spdf_d <- reactive ({
     shiny::validate(need(input$health_bound_d, message=F))
     if(!is.null(input$health_bound_d)){
@@ -372,7 +374,7 @@ server <- function(input, output,session) {
     }
   })
   
-  
+  # Filter dataset based on user input
   filter_df_d <- reactive({
     datasetInput_d() |> 
       filter ((GEOGRAPHY == healthboundInput_d())&
@@ -440,14 +442,8 @@ server <- function(input, output,session) {
     
   })  
   
-  # Render bar graph for each rate/disease 
+  # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
-    
-    # dummyData <- datasetInput_d() |>
-    #   filter(CLNT_GENDER_LABEL=='T',
-    #          GEOGRAPHY =="HA",
-    #          DISEASE == "Acute Myocardial Infarction",
-    #          YEAR==2001)
     
     dummyData <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d,
@@ -474,11 +470,6 @@ server <- function(input, output,session) {
                                     else
                                     CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
                               ),
-              # hovertemplate = paste('<b>Health Region</b>: %{x}',
-              #                       '<br><b>%{yaxis.title.text}</b>: %{y:.2f}<br>',
-              #                       '<b>Year</b>:', input$year_d,
-              #                       '<extra></extra>'
-              #                       )
               hoverinfo="skip"
               )%>%
       layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
@@ -498,29 +489,6 @@ server <- function(input, output,session) {
              showlegend = FALSE
             ) %>%
       event_register('plotly_hover')
-    
-    # d<-filter_df_d()|>
-    #       filter((YEAR == input$year_d)&
-    #                (if ("All" %in% input$region_d) TRUE else (HEALTH_BOUND_NAME %in% input$region_d))) |>
-    #       highlight_key(~HEALTH_BOUND_NAME)
-    # 
-    # p <- dummyData |>
-    #   ggplot(aes_string(x="HEALTH_BOUND_NAME",y= "CRUDE_RATE_PER_1000",fill="HEALTH_BOUND_NAME"
-    #                     # frame = "YEAR"
-    #                     ))+
-    #   geom_col(position = "identity")+
-    #   # scale_fill_manual("legend", values = c("A" = "black", "B" = "orange", "C" = "blue"))+
-    #   labs(x="Health Region",
-    #        y=paste0(input$dataset_d," Per 1000"),
-    #        title = paste0(input$dataset_d," of "," in 2001" ))+
-    #   theme(
-    #     # legend.position="none",
-    #         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
-    #         plot.title = element_text(size=12),
-    #         axis.title.x = element_text(size=10),
-    #         axis.title.y = element_text(size=10))
-    # ggplotly(p,source = "disease_graph_bar",tooltip=c("YEAR","HEALTH_BOUND_NAME"))|>
-    #   event_register('plotly_hover')
   })
   
   # Update Disease Bar Graph with filter changes
@@ -579,7 +547,7 @@ server <- function(input, output,session) {
     
   })
   
-  # Render line graph 
+  # Render disease line graph 
   output$disease_graph_line <- renderPlotly({
     
     d <- filter_df_d()|>
@@ -644,7 +612,7 @@ server <- function(input, output,session) {
 
   })
   
-  
+  # Update disease line graph with year 
   observe({
     p <- plotlyProxy("disease_graph_line", session)
     
