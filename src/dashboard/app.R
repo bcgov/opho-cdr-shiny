@@ -1195,17 +1195,27 @@ server <- function(input, output,session) {
   })
   
   filter_df_data <- reactive({
-    datasetInput_data() |> 
+    data <- datasetInput_data() |> 
       filter (
         (GEOGRAPHY == healthboundInput_data()) & 
           (if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
           (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
           (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
           (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
-      select(-HEALTH_BOUND_CODE)|>
-      rename(Sex = CLNT_GENDER_LABEL,
-             "Health Boundary"=HEALTH_BOUND_NAME)|>
-      mutate()
+      mutate(CRUDE_CI=paste0("(",CRUDE_LCL_95,",",CRUDE_UCL_95,")"),
+             STD_CI=paste0("(",STD_LCL_95,",",STD_UCL_95,")"))|>
+      rename(SEX =CLNT_GENDER_LABEL,
+             HEALTH_BOUNDARY=HEALTH_BOUND_NAME)|>
+      select(YEAR,DISEASE,SEX,GEOGRAPHY,HEALTH_BOUNDARY,NUMERATOR,DENOMINATOR,
+             CRUDE_RATE_PER_1000, CRUDE_CI,CRUDE_VARIANCE,STD_RATE_PER_1000,
+             STD_CI,STD_VARIANCE)
+    
+    names(data)<-snakecase::to_title_case(names(data))
+    
+    data|>
+      rename("Crude 95% CI" = "Crude Ci",
+             "Standardized 95% CI" = "Std Ci")
+    
   })
   
   
