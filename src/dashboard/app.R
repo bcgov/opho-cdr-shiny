@@ -128,13 +128,13 @@ ui <- fluidPage(
                    column(3,htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height = 645)%>% withSpinner(),
+                   column(6, leafletOutput("map",height=645)%>% withSpinner(),
                           # verbatimTextOutput("hover_stuff"),
                           # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
-                          br(),
+                         
                           fluidRow(column(12,
                                           materialSwitch(
                                             inputId = "yax_switch",
