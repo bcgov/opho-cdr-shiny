@@ -124,7 +124,7 @@ ui <- fluidPage(
                    column(3,htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height = 750)%>% withSpinner(),
+                   column(6, leafletOutput("map",height = 700)%>% withSpinner(),
                           # verbatimTextOutput("hover_stuff"),
                           # verbatimTextOutput("hover_stuff2")
                           ),
@@ -360,6 +360,47 @@ server <- function(input, output,session) {
     lower = NULL,
     upper = NULL
   )
+  
+  #Render disease stats
+  output$text_d1 <- renderText({
+    data <- filter_df_d()
+    reg_max <-data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(HEALTH_BOUND_NAME)
+    
+    paste0(
+      "<b>",healthboundInput_d()," with Highest Maximum ",input$dataset_d,
+      "</b><br style = 'margin-bottom:10px;' >", reg_max
+    )
+    
+  })
+  output$text_d2 <- renderText({
+    data <- filter_df_d()|>
+      group_by(HEALTH_BOUND_NAME)|>
+      summarize_at(rateInput_d(), mean)
+    reg_avg<- data|>
+      arrange(desc(data[[rateInput_d()]]))|>
+      slice(1)|>
+      pull(HEALTH_BOUND_NAME)
+    
+    paste0(
+      "<b>",healthboundInput_d()," with Highest Average ",input$dataset_d,
+      "</b><br><br>", reg_avg
+    )
+    
+  })
+  output$text_d3 <- renderText({
+    paste0(
+      "<b>ABCABC</b><br><br>",
+      "SKDJF:LKE  ")
+    
+  })
+  output$text_d4 <- renderText({
+    paste0(
+      "<b>ABCABC</b><br>",
+      "SKDJF:LKE")
+  })  
   
   # Render bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
@@ -779,32 +820,10 @@ server <- function(input, output,session) {
     }
   })
   
-  # TEST
-  output$text_d1 <- renderText({
-    paste0(
-    "<b>ABCABC</b><br/>",
-    "SKDJF:LKE<br style='margin-bottom:240px;'/> ")
 
-  })
-  output$text_d2 <- renderText({
-    paste0(
-      "<p><br/><b>ABCABC</b><br/>",
-      "SKDJF:LKE</p><p>  ")
-    
-  })
-  output$text_d3 <- renderText({
-    paste0(
-      "<b>ABCABC</b><br/>",
-      "SKDJF:LKE  ")
-    
-  })
-  output$text_d4 <- renderText({
-    paste0(
-      "<b>ABCABC</b><br/>",
-      "SKDJF:LKE")
-    
-  })
+
   
+  # TEST
   output$hover_stuff <- renderPrint({
     input$yax-switch
     

@@ -63,8 +63,13 @@
 }
 
 #text_d1,#text_d2,#text_d3,#text_d4{
-  background-color:white ;
+  background-color:var(--white) ;
   text-align: center;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  height: 100px;
 }
 
 .col-sm-3{

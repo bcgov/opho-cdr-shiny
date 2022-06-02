@@ -136,7 +136,7 @@ for (i in seq(1,5)){
   cols <- cols[6:(length(cols)-5)]
   chsas_colors <- chsas|>
     mutate(Colors = cols)|>
-    rename(Regions = HEALTH_BOUND_NAME)
+    dplyr::rename(Regions = HEALTH_BOUND_NAME)
   CHSA_colours<- rbind(CHSA_colours,chsas_colors)
 }
 
