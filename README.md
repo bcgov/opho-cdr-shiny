@@ -44,12 +44,24 @@ to abide by its terms.
 
 ### Dependencies
 
--   R version 4.2.0 and R packages: -here=1.0.1 -tidyverse=1.3.1
-    -ggplot2=3.3.6 -R-INLA=22.05.07 -docopt=0.7.1 -shiny=1.7.1
-    -shinyjs=2.1.0 -plyr=1.8.7 -leaflet=2.1.1 -sp=1.4-7 -rgdal=1.5-32
-    -shinythemes=1.2.0 -plotly=4.10.0 -scales=1.2.0
-    -shinycssloaders=1.0.0 -rgeos=0.5-9
--   GNU make 4.2.1
+-   R version 4.2.0 and R packages:
+    -   here=1.0.1
+    -   tidyverse=1.3.1
+    -   ggplot2=3.3.6
+    -   R-INLA=22.05.07
+    -   docopt=0.7.1
+    -   shiny=1.7.1
+    -   shinyjs=2.1.0
+    -   plyr=1.8.7
+    -   leaflet=2.1.1
+    -   sp=1.4-7
+    -   rgdal=1.5-32
+    -   shinythemes=1.2.0
+    -   plotly=4.10.0
+    -   scales=1.2.0
+    -   shinycssloaders=1.0.0
+    -   rgeos=0.5-9
+-   GNU make 3.81
 
 ### License
 
