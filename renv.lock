@@ -5,6 +5,10 @@
       {
         "Name": "CRAN",
         "URL": "https://cran.rstudio.com"
+      },
+      {
+        "Name": "INLA",
+        "URL": "https://inla.r-inla-download.org/R/stable"
       }
     ]
   },
@@ -36,7 +40,8 @@
     "INLA": {
       "Package": "INLA",
       "Version": "22.05.07",
-      "Source": "unknown",
+      "Source": "Repository",
+      "Repository": "INLA",
       "Hash": "13625e6196b0d3db02e1ca8dad8308ec",
       "Requirements": [
         "Matrix",
