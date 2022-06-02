@@ -32,23 +32,27 @@ Rscript -e "rmarkdown::render('docs/proposal/capstone-proposal.Rmd')"
 
 ### Usage
 
-Describe data being used (links), and how to run. Eg:
+Our data product is currently available for internal use only. Please contact the CDR Working Group to request access to the data.
 
-There are four core scripts that are required for the analysis, they
-need to be run in order:
+#### Temporal Modelling
 
--   01_clean.R
--   02_analysis.R
--   03_visualize.R
--   04_output.R
+To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are installed, then follow these instructions:
 
-#### Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-## basic example code
-```
+1. Clone this Github repository.
+2. Create a folder named "data" in the root of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
+3. Open the `opho-cdr-shiny.Rproject` file then run `renv::restore()` in the R console to install the package dependencies. 
+    - To install INLA, run the following command in the R console:
+    ```
+    remotes::install_version("INLA", version="22.05.07",repos=c(getOption("repos"),INLA="https://inla.r-inla-download.org/R/testing"), dep=TRUE)
+    ```
+4. Run the following command using the command line/terminal from the root directory of the project:
+    ```
+    make all
+    ```
+5. To run the temporal model visualizations in a Shiny document, ensure all results have been output to "results/model". Run the following command in the root of the repo and open the prompted URL in a browser:
+    ```
+    Rscript -e "rmarkdown::run('src/model/02_visualize.Rmd')”
+    ```
 
 ### Project Status
 
