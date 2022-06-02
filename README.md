@@ -40,7 +40,7 @@ To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are ins
 
 1. Clone this Github repository.
 2. Create a folder named "data" in the root directory of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
-3. Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the following command in the R console to install the package dependencies or as listed below.
+3. Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the following command in the R console to install the package dependencies or as listed below:
     ```
     renv::restore()
     ```
@@ -53,22 +53,6 @@ To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are ins
     ```
     rmarkdown::run('src/model/02_visualize.Rmd')
     ```
-
-### Project Status
-
-### Getting Help or Reporting an Issue
-
-To report bugs/issues/feature requests, please file an
-[issue](https://github.com/bcgov/opho-cdr-shiny/issues/).
-
-### How to Contribute
-
-If you would like to contribute, please see our
-[CONTRIBUTING](CONTRIBUTING.md) guidelines.
-
-Please note that this project is released with a [Contributor Code of
-Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree
-to abide by its terms.
 
 ### Dependencies
 
@@ -92,6 +76,22 @@ to abide by its terms.
     -   rgeos=0.5-9
 
 -   GNU make 3.81
+
+### Project Status
+
+### Getting Help or Reporting an Issue
+
+To report bugs/issues/feature requests, please file an
+[issue](https://github.com/bcgov/opho-cdr-shiny/issues/).
+
+### How to Contribute
+
+If you would like to contribute, please see our
+[CONTRIBUTING](CONTRIBUTING.md) guidelines.
+
+Please note that this project is released with a [Contributor Code of
+Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree
+to abide by its terms.
 
 ### License
 
