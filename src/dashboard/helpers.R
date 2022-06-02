@@ -38,7 +38,7 @@ window.LeafletWidget.methods.setLabel = function(category, layerId, label){
 )
 
 
-
+#helper function in JS for changing tab backgrounds
 tab_colsjs <- tags$head(
   tags$script("
       Shiny.addCustomMessageHandler('background-color', function(color) {

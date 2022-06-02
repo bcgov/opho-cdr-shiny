@@ -113,6 +113,8 @@ ui <- fluidPage(
                                ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
+                   
+                   br(),
         
                    actionButton("reset_d", "Reset")
                     
@@ -126,7 +128,7 @@ ui <- fluidPage(
                    column(3,htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height = 650)%>% withSpinner(),
+                   column(6, leafletOutput("map",height = 645)%>% withSpinner(),
                           # verbatimTextOutput("hover_stuff"),
                           # verbatimTextOutput("hover_stuff2")
                           ),
@@ -236,6 +238,7 @@ ui <- fluidPage(
                                 choices = c("Male","Female","Total"), 
                                 selected = "Total",
                                 inline = TRUE),
+                   br(),br(),
                    
                    actionButton("reset_data", "Reset")
                  ),
@@ -674,6 +677,12 @@ server <- function(input, output,session) {
     legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#cccccc")
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+              )
     
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
@@ -704,7 +713,10 @@ server <- function(input, output,session) {
         ),
       ) |>
       addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft" )
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })
     m
     
   })
@@ -743,12 +755,21 @@ server <- function(input, output,session) {
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
-
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+    )
+    
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
       clearControls()%>%
       addLegend( pal=mypalette, values=current_map_spdf@data[[rateInput_d()]], opacity=0.9,
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft" )%>%
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })%>%
       setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
                     fillColor = mypalette(current_map_spdf@data[[rateInput_d()]]),
                     label = current_map_spdf@data$text

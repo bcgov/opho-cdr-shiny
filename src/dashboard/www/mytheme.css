@@ -88,7 +88,7 @@ img{
   color:var(--navy);
   font-size: 28px;
   font-weight: bold;
-  padding-top: 5px;
+  padding-top: 3px;
   text-align: center;
 }
 
@@ -102,6 +102,7 @@ img{
 
 .form-group {
     margin-bottom: 5px;
+    margin-top: 4px;
 }
 
 #map {
@@ -118,6 +119,10 @@ img{
   background-color: #FFFAEB;
   border-radius: 15px;
   border: 5px solid var(--yellow);
+}
+
+hr {
+    margin-top: 10px;
 }
 
 /* Data Tab Styles */
