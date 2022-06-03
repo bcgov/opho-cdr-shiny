@@ -1060,9 +1060,7 @@ server <- function(input, output,session) {
         hovertemplate = paste0(
           '<br><b>%{yaxis.title.text}</b>: %{y:.1f}',
           '<br><b>Year</b>: %{x}',
-          '<extra></extra>'
-        )
-      ) |>
+          '<extra></extra>')) |>
       layout(
         yaxis = list(
           title = paste0(input$region_tab_rate_type_selected, " Per 1000"),
@@ -1088,7 +1086,6 @@ server <- function(input, output,session) {
         ),
         margin = list(t = 80, b = 50),
         legend = list(title = list(text = 'Disease'))
-        # hovermode = "x unified"
       )
       
   })
@@ -1118,7 +1115,11 @@ server <- function(input, output,session) {
           color = '#000000',
           width = 10
         ),
-        hoverinfo = "skip"
+        hovertemplate = paste('<br><b>%{yaxis.title.text}</b>: %{y:.1f}',
+                              '<br><b>95% Confidence Interval</b>: (',
+                              bar_chart_data[[error$lower]], ',',
+                              bar_chart_data[[error$upper]],')',
+                              '<extra></extra>')
       ) %>%
       layout(
         yaxis = list(
@@ -1131,7 +1132,7 @@ server <- function(input, output,session) {
         ),
         xaxis = list(
           categoryorder = "category ascending",
-          tickfont = list(size = 10),
+          # tickfont = list(size = 10),
           showline = T,
           linewidth = 1,
           linecolor = 'black'
@@ -1148,40 +1149,10 @@ server <- function(input, output,session) {
         ),
         barmode = "overlay",
         margin = list(t = 80, b = 50),
-        # plot_bgcolor= '#d9dadb'
         showlegend = FALSE
       )
     #   event_register('plotly_hover')
   })
-  # output$region_tab_bar_chart <- renderPlotly({
-  #   bar_chart_data <- region_tab_filtered_data() |>
-  #     filter(YEAR == input$region_tab_year_range_selected[1])
-  #   
-  #   bar_chart <- bar_chart_data |>
-  #     ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(),
-  #                       fill = "DISEASE")) +
-  #     geom_bar(stat = "identity") +
-  #     geom_errorbar(aes_string(ymin = paste0(substr(region_tab_rate_as_variable(), 1, 5),
-  #                                     "_LCL_95"),
-  #                       ymax = paste0(substr(region_tab_rate_as_variable(), 1, 5),
-  #                                     "_UCL_95"))) +
-  #     labs(
-  #       y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-  #       x = NULL,
-  #       title = paste0(
-  #         "Distribution of Diseases by ",
-  #         input$region_tab_rate_type_selected,
-  #         " in ",
-  #         input$region_tab_year_range_selected[1]
-  #       )
-  #     ) + theme(plot.title = element_text(size = 8),
-  #               legend.position="none") +
-  #     scale_x_discrete(labels = wrap_format(10))
-  #   
-  #   ggplotly(bar_chart) |> 
-  #     style(text = paste0(input$region_tab_rate_type_selected, " Per 1000: ",
-  #                         bar_chart_data[[paste0(region_tab_rate_as_variable(), "_rounded")]]))
-  # })
   
   # This function finds the information to highlight the selected region on the map
   # It finds the index of the selected region from the corresponding list 
