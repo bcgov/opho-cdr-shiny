@@ -266,7 +266,12 @@ ui <- fluidPage(
                    hr(),
                    DTOutput("data_table")
                  )
-               ))
+               )),
+      
+      tabPanel("Model",
+               
+        
+      )
   )
 )
 
