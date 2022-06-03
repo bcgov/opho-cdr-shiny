@@ -666,28 +666,20 @@ server <- function(input, output,session) {
   
   # Switch to change line graph to modelled data 
   observeEvent(input$modeldata_d_switch,{
+    data <- filter_df_d()|>
+      filter(HEALTH_BOUND_NAME %in% input$region_d)
+    
     p <- plotlyProxy("disease_graph_line", session)
-    if(input$yax_switch==TRUE){
+    if(input$modeldata_d_switch==TRUE){
       p%>%
-        plotlyProxyInvoke("relayout",
+        plotlyProxyInvoke("restyle",
                           list(
-                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
-                                       gridcolor = "#d9dadb",
-                                       showline= T, linewidth=1, linecolor='black',
-                                       rangemode = "tozero")
+                            x = list(data$YEAR),
+                            y= list(data$y_fitted)
+
                           ))
-    }else{
-      p%>%
-        plotlyProxyInvoke("relayout",
-                          list(
-                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
-                                       gridcolor = "#d9dadb",
-                                       showline= T, linewidth=1, linecolor='black',
-                                       rangemode = "nonnegative")
-                          ))
-      
     }
-  })
+    })
   
   
 
