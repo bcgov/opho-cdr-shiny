@@ -658,11 +658,38 @@ server <- function(input, output,session) {
                             yaxis=list(title = paste0(input$dataset_d," Per 1000"),
                                        gridcolor = "#d9dadb",
                                        showline= T, linewidth=1, linecolor='black',
-                                       rangemode = "nonneagtive")
+                                       rangemode = "nonnegative")
                           ))
       
     }
   })
+  
+  # Switch to change line graph to modelled data 
+  observeEvent(input$modeldata_d_switch,{
+    p <- plotlyProxy("disease_graph_line", session)
+    if(input$yax_switch==TRUE){
+      p%>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                       gridcolor = "#d9dadb",
+                                       showline= T, linewidth=1, linecolor='black',
+                                       rangemode = "tozero")
+                          ))
+    }else{
+      p%>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                                       gridcolor = "#d9dadb",
+                                       showline= T, linewidth=1, linecolor='black',
+                                       rangemode = "nonnegative")
+                          ))
+      
+    }
+  })
+  
+  
 
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
