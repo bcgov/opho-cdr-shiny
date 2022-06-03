@@ -34,10 +34,7 @@ options(spinner.color="#003366")
 # Define the ui of the four main tabs of the dashboard from left to right
 ################################
 ui <- fluidPage(
-  # theme = shinytheme("sandstone"),
   theme = "mytheme.css",
-  # theme = bs_theme(bootswatch = "minty"),
-  # includeCSS("www/mytheme.css"),
   shinyjs::useShinyjs(),
   leafletjs,
   tab_colsjs,
@@ -50,7 +47,6 @@ ui <- fluidPage(
       # Information Tab UI Side Logic
       ################################
       navbarMenu("Information",
-                  
         tabPanel("About", 
                  p(HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")),
                  h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
@@ -86,20 +82,15 @@ ui <- fluidPage(
                    width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
-  
                    selectInput("disease_d",
                                label= "Select Disease",
                                choices = sort(unique(inc_rate_df$DISEASE))),
-                   
                    uiOutput("dataset_d"),
-                   
                    radioButtons("health_bound_d",
                                 label= "Select Health Boundary Type",
                                 choices = GEOGRAPHY_CHOICES,
                                 selected= GEOGRAPHY_CHOICES[1]),
-                   
                    uiOutput("region_d"),
-                   
                    radioButtons("gender_d", 
                                 label = ("Select Sex"),
                                 choices = c("Male","Female","Total"), 
@@ -267,19 +258,75 @@ ui <- fluidPage(
                )),
       
       
-      ######
-      # Temp Model Tab
-      ######
+      #########################
+      # Model Tab UI Side Logic
+      #########################
       tabPanel("Model",
-               mainPanel(
-          
-               img(src='model_image2.png',align="center",style="width: 1000px"),
-                 
-               )),
+               # sidebarLayout(
+               #   sidebarPanel(
+               #     id="filters_model",
+               #     width = 3,
+               #     h2("Filters"),
+               #     hr(style = "border-top: 1px solid #000000"),
+               #     selectInput("disease_m",
+               #                 label= "Select Disease",
+               #                 choices = sort(unique(inc_rate_df$DISEASE))),
+               #     uiOutput("dataset_d"),
+               # 
+               #     uiOutput("region_d"),
+               # 
+               #     sliderInput("year_d", 
+               #                 label = tags$span(
+               #                   "Select Year  ", 
+               #                   tags$i(
+               #                     id = "year_info_m",
+               #                     class = "glyphicon glyphicon-info-sign", 
+               #                     style = "color:#0072B2;"
+               #                   )),
+               #                 min = 2001,
+               #                 max=2020,
+               #                 value = 2001,
+               #                 sep = "",
+               #                 ticks = TRUE,
+               #                 animate = animationOptions(interval = 1000)
+               #     ),
+               #     bsTooltip(id = "year_info_m", 
+               #               title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+               #               placement = "right"
+               #     ),
+               #     br(),
+               #     actionButton("reset_m", "Reset")
+               #   ),
+               #   mainPanel(
+               #     width = 9,
+               #     fluidRow(
+               #       column(3,htmlOutput("text_d1")),
+               #       column(3,htmlOutput("text_d2")),
+               #       column(3,htmlOutput("text_d3")),
+               #       column(3,htmlOutput("text_d4"))
+               #     ),
+               #     fluidRow(
+               #       column(6, leafletOutput("map",height=645)%>% withSpinner(),
+               #              # verbatimTextOutput("hover_stuff"),
+               #              # verbatimTextOutput("hover_stuff2")
+               #       ),
+               #       column(6, 
+               #              fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
+               #              fluidRow(column(12,
+               #                              materialSwitch(
+               #                                inputId = "yax_switch",
+               #                                label = "Y-axis from 0",
+               #                                right = TRUE
+               #                              ),
+               #                              plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
+               #       )))
+               # )
+      ),
+
       
-      ######
+      #############
       # MAHMOOD TAB
-      ######
+      #############
       tabPanel("Mahmood",
                mainPanel(
                  img(src='model_image2.png',align="center",style="width: 1000px"),

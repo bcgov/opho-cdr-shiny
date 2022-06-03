@@ -137,7 +137,7 @@
   padding-top: 85px;
 }
 
-#filters_d, #filters_data{
+#filters_d, #filters_data, #filters_model{
   background-color: #FFFAEB;
   border-radius: 15px;
   border: 5px solid var(--yellow);
