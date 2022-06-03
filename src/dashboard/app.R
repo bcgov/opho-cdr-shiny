@@ -65,9 +65,11 @@ ui <- fluidPage(
                  p(HTML(rate_info))
                  ),
         tabPanel("Diseases",
-                 position = c("fixed-top"),
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
-                 p(HTML(disease_info))
+                 p(HTML(disease_info)),
+                 actionButton("show_pdf", "Show PDF"),
+                 htmlOutput("pdfviewer"),
+                 tags$iframe(style="height:600px; width:100%", src="CDR_Case_Definitions.pdf")
                  ),
         tabPanel("Data Dictionary",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
@@ -295,6 +297,18 @@ server <- function(input, output,session) {
       session$sendCustomMessage("background-color", "#cccccc")
     }
   })
+  
+  ################################
+  # Info Tab Server Side Logic
+  ################################
+  
+  observeEvent(input$show_pdf, {
+    output$pdfviewer <- renderText({
+      # tags$iframe(style="height:600px; width:100%", src="CDR_Case_Definitions.pdf")
+      '<iframe style="height:600px; width:100%" src="CDR_Case_Definitions.pdf"></iframe>'
+    })
+  })
+  
   
   ################################
   # By Disease Tab Server Side Logic
