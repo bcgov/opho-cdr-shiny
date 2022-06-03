@@ -7,12 +7,6 @@
 # Define and initialize global variables
 ################################
 
-# Create 3 empty data frames that correspond to three rate types:
-#   Incidence Rate, Active Healthcare Contact (HSC) Prevalence, and Lifetime Prevalence
-inc_rate_df <- data.frame()
-hsc_prev_df <- data.frame()
-life_prev_df <- data.frame()
-
 # Define a dictionary of disease names, which maps acronyms to user-friendly full names
 disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementia",
                   "AMI" = "Acute Myocardial Infarction",
@@ -71,6 +65,12 @@ RATE_TYPE_CHOICES <- c(
 ################################
 # Read data from files and prepare data frames for analysis
 ################################
+
+# Create 3 empty data frames that correspond to three rate types:
+#   Incidence Rate, Active Healthcare Contact (HSC) Prevalence, and Lifetime Prevalence
+inc_rate_df <- data.frame()
+hsc_prev_df <- data.frame()
+life_prev_df <- data.frame()
 
 # Read csv files and concatenate rows with the same rate type
 for (dir in list.dirs("data")[-1]) {
