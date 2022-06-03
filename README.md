@@ -5,8 +5,24 @@ See <https://github.com/BCDevExchange/Our-Project-Docs/blob/master/discussion/pr
 If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badge' Addin.
 -->
 
-opho-cdr-shiny
+BC Chronic Disease Dashboard
 ============================
+
+The Chronic Disease Registry is a data product that captures information about the 
+rate of new and persistent cases of chronic diseases in each CHSA (Community Health Service Area), 
+as well as demographic information such as sex and age standardized rates.
+In this project we aim to create an interactive dashboard that will allow users 
+of all technical expertise to explore and visualize spatiotemporal information of the disease rates in the data,
+and to develop an analysis pipeline that will describe the temporal trends in the data. 
+
+### Proposal
+Our proposal is linked [here](https://github.com/bcgov/opho-cdr-shiny/blob/main/docs/proposal/capstone-proposal.pdf).
+
+To render our proposal locally, clone this GitHub repository, install R and the required dependencies, and run the following command at the command line/terminal from the root directory:
+
+```
+Rscript -e "rmarkdown::render('docs/proposal/capstone-proposal.Rmd')"
+```
 
 ### Usage
 
