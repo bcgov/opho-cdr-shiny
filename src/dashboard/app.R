@@ -134,15 +134,16 @@ ui <- fluidPage(
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
-                          fluidRow(column(12,
+                          fluidRow(column(4,
                                           materialSwitch(
                                             inputId = "yax_switch",
                                             label = "Y-axis from 0",
                                             right = TRUE,
                                             inline= TRUE
-                                          ),
-                                          uiOutput("modeldata_d"),
-                                          plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
+                                          )),
+                                   column(4,
+                                          uiOutput("modeldata_d"))),
+                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
                           )))
                )),
       
@@ -264,65 +265,6 @@ ui <- fluidPage(
       # Model Tab UI Side Logic
       #########################
       tabPanel("Model",
-               # sidebarLayout(
-               #   sidebarPanel(
-               #     id="filters_model",
-               #     width = 3,
-               #     h2("Filters"),
-               #     hr(style = "border-top: 1px solid #000000"),
-               #     selectInput("disease_m",
-               #                 label= "Select Disease",
-               #                 choices = sort(unique(inc_rate_df$DISEASE))),
-               #     uiOutput("dataset_d"),
-               # 
-               #     uiOutput("region_d"),
-               # 
-               #     sliderInput("year_d", 
-               #                 label = tags$span(
-               #                   "Select Year  ", 
-               #                   tags$i(
-               #                     id = "year_info_m",
-               #                     class = "glyphicon glyphicon-info-sign", 
-               #                     style = "color:#0072B2;"
-               #                   )),
-               #                 min = 2001,
-               #                 max=2020,
-               #                 value = 2001,
-               #                 sep = "",
-               #                 ticks = TRUE,
-               #                 animate = animationOptions(interval = 1000)
-               #     ),
-               #     bsTooltip(id = "year_info_m", 
-               #               title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
-               #               placement = "right"
-               #     ),
-               #     br(),
-               #     actionButton("reset_m", "Reset")
-               #   ),
-               #   mainPanel(
-               #     width = 9,
-               #     fluidRow(
-               #       column(3,htmlOutput("text_d1")),
-               #       column(3,htmlOutput("text_d2")),
-               #       column(3,htmlOutput("text_d3")),
-               #       column(3,htmlOutput("text_d4"))
-               #     ),
-               #     fluidRow(
-               #       column(6, leafletOutput("map",height=645)%>% withSpinner(),
-               #              # verbatimTextOutput("hover_stuff"),
-               #              # verbatimTextOutput("hover_stuff2")
-               #       ),
-               #       column(6, 
-               #              fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
-               #              fluidRow(column(12,
-               #                              materialSwitch(
-               #                                inputId = "yax_switch",
-               #                                label = "Y-axis from 0",
-               #                                right = TRUE
-               #                              ),
-               #                              plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
-               #       )))
-               # )
       ),
 
       
@@ -354,16 +296,8 @@ server <- function(input, output,session) {
   # Info Tab Server Side Logic
   ################################
   
+  # Show disease pdf on button click
   observeEvent(input$show_pdf, {
-    # output$pdfviewer <- renderImage({
-    #   # tags$iframe(style="height:600px; width:100%", src="CDR_Case_Definitions.pdf")
-    #   # '<iframe style="height:600px; width:100%" src="CDR_Case_Definitions.pdf"></iframe>'
-    #   
-    #   PDFfile="www/CDR_Case_Definitions.pdf"
-    #   print(paste("file exists:",file.exists(PDFfile)))
-    #   list(src = PDFfile)
-    # }, deleteFile = FALSE)
-    
     output$pdfviewer<-renderUI({
       tags$iframe(
         src="CDR_Case_Definitions.pdf",
