@@ -1301,7 +1301,7 @@ server <- function(input, output,session) {
                                   autoWidth = TRUE,
                                   columnDefs = list(list(width = '150px', targets = c(1)),
                                                     list(className = 'dt-center', targets = "_all"),
-                                                    list(width = '100px', targets = c(7,10))
+                                                    list(width = '100px', targets = c(7,9))
                                                     )
                                   ))
   
