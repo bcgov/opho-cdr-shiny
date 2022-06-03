@@ -68,8 +68,8 @@ ui <- fluidPage(
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
                  p(HTML(disease_info)),
                  actionButton("show_pdf", "Show PDF"),
-                 htmlOutput("pdfviewer"),
-                 tags$iframe(style="height:600px; width:100%", src="CDR_Case_Definitions.pdf")
+                 uiOutput("pdfviewer"),
+                 tags$iframe(style="height:600px; width:100%", src="http://localhost/CDR_Case_Definitions.pdf")
                  ),
         tabPanel("Data Dictionary",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
@@ -276,7 +276,7 @@ ui <- fluidPage(
       ######
       tabPanel("Model",
                mainPanel(
-                
+          
                img(src='model_image2.png',align="center",style="width: 1000px"),
                  
                )
@@ -303,9 +303,25 @@ server <- function(input, output,session) {
   ################################
   
   observeEvent(input$show_pdf, {
-    output$pdfviewer <- renderText({
-      # tags$iframe(style="height:600px; width:100%", src="CDR_Case_Definitions.pdf")
-      '<iframe style="height:600px; width:100%" src="CDR_Case_Definitions.pdf"></iframe>'
+    # output$pdfviewer <- renderImage({
+    #   # tags$iframe(style="height:600px; width:100%", src="CDR_Case_Definitions.pdf")
+    #   # '<iframe style="height:600px; width:100%" src="CDR_Case_Definitions.pdf"></iframe>'
+    #   
+    #   PDFfile="www/CDR_Case_Definitions.pdf"
+    #   print(paste("file exists:",file.exists(PDFfile)))
+    #   list(src = PDFfile)
+    # }, deleteFile = FALSE)
+    
+    output$pdfviewer<-renderUI({
+      
+      PDFfile="CDR_Case_Definitions.pdf"
+      print(paste("file exists:",file.exists(PDFfile)))
+      print(getwd())
+      tags$iframe(
+        src=PDFfile,
+        width="100%",
+        height="800px")
+      
     })
   })
   
