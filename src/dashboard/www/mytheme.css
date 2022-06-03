@@ -60,7 +60,7 @@
   color:  var(--yellow);
 }
 
-img{
+#logo{
     max-height: 60px;
     width: auto;
     margin-top: 0px;

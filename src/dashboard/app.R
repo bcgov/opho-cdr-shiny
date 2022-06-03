@@ -43,7 +43,7 @@ ui <- fluidPage(
   tab_colsjs,
   id="body",
   list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
-  navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
+  navbarPage(title = div(img(id = "logo",src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
              position = "fixed-top", 
              id = "navbarID",
       ################################
@@ -268,9 +268,16 @@ ui <- fluidPage(
                  )
                )),
       
+      
+      ######
+      # Temp Model Tab
+      ######
       tabPanel("Model",
-               img(src='model_image.png'),
-        
+               mainPanel(
+                
+               img(src='model_image2.png',align="center",style="width: 1000px"),
+                 
+               )
       )
   )
 )
