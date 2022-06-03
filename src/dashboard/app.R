@@ -1313,7 +1313,8 @@ server <- function(input, output,session) {
           (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
           (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
       mutate(CRUDE_CI=paste0("(",CRUDE_LCL_95,",",CRUDE_UCL_95,")"),
-             STD_CI=paste0("(",STD_LCL_95,",",STD_UCL_95,")"))|>
+             STD_CI=paste0("(",STD_LCL_95,",",STD_UCL_95,")"),
+             YEAR = paste0(YEAR,"/",YEAR+1))|>
       rename(SEX =CLNT_GENDER_LABEL,
              HEALTH_BOUNDARY=HEALTH_BOUND_NAME)|>
       select(YEAR,DISEASE,SEX,GEOGRAPHY,HEALTH_BOUNDARY,NUMERATOR,DENOMINATOR,
@@ -1339,7 +1340,8 @@ server <- function(input, output,session) {
   )
 
   # Render data table  
-  output$data_table <- renderDT(filter_df_data(),
+  output$data_table <- renderDT(filter_df_data()|>
+                                  select(-"Crude Variance",-"Std Variance"),
                                 rownames= FALSE,
                                 options = list(
                                   scrollX = TRUE, 
