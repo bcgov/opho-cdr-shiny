@@ -278,8 +278,15 @@ ui <- fluidPage(
           
                img(src='model_image2.png',align="center",style="width: 1000px"),
                  
-               )
-      )
+               )),
+      
+      ######
+      # MAHMOOD TAB
+      ######
+      tabPanel("Mahmood",
+               mainPanel(
+                 img(src='model_image2.png',align="center",style="width: 1000px"),
+               ))
   )
 )
 
