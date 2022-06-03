@@ -73,20 +73,65 @@ hsc_prev_df <- data.frame()
 life_prev_df <- data.frame()
 
 # Read csv files and concatenate rows with the same rate type
-for (dir in list.dirs("data")[-1]) {
+for (dir in list.dirs("data/raw")[-1]) {
   for (file in list.files(dir)) {
     new_df <- data.table::fread(paste0(dir, "/", file),
                                 verbose = FALSE,
                                 drop = c("STDPOP")) |>
       drop_na(NUMERATOR)
-    
-    if (dir == "data/IncidenceRate") {
+    if (dir == "data/raw/IncidenceRate") {
       inc_rate_df <- rbind(inc_rate_df, new_df)
-    } else if (dir == "data/LifePrevalence") {
+    } else if (dir == "data/raw/LifePrevalence") {
       life_prev_df <- rbind(life_prev_df, new_df)
-    } else if (dir == "data/HSCPrevalence") {
+    } else if (dir == "data/raw/HSCPrevalence") {
       hsc_prev_df <- rbind(hsc_prev_df, new_df)
     }
+  }
+}
+
+# Function to wrangle year and create fitted columns in preparation for merging
+wrangle_df <- function(df){
+  df|>
+    mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
+           y_fitted = NA,
+           ci_95_ll = NA,
+           ci_95_ul = NA,
+           )|>
+    select(-FISC_YR_LABEL) 
+}
+
+inc_rate_df <- wrangle_df(inc_rate_df)
+hsc_prev_df <- wrangle_df(hsc_prev_df)
+life_prev_df <- wrangle_df(life_prev_df)
+
+# Function to merge raw data with modeled data
+merge_df <- function(df,new_df_model){
+  df|>
+    left_join(new_df_model, by =c("DISEASE","HEALTH_BOUNDARIES","YEAR"="year"))|>
+    mutate(y_fitted = coalesce(y_fitted.x, y_fitted.y),
+           ci_95_ll = coalesce(ci_95_ll.x, ci_95_ll.y),
+           ci_95_ul = coalesce(ci_95_ul.x, ci_95_ul.y)) |>
+    select(-y_fitted.x, -y_fitted.y,
+           -ci_95_ll.x, -ci_95_ll.y,
+           -ci_95_ul.x, -ci_95_ul.y)
+  
+}
+
+# Read in modeled data and merge with raw data
+for(dir in list.dirs("data/model")[-1]){
+  for (file in list.files(dir)){
+    new_df_model<- data.table::fread(paste0(dir, "/", file),
+                                     verbose = FALSE,
+                                     drop = c("dic","waic","model","y_obs"))
+    
+    if (dir == "data/model/IncidenceRate") {
+      inc_rate_df <- merge_df(inc_rate_df,new_df_model)
+    } else if (dir == "data/model/LifePrevalence") {
+      life_prev_df <- merge_df(life_prev_df,new_df_model)
+    } else if (dir == "data/model/HSCPrevalence") {
+      hsc_prev_df <- merge_df(hsc_prev_df,new_df_model)
+    }
+
   }
 }
 
@@ -107,10 +152,8 @@ wrangle_data_frame <- function(df) {
              c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
              " ",
              extra = "merge") |>
-    mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-           DISEASE = str_replace_all(DISEASE, disease_dict),
+    mutate(DISEASE = str_replace_all(DISEASE, disease_dict),
            DISEASE = ifelse(endsWith(DISEASE, "_EPI"), str_sub(DISEASE, 1, -5), DISEASE)) |>
-    select(-FISC_YR_LABEL) |>
     data.table::setcolorder(c("YEAR")) |>
     filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))
 }
