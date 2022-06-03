@@ -1076,71 +1076,119 @@ server <- function(input, output,session) {
                 (YEAR %in% seq(input$region_tab_year_range_selected[1], 
                                input$region_tab_year_range_selected[2], 
                                by = 1)) &
-                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1))) |> 
-      mutate(CRUDE_RATE_PER_1000_rounded = round(CRUDE_RATE_PER_1000, 1),
-             STD_RATE_PER_1000_rounded = round(STD_RATE_PER_1000, 1))
+                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
   
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
+  # 
   output$region_tab_line_chart <- renderPlotly({
-    line_chart <- region_tab_filtered_data() |>
-      ggplot(aes_string(y = region_tab_rate_as_variable(),
-                        x = "YEAR",
-                        color = "DISEASE"
-                        # ,tooltip = paste0(region_tab_rate_as_variable(), "_rounded")
-                        )) +
-      geom_line(stat = 'identity') +
-      labs(
-        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-        x = NULL,
-        color = "Disease",
-        title = paste0(input$region_tab_rate_type_selected, " Over Time")
-      ) +
-      theme(axis.text.x = element_text(
-        angle = 45,
-        hjust = 1,
-        vjust = 1)) +
-      scale_x_continuous(breaks = breaks_width(1))
+    data <- region_tab_filtered_data()
     
-    ggplotly(line_chart) |>
-      layout(hovermode = "x unified",
-             hovertemplate = paste0('<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                     '<extra></extra>')) 
-    
-    
-    })
+    data |>
+      plot_ly(
+        x = data$YEAR,
+        y = data[[region_tab_rate_as_variable()]],
+        type = "scatter",
+        mode = "lines",
+        line = list(width = 2),
+        color = ~ DISEASE,
+        showlegend = T,
+        hovertemplate = paste0(
+          '<br><b>%{yaxis.title.text}</b>: %{y:.1f}',
+          '<br><b>Year</b>: %{x}',
+          '<extra></extra>')) |>
+      layout(
+        yaxis = list(
+          title = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+          gridcolor = "#d9dadb",
+          showline = T,
+          linewidth = 1,
+          linecolor = 'black',
+          rangemode = "nonnegative"
+        ),
+        xaxis = list(
+          title = list(text = 'Year', standoff = 10),
+          gridcolor = "#d9dadb",
+          showline = T,
+          linewidth = 1,
+          linecolor = 'black'
+        ),
+        title = list(
+          text = paste0('<b>',
+                        input$region_tab_rate_type_selected,
+                        " Over Time </b>"),
+          y = 0.92,
+          font = list(size = 16)
+        ),
+        margin = list(t = 80, b = 50),
+        legend = list(title = list(text = 'Disease'))
+      )
+      
+  })
   
   # Plot a bar chart comparing rates for diseases in a year
   # x is DISEASE, y is the selected rate type, color is DISEASE
+   
   output$region_tab_bar_chart <- renderPlotly({
     bar_chart_data <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_range_selected[1])
+    error$lower <-
+      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
     
-    bar_chart <- bar_chart_data |>
-      ggplot(aes_string(x = "DISEASE", y = region_tab_rate_as_variable(),
-                        fill = "DISEASE")) +
-      geom_bar(stat = "identity") +
-      geom_errorbar(aes_string(ymin = paste0(substr(region_tab_rate_as_variable(), 1, 5),
-                                      "_LCL_95"),
-                        ymax = paste0(substr(region_tab_rate_as_variable(), 1, 5),
-                                      "_UCL_95"))) +
-      labs(
-        y = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-        x = NULL,
-        title = paste0(
-          "Distribution of Diseases by ",
-          input$region_tab_rate_type_selected,
-          " in ",
-          input$region_tab_year_range_selected[1]
-        )
-      ) + theme(plot.title = element_text(size = 8),
-                legend.position="none") +
-      scale_x_discrete(labels = wrap_format(10))
-    
-    ggplotly(bar_chart) |> 
-      style(text = paste0(input$region_tab_rate_type_selected, " Per 1000: ",
-                          bar_chart_data[[paste0(region_tab_rate_as_variable(), "_rounded")]]))
+    bar_chart_data |>
+      plot_ly(
+        x = bar_chart_data$DISEASE,
+        y = bar_chart_data[[region_tab_rate_as_variable()]],
+        color = ~ DISEASE,
+        type = 'bar',
+        error_y = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = bar_chart_data[[region_tab_rate_as_variable()]] - bar_chart_data[[error$lower]],
+          array = bar_chart_data[[error$upper]] - bar_chart_data[[region_tab_rate_as_variable()]],
+          color = '#000000',
+          width = 10
+        ),
+        hovertemplate = paste('<br><b>%{yaxis.title.text}</b>: %{y:.1f}',
+                              '<br><b>95% Confidence Interval</b>: (',
+                              bar_chart_data[[error$lower]], ',',
+                              bar_chart_data[[error$upper]],')',
+                              '<extra></extra>')
+      ) %>%
+      layout(
+        yaxis = list(
+          # range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
+          title = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+          gridcolor = "#d9dadb",
+          showline = T,
+          linewidth = 1,
+          linecolor = 'black'
+        ),
+        xaxis = list(
+          categoryorder = "category ascending",
+          # tickfont = list(size = 10),
+          showline = T,
+          linewidth = 1,
+          linecolor = 'black'
+        ),
+        title = list(
+          text = paste0(
+                    "Distribution of Diseases by ",
+                    input$region_tab_rate_type_selected,
+                    " in ",
+                    input$region_tab_year_range_selected[1]
+                  ),
+          y = 0.92,
+          font = list(size = 16)
+        ),
+        barmode = "overlay",
+        margin = list(t = 80, b = 50),
+        showlegend = FALSE
+      )
+    #   event_register('plotly_hover')
   })
   
   # This function finds the information to highlight the selected region on the map
