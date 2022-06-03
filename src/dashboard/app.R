@@ -664,7 +664,7 @@ server <- function(input, output,session) {
     }
   })
   
-  # Switch to change line graph to modelled data 
+  # Switch to change line graph to modeled data 
   observeEvent(input$modeldata_d_switch,{
     data <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d)
@@ -675,9 +675,28 @@ server <- function(input, output,session) {
         plotlyProxyInvoke("restyle",
                           list(
                             x = list(data$YEAR),
-                            y= list(data$y_fitted)
+                            y= list(data$y_fitted),
+                            color = list(data$HEALTH_BOUND_NAME),
+                            colors = list(setNames(CHSA_colours$Colors,CHSA_colours$Regions))
 
                           ))
+    }else{
+      p%>%
+        plotlyProxyInvoke("restyle",
+                          list(
+                            x= list(data$YEAR),
+                            y= list(data[[rateInput_d()]]),
+                            color = list(data$HEALTH_BOUND_NAME),
+                            colors = if(input$health_bound_d == "Health Authorities")
+                                      setNames(HA_colours$Colors,HA_colours$Regions) 
+                                    else 
+                                      setNames(CHSA_colours$Colors,CHSA_colours$Regions),
+                            hovertemplate = list(paste0('<b>Health Region</b>: %{fullData.name}',
+                                                   '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                                 '<br><b>Year</b>: %{x}',
+                                                 '<extra></extra>'))
+                          ))
+                
     }
     })
   
