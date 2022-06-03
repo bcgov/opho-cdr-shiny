@@ -312,11 +312,8 @@ server <- function(input, output,session) {
     # }, deleteFile = FALSE)
     
     output$pdfviewer<-renderUI({
-      PDFfile="CDR_Case_Definitions.pdf"
-      print(paste("file exists:",file.exists(PDFfile)))
-      print(getwd())
       tags$iframe(
-        src=PDFfile,
+        src="CDR_Case_Definitions.pdf",
         width="100%",
         height="800px")
       
