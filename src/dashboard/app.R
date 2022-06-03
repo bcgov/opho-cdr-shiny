@@ -204,10 +204,7 @@ ui <- fluidPage(
                    width = 9,
                    fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()),
                    br(),
-                   fluidRow(
-                     column(8, plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
-                     # br(),
-                     column(4, leafletOutput("region_tab_map") %>% withSpinner())))
+                   fluidRow(plotlyOutput("region_tab_bar_chart") %>% withSpinner()))
                  
               )), 
       
@@ -1054,7 +1051,7 @@ server <- function(input, output,session) {
   output$region_tab_region_selected <- renderUI({
     selectInput(
       "region_tab_region_selected",
-      label = "Select Health Region",
+      label = "Select Health Boundary",
       choices = (
         if (input$region_tab_geography_selected == "Health Authorities")
           HA_CHOICES
@@ -1072,8 +1069,7 @@ server <- function(input, output,session) {
                    label = "Select Disease(s)",
                 choices = unique(region_tab_dataset_used()$DISEASE),
                 multiple = TRUE,
-                selected = unique(region_tab_dataset_used()$DISEASE)[1],
-                options = list(maxItems = 5))
+                selected = unique(region_tab_dataset_used()$DISEASE)[1])
   }) 
   
   region_tab_filtered_data <- reactive({
@@ -1197,50 +1193,6 @@ server <- function(input, output,session) {
       )
     #   event_register('plotly_hover')
   })
-  
-  # This function finds the information to highlight the selected region on the map
-  # It finds the index of the selected region from the corresponding list 
-  #   and uses that index to get the region's latitude and longitude.
-  # These two values are needed in the addMarker() function later to pinpoint the area
-  # 
-  # Note that three values are returned as a list
-  region_tab_map_data <- reactive({
-    if (input$region_tab_geography_selected == "Health Authorities") {
-      region_level <- ha_spdf
-      region_index <- data.table::chmatch(input$region_tab_region_selected, ha_spdf$HA_Name)
-      selected_region_lat <- ha_spdf$Latitude[region_index]
-      selected_region_lon <- ha_spdf$Longitude[region_index]
-    }
-    else {
-      region_level <- chsa_spdf
-      region_index <- data.table::chmatch(input$region_tab_region_selected, chsa_spdf$CHSA_Name)
-      selected_region_lat <- chsa_spdf$Latitude[region_index]
-      selected_region_lon <- chsa_spdf$Longitude[region_index]
-    }
-    to_return <- list(region_level = region_level,
-                      selected_region_lat = selected_region_lat, 
-                      selected_region_lon = selected_region_lon)
-    to_return
-  })
-  
-  # Plot a map highlighting the selected health region to provide context for users
-  output$region_tab_map <- renderLeaflet({
-    location_to_be_tagged <- region_tab_map_data()
-    
-    map <- leaflet() |> 
-      setView(lat = 53.5, lng = -127, zoom = 4.5) |> 
-      addProviderTiles(providers$OpenStreetMap) |> 
-      addPolygons(data = location_to_be_tagged$region_level,
-                  weight = 1, smoothFactor = 0.5,
-                opacity = 1.0, fillOpacity = 0.5,
-                highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                    bringToFront = TRUE)) |>
-      addMarkers(lng = location_to_be_tagged$selected_region_lon,
-                 lat = location_to_be_tagged$selected_region_lat,
-                 label = input$region_tab_region_selected)
-    
-    map
-    })
   
   
   ################################
