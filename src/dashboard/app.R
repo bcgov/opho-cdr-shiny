@@ -138,8 +138,10 @@ ui <- fluidPage(
                                           materialSwitch(
                                             inputId = "yax_switch",
                                             label = "Y-axis from 0",
-                                            right = TRUE
+                                            right = TRUE,
+                                            inline= TRUE
                                           ),
+                                          uiOutput("modeldata_d"),
                                           plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
                           )))
                )),
@@ -380,6 +382,22 @@ server <- function(input, output,session) {
   observeEvent(input$reset_d, {
     reset("filters_d")
   })
+  
+  observe({
+    if(input$gender_d =="Total"&& input$health_bound_d=="Community Health Service Areas"){
+      output$modeldata_d <- renderUI({
+        materialSwitch(
+          inputId = "modeldata_d_switch",
+          label = "Modelled Data",
+          right = TRUE,
+          inline = TRUE
+        )
+      })
+
+    }
+
+  })
+
 
   # Dynamic UI for rate selection
   output$dataset_d <- renderUI({
@@ -1315,8 +1333,9 @@ server <- function(input, output,session) {
              STD_CI=paste0("(",STD_LCL_95,",",STD_UCL_95,")"),
              YEAR = paste0(YEAR,"/",YEAR+1))|>
       rename(SEX =CLNT_GENDER_LABEL,
-             HEALTH_BOUNDARY=HEALTH_BOUND_NAME)|>
-      select(YEAR,DISEASE,SEX,GEOGRAPHY,HEALTH_BOUNDARY,NUMERATOR,DENOMINATOR,
+             HEALTH_BOUNDARY=HEALTH_BOUND_NAME,
+             FISCAL_YEAR = YEAR)|>
+      select(FISCAL_YEAR,DISEASE,SEX,GEOGRAPHY,HEALTH_BOUNDARY,NUMERATOR,DENOMINATOR,
              CRUDE_RATE_PER_1000, CRUDE_CI,CRUDE_VARIANCE,STD_RATE_PER_1000,
              STD_CI,STD_VARIANCE)
     
