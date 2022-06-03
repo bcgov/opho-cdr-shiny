@@ -68,8 +68,7 @@ ui <- fluidPage(
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
                  p(HTML(disease_info)),
                  actionButton("show_pdf", "Show PDF"),
-                 uiOutput("pdfviewer"),
-                 tags$iframe(style="height:600px; width:100%", src="http://localhost/CDR_Case_Definitions.pdf")
+                 uiOutput("pdfviewer")
                  ),
         tabPanel("Data Dictionary",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
@@ -313,7 +312,6 @@ server <- function(input, output,session) {
     # }, deleteFile = FALSE)
     
     output$pdfviewer<-renderUI({
-      
       PDFfile="CDR_Case_Definitions.pdf"
       print(paste("file exists:",file.exists(PDFfile)))
       print(getwd())
