@@ -36,8 +36,8 @@ When p = 1, the distribution is equivalent to a Poisson distribution.
 When p = 2, the distribution is equivalent to a gamma distribution.
 
 However, the Tweedie distribution implementation in INLA is currently experimental and subject to changes.
-Due to the experimental nature and issues with fitting the model on the data below, 
-we did not further explore this distribution at this time.
+Due to the experimental nature and some issues with fitting the model on the data below,
+the models generated with this distribution may require more careful review.
 
 ```{r Functions to Fit and Plot Models}
 #' Fit a random walk 1 model with STD_RATE_PER_1000 as response variable and 
