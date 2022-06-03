@@ -94,7 +94,7 @@ ui <- fluidPage(
                    uiOutput("dataset_d"),
                    
                    radioButtons("health_bound_d",
-                                label= "Select Geography",
+                                label= "Select Health Boundary Type",
                                 choices = GEOGRAPHY_CHOICES,
                                 selected= GEOGRAPHY_CHOICES[1]),
                    
@@ -231,7 +231,7 @@ ui <- fluidPage(
                    uiOutput("disease_data"),
                    
                    radioButtons("health_bound_data",
-                                label= "Select Geography",
+                                label= "Select Health Boundary Type",
                                 choices = GEOGRAPHY_CHOICES,
                                 selected=GEOGRAPHY_CHOICES[1]),
                    
@@ -358,7 +358,7 @@ server <- function(input, output,session) {
   # Dynamic UI for region selection
   output$region_d <- renderUI({
     selectInput("region_d",
-                label = "Select Health Region(s)",
+                label = "Select Health Boundaries",
                 choices = (
                   if(input$health_bound_d == "Health Authorities") 
                     c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
@@ -1284,7 +1284,7 @@ server <- function(input, output,session) {
   # Dynamic UI for region selection
   output$region_data <- renderUI({
     selectInput("region_data",
-                label = "Select Health Region(s)",
+                label = "Select Health Boundaries",
                 choices = (
                   if(input$health_bound_data == "Health Authorities") 
                     c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
