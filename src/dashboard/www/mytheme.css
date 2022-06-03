@@ -60,7 +60,7 @@
   color:  var(--yellow);
 }
 
-img{
+#logo{
     max-height: 60px;
     width: auto;
     margin-top: 0px;
@@ -71,10 +71,12 @@ img{
 
 #disease_graph_line .plot-container .plotly{
   padding-bottom: 10px;
+  box-shadow: 6px 6px 6px darkgrey;
 }
 
 #disease_graph_bar{
   margin-bottom:5px;
+  box-shadow: 6px 6px 6px darkgrey;
 }
 
 #text_d1,#text_d2,#text_d3,#text_d4{
@@ -86,6 +88,7 @@ img{
   padding-bottom: 20px;
   height: 100px;
   font-size: 12px;
+  box-shadow: 6px 6px 6px darkgrey;
 }
 
 #stat{
@@ -125,6 +128,7 @@ img{
 
 #map {
     background: white;
+    box-shadow: 6px 6px 6px darkgrey;
 }
 
 /* Body and Filter Sidebar Styles */

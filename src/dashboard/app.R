@@ -43,7 +43,7 @@ ui <- fluidPage(
   tab_colsjs,
   id="body",
   list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
-  navbarPage(title = div(img(src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
+  navbarPage(title = div(img(id = "logo",src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
              position = "fixed-top", 
              id = "navbarID",
       ################################
@@ -65,9 +65,10 @@ ui <- fluidPage(
                  p(HTML(rate_info))
                  ),
         tabPanel("Diseases",
-                 position = c("fixed-top"),
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
-                 p(HTML(disease_info))
+                 p(HTML(disease_info)),
+                 actionButton("show_pdf", "Show PDF"),
+                 uiOutput("pdfviewer")
                  ),
         tabPanel("Data Dictionary",
                  p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
@@ -266,7 +267,19 @@ ui <- fluidPage(
                    hr(),
                    DTOutput("data_table")
                  )
-               ))
+               )),
+      
+      
+      ######
+      # Temp Model Tab
+      ######
+      tabPanel("Model",
+               mainPanel(
+          
+               img(src='model_image2.png',align="center",style="width: 1000px"),
+                 
+               )
+      )
   )
 )
 
@@ -283,6 +296,30 @@ server <- function(input, output,session) {
       session$sendCustomMessage("background-color", "#cccccc")
     }
   })
+  
+  ################################
+  # Info Tab Server Side Logic
+  ################################
+  
+  observeEvent(input$show_pdf, {
+    # output$pdfviewer <- renderImage({
+    #   # tags$iframe(style="height:600px; width:100%", src="CDR_Case_Definitions.pdf")
+    #   # '<iframe style="height:600px; width:100%" src="CDR_Case_Definitions.pdf"></iframe>'
+    #   
+    #   PDFfile="www/CDR_Case_Definitions.pdf"
+    #   print(paste("file exists:",file.exists(PDFfile)))
+    #   list(src = PDFfile)
+    # }, deleteFile = FALSE)
+    
+    output$pdfviewer<-renderUI({
+      tags$iframe(
+        src="CDR_Case_Definitions.pdf",
+        width="100%",
+        height="800px")
+      
+    })
+  })
+  
   
   ################################
   # By Disease Tab Server Side Logic

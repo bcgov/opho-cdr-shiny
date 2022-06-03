@@ -121,8 +121,8 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                       Acute myocardial infarction*<br/>
                       Heart failure <br/>
                       Ischemic heart disease <br/>
-                      Stroke* <br/>
-                      <p style='margin-left: 40px'> 
+                      Stroke*
+                      <p style='margin-left: 60px'> 
                             Haemorrhagic stroke* <br/>
                             Ischemic stroke* <br/>
                             Transient ischemic attack* <br/>
