@@ -3,6 +3,41 @@
 #   going to be used in app.R
 ################################  
 
+source('helpers.R', local = T)
+
+
+################################
+# Read geographic data from files and simplify polygons
+################################
+
+# Read the shape files for the Community Health Service Areas (CHSA) level
+chsa_spdf <- readOGR(
+  dsn = paste0(getwd(), "/geo_data/chsa_2018"),
+  layer = "CHSA_2018",
+  verbose = FALSE
+) |>
+  spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+# Simplify Spatial Polygons for faster rendering
+regions_df <- chsa_spdf@data
+chsa_spdf <- gSimplify(chsa_spdf,0.01,topologyPreserve = TRUE)
+chsa_spdf <- SpatialPolygonsDataFrame(chsa_spdf, regions_df)
+
+# Read the shape files for the Health Authorities (HA) level
+ha_spdf <- readOGR(
+  dsn = paste0(getwd(), "/geo_data/ha_2018"),
+  layer = "HA_2018",
+  verbose = FALSE
+) |>
+  spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+
+# Simplify Spatial Polygons for faster rendering
+regions_df <- ha_spdf@data
+ha_spdf <- gSimplify(ha_spdf,0.01,topologyPreserve = TRUE)
+ha_spdf <- SpatialPolygonsDataFrame(ha_spdf, regions_df)
+
+
 ################################
 # Define and initialize global variables
 ################################
@@ -62,6 +97,9 @@ RATE_TYPE_CHOICES <- c(
 
 # CHSA_CHOICES <- sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
 
+
+
+
 ################################
 # Read data from files and prepare data frames for analysis
 ################################
@@ -89,33 +127,10 @@ for (dir in list.dirs("data/raw")[-1]) {
   }
 }
 
-# Function to wrangle year and create fitted columns in preparation for merging
-wrangle_df <- function(df){
-  df|>
-    mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-           y_fitted = NA,
-           ci_95_ll = NA,
-           ci_95_ul = NA,
-           )|>
-    select(-FISC_YR_LABEL) 
-}
+inc_rate_df <- wrangle_df_for_merge(inc_rate_df)
+hsc_prev_df <- wrangle_df_for_merge(hsc_prev_df)
+life_prev_df <- wrangle_df_for_merge(life_prev_df)
 
-inc_rate_df <- wrangle_df(inc_rate_df)
-hsc_prev_df <- wrangle_df(hsc_prev_df)
-life_prev_df <- wrangle_df(life_prev_df)
-
-# Function to merge raw data with modeled data
-merge_df <- function(df,new_df_model){
-  df|>
-    left_join(new_df_model, by =c("DISEASE","HEALTH_BOUNDARIES","YEAR"="year"))|>
-    mutate(y_fitted = coalesce(y_fitted.x, y_fitted.y),
-           ci_95_ll = coalesce(ci_95_ll.x, ci_95_ll.y),
-           ci_95_ul = coalesce(ci_95_ul.x, ci_95_ul.y)) |>
-    select(-y_fitted.x, -y_fitted.y,
-           -ci_95_ll.x, -ci_95_ll.y,
-           -ci_95_ul.x, -ci_95_ul.y)
-  
-}
 
 # Read in modeled data and merge with raw data
 for(dir in list.dirs("data/model")[-1]){
@@ -131,31 +146,8 @@ for(dir in list.dirs("data/model")[-1]){
     } else if (dir == "data/model/HSCPrevalence") {
       hsc_prev_df <- merge_df(hsc_prev_df,new_df_model)
     }
-
+    
   }
-}
-
-# Clean the data frames using a function
-
-# This function wrangles a data frame based on the following steps:
-#  1. extract the HEALTH_BOUND_CODE and HEALTH_BOUND_NAME from the HEALTH_BOUNDARIES column
-#  2. extract only the YEAR part from the FISC_YR_LABEL column and keep only the extracted YEAR
-#  3. replace the acronyms used in the DISEASE column with their full names
-#  4. reorder the the data frame based on YEAR
-#  5. remove the rows where HEALTH_BOUND_NAME is unknown
-#  
-#  It returns the cleaned data frame
-
-wrangle_data_frame <- function(df) {
-  df |>
-    separate(HEALTH_BOUNDARIES,
-             c("HEALTH_BOUND_CODE", "HEALTH_BOUND_NAME"),
-             " ",
-             extra = "merge") |>
-    mutate(DISEASE = str_replace_all(DISEASE, disease_dict),
-           DISEASE = ifelse(endsWith(DISEASE, "_EPI"), str_sub(DISEASE, 1, -5), DISEASE)) |>
-    data.table::setcolorder(c("YEAR")) |>
-    filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))
 }
 
 inc_rate_df <- wrangle_data_frame(inc_rate_df)
@@ -181,63 +173,4 @@ for (i in seq(1,5)){
     mutate(Colors = cols)|>
     dplyr::rename(Regions = HEALTH_BOUND_NAME)
   CHSA_colours<- rbind(CHSA_colours,chsas_colors)
-}
-
-# Read the shape files for the Community Health Service Areas (CHSA) level
-chsa_spdf <- readOGR(
-  dsn = paste0(getwd(), "/geo_data/chsa_2018"),
-  layer = "CHSA_2018",
-  verbose = FALSE
-) |>
-  spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
-# Simplify Spatial Polygons for faster rendering
-regions_df <- chsa_spdf@data
-chsa_spdf <- gSimplify(chsa_spdf,0.01,topologyPreserve = TRUE)
-chsa_spdf <- SpatialPolygonsDataFrame(chsa_spdf, regions_df)
-
-# Read the shape files for the Health Authorities (HA) level
-ha_spdf <- readOGR(
-  dsn = paste0(getwd(), "/geo_data/ha_2018"),
-  layer = "HA_2018",
-  verbose = FALSE
-) |>
-  spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
-
-# Simplify Spatial Polygons for faster rendering
-regions_df <- ha_spdf@data
-ha_spdf <- gSimplify(ha_spdf,0.01,topologyPreserve = TRUE)
-ha_spdf <- SpatialPolygonsDataFrame(ha_spdf, regions_df)
-
-
-#helper function for choropleth animation
-setShapeStyle <- function( map, data = getMapData(map), layerId,
-                           stroke = NULL, color = NULL,
-                           weight = NULL, opacity = NULL,
-                           fill = NULL, fillColor = NULL,
-                           fillOpacity = NULL, dashArray = NULL,
-                           smoothFactor = NULL, noClip = NULL, label = NULL,
-                           options = NULL){
-  
-  options <- c(list(layerId = layerId),
-               options,
-               filterNULL(list(stroke = stroke, color = color,
-                               weight = weight, opacity = opacity,
-                               fill = fill, fillColor = fillColor,
-                               fillOpacity = fillOpacity, dashArray = dashArray,
-                               smoothFactor = smoothFactor, noClip = noClip, label = label
-               )))
-  
-  options <- evalFormula(options, data = data)
-  options <- do.call(data.frame, c(options, list(stringsAsFactors=FALSE)))
-  
-  layerId <- options[[1]]
-  style <- options[-1]
-  if("label" %in% colnames(style)){
-    labelData = style[,"label", FALSE]
-    style = style[,-which(colnames(style)=="label"), FALSE]
-    leaflet::invokeMethod(map, data, "setLabel", "shape", layerId, label)
-  }
-  leaflet::invokeMethod(map, data, "setStyle", "shape", layerId, style);
 }

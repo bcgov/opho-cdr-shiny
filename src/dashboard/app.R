@@ -307,7 +307,6 @@ server <- function(input, output,session) {
     })
   })
   
-  
   ################################
   # By Disease Tab Server Side Logic
   ################################
@@ -317,6 +316,7 @@ server <- function(input, output,session) {
     reset("filters_d")
   })
   
+  # Show modelled data toggle switch
   observe({
     if(input$gender_d =="Total"&& input$health_bound_d=="Community Health Service Areas"){
       output$modeldata_d <- renderUI({
