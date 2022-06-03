@@ -269,7 +269,7 @@ ui <- fluidPage(
                )),
       
       tabPanel("Model",
-               
+               img(src='model_image.png'),
         
       )
   )
