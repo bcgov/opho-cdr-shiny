@@ -466,7 +466,7 @@ server <- function(input, output,session) {
     
     paste0(
       "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
-      "<br>", "<div id=stat>",round(avg_rate,2),"</div>"
+      "<br>", "<div id=stat>",format_round(avg_rate),"</div>"
     )
     
   })
@@ -767,7 +767,7 @@ server <- function(input, output,session) {
     mytext <- paste(
       "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
       "<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
-      paste0(input$dataset_d,":"), format(round(dummy_spdf@data[[rateInput_d()]],1),1),
+      paste0(input$dataset_d,":"), format_round(dummy_spdf@data[[rateInput_d()]]),
       sep="") |>
       lapply(htmltools::HTML)
     
@@ -822,14 +822,14 @@ server <- function(input, output,session) {
     if(input$health_bound_d == "Health Authorities"){
       current_map_spdf@data$text <- paste0(
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>",format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
-        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+        "<b>",input$dataset_d,": ","</b>",format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
+        "<b>95% Confidence Interval</b>: (",format_round(current_map_spdf@data[[error$lower]]),",",format_round(current_map_spdf@data[[error$upper]]),")")
     }else{
       current_map_spdf@data$text <- paste0(
         "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>", format(round(current_map_spdf@data[[rateInput_d()]],1),1),"<br/>",
-        "<b>95% Confidence Interval</b>: (",current_map_spdf@data[[error$lower]],",",current_map_spdf@data[[error$upper]],")")
+        "<b>",input$dataset_d,": ","</b>", format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
+        "<b>95% Confidence Interval</b>: (",format_round(current_map_spdf@data[[error$lower]]),",",format_round(current_map_spdf@data[[error$upper]]),")")
   }
 
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
@@ -1028,8 +1028,8 @@ server <- function(input, output,session) {
               hovertemplate = paste('<b>Health Region</b>: %{x}',
                                     '<br><b>Year</b>: ',input$year_d,
                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                    '<br><b>95% Confidence Interval</b>: (',bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)], ',',
-                                                                    bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)],')',
+                                    '<br><b>95% Confidence Interval</b>: (',format_round(bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]), ',',
+                                                                            format_round(bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]),')',
                                     '<extra></extra>')
             )
           )
