@@ -129,8 +129,8 @@ ui <- fluidPage(
                  ),
                  fluidRow(
                    column(6, leafletOutput("map",height=645)%>% withSpinner(),
-                          # verbatimTextOutput("hover_stuff"),
-                          # verbatimTextOutput("hover_stuff2")
+                          verbatimTextOutput("hover_stuff"),
+                          verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
@@ -316,18 +316,21 @@ server <- function(input, output,session) {
     reset("filters_d")
   })
   
-  # Show modelled data toggle switch
+  # Show modeled data toggle switch
   observe({
-    if(input$gender_d =="Total"&& input$health_bound_d=="Community Health Service Areas"){
+    if(input$gender_d =="Total"&& 
+       input$health_bound_d=="Community Health Service Areas" &&
+       startsWith(input$dataset_d,"Age")){
       output$modeldata_d <- renderUI({
         materialSwitch(
           inputId = "modeldata_d_switch",
-          label = "Modelled Data",
+          label = "Modeled Data",
           right = TRUE,
           inline = TRUE
         )
       })
-
+    }else{
+      output$modeldata_d <- renderUI({ })
     }
 
   })
@@ -663,44 +666,54 @@ server <- function(input, output,session) {
       
     }
   })
-  
-  # Switch to change line graph to modeled data 
+
+  # Switch to change line graph to modeled data
   observeEvent(input$modeldata_d_switch,{
     data <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d)
-    
+
     p <- plotlyProxy("disease_graph_line", session)
     if(input$modeldata_d_switch==TRUE){
-      p%>%
-        plotlyProxyInvoke("restyle",
-                          list(
-                            x = list(data$YEAR),
-                            y= list(data$y_fitted),
-                            color = list(data$HEALTH_BOUND_NAME),
-                            colors = list(setNames(CHSA_colours$Colors,CHSA_colours$Regions))
+      p %>%
+        plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
 
-                          ))
+      for(reg in input$region_d){
+        df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        p |>
+          plotlyProxyInvoke("addTraces",
+                            list(
+                              x = df$YEAR,
+                              y = df$y_fitted,
+                              type = "scatter",
+                              mode="lines",
+                              name=reg,
+                              line = list(width=2,
+                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])
+                            ))
+
+      }
     }else{
-      p%>%
-        plotlyProxyInvoke("restyle",
-                          list(
-                            x= list(data$YEAR),
-                            y= list(data[[rateInput_d()]]),
-                            color = list(data$HEALTH_BOUND_NAME),
-                            colors = if(input$health_bound_d == "Health Authorities")
-                                      setNames(HA_colours$Colors,HA_colours$Regions) 
-                                    else 
-                                      setNames(CHSA_colours$Colors,CHSA_colours$Regions),
-                            hovertemplate = list(paste0('<b>Health Region</b>: %{fullData.name}',
-                                                   '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                                 '<br><b>Year</b>: %{x}',
-                                                 '<extra></extra>'))
-                          ))
-                
+      p %>%
+        plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
+      for(reg in input$region_d){
+        df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        p |>
+          plotlyProxyInvoke("addTraces",
+                            list(
+                              x = df$YEAR,
+                              y = df[[rateInput_d()]],
+                              type = "scatter",
+                              mode="lines",
+                              name=reg,
+                              line = list(width=2,
+                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])
+                            ))
+
+      }
     }
     })
-  
-  
+
+
 
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
@@ -911,7 +924,7 @@ server <- function(input, output,session) {
 
   # TEST
   output$hover_stuff <- renderPrint({
-    input$yax-switch
+    input$region_d
     
   })
   
