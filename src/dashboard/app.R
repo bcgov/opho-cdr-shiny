@@ -129,8 +129,8 @@ ui <- fluidPage(
                  ),
                  fluidRow(
                    column(6, leafletOutput("map",height=645)%>% withSpinner(),
-                          verbatimTextOutput("hover_stuff"),
-                          verbatimTextOutput("hover_stuff2")
+                          # verbatimTextOutput("hover_stuff"),
+                          # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
@@ -517,7 +517,9 @@ server <- function(input, output,session) {
               hoverinfo="skip"
               )%>%
       layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
-                        title = paste0(input$dataset_d," Per 1000"),
+                        title = list(text = paste0(input$dataset_d," Per 1000"),
+                                     font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
+                        ),
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black'),
              xaxis = list(title = list(text = 'Health Region', standoff = 10),
@@ -593,7 +595,6 @@ server <- function(input, output,session) {
       filter(HEALTH_BOUND_NAME %in% input$region_d)
     
     d |>
-    # highlight_key(~HEALTH_BOUND_NAME)|>
     plot_ly(
       x= d$YEAR,
       y=d[[rateInput_d()]],
@@ -614,7 +615,8 @@ server <- function(input, output,session) {
                             '<extra></extra>'
                             )
     )%>%
-      layout(yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+      layout(yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
+                                     font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black',
                         rangemode="nonnegative"),
@@ -675,7 +677,6 @@ server <- function(input, output,session) {
 
     p <- plotlyProxy("disease_graph_line", session)
     if(input$modeldata_d_switch==TRUE){
-      print("Switch True")
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
 
@@ -701,7 +702,6 @@ server <- function(input, output,session) {
 
       }
     }else{
-      print("Switch False")
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       for(reg in input$region_d){
