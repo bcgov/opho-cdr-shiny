@@ -1041,26 +1041,26 @@ server <- function(input, output,session) {
     ppb <- plotlyProxy("disease_graph_bar", session)
     lp <- leafletProxy("map",session)
     if (is.null(event)){
-      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2),
-                                                      color = list(~HEALTH_BOUND_NAME),
-                                                      colors = list(if(input$health_bound_d == "Health Authorities")
-                                                        setNames(HA_colours$Colors,HA_colours$Regions) 
-                                                        else 
-                                                          setNames(CHSA_colours$Colors,CHSA_colours$Regions) )))
+      for (reg in my_traces()){
+      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2,
+                                                                  color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
+                                as.integer(match(reg,my_traces())-1))
+                                
+      }                                  
       ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
               plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
       lp %>% clearGroup('selected')
     }else{
+      for (reg in my_traces()){
+        ppl %>%
+          plotlyProxyInvoke(
+            method = "restyle",
+            list(line = list(width = 0.5,
+                             color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
+            as.integer(match(reg,my_traces())-1)
+          )
+      }
       ppl %>%
-        plotlyProxyInvoke(
-          method = "restyle",
-          list(line = list(width = 0.5),
-               color = list(~HEALTH_BOUND_NAME),
-               colors = list(if(input$health_bound_d == "Health Authorities")
-                 setNames(HA_colours$Colors,HA_colours$Regions) 
-                 else 
-                   setNames(CHSA_colours$Colors,CHSA_colours$Regions) ))
-        ) %>%
         plotlyProxyInvoke(
           method = "restyle",
           "line",
