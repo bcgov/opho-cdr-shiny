@@ -366,7 +366,7 @@ server <- function(input, output,session) {
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
-                  else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","University of British Columbia")
+                  else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
                 ))
   })
   
@@ -522,11 +522,11 @@ server <- function(input, output,session) {
                         ),
                         gridcolor = "#d9dadb",
                         showline= T, linewidth=1, linecolor='black'),
-             xaxis = list(title = list(text = 'Health Region', standoff = 10),
+             xaxis = list(title = list(text = 'Health Region', standoff = 0),
                           categoryorder = "category ascending",
                           tickfont = list(size = 10),
                           showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>\n  "),
+             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
                           y=0.92,
                           font = list(size = 16)),
              barmode = "overlay",
@@ -571,11 +571,12 @@ server <- function(input, output,session) {
                         list(
                           autosize = F,
                           yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
-                                     title = paste0(input$dataset_d," Per 1000"),
+                                     title = list(text = paste0(input$dataset_d," Per 1000"),
+                                                  font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
                                      gridcolor = "#d9dadb",
                                      showline= T, linewidth=1, linecolor='black'),
                           xaxis=list(fixedrange = TRUE,
-                                     title = list(text = 'Health Region', standoff = 10),
+                                     title = list(text = 'Health Region', standoff = 0),
                                      categoryorder = "category ascending",
                                      tickfont = list(size = 10),
                                      automargin = TRUE,
@@ -614,6 +615,8 @@ server <- function(input, output,session) {
                             '<br><b>Year</b>: %{x}',
                             '<extra></extra>'
                             )
+      
+      
     )%>%
       layout(yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
                                      font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
