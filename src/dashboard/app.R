@@ -871,24 +871,23 @@ server <- function(input, output,session) {
     rv_location$lat <- event_info$lat
     rv_location$lng <- event_info$lng
     if ((event_info$id %in% input$region_d)){
-    ppl%>%
-      plotlyProxyInvoke(
-        method = "restyle",
-        list(line = list(width = 0.5),
-             color = list(~HEALTH_BOUND_NAME),
-             colors = list(if(input$health_bound_d == "Health Authorities")
-                            setNames(HA_colours$Colors,HA_colours$Regions) 
-                           else 
-                             setNames(CHSA_colours$Colors,CHSA_colours$Regions) )
-             )
-      ) %>%
-      plotlyProxyInvoke(
-        method = "restyle",
-        "line",
-        list(width = 3),
-        as.integer(match(event_info$id,
-                         my_traces())-1)
-      )
+      for (reg in my_traces()){
+        ppl %>%
+          plotlyProxyInvoke(
+            method = "restyle",
+            list(line = list(width = 0.5,
+                             color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
+            as.integer(match(reg,my_traces())-1)
+          )
+      }
+      ppl %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          "line",
+          list(width = 3,
+               color = CHSA_colours$Colors[match(event_info$id,CHSA_colours$Regions)]),
+          as.integer(match(event_info$id,my_traces())-1)
+        )
       ppb %>%
         plotlyProxyInvoke(
           method = "restyle",
@@ -926,7 +925,13 @@ server <- function(input, output,session) {
     
     if (all(unlist(event_info[c('lat','lng')]) == unlist(event_info_old[c('lat','lng')]))){
       rv_shape(FALSE)
-      plotlyProxyInvoke(ppl,method = "restyle",list(line = list(width = 2)))
+      for (reg in my_traces()){
+        ppl %>% plotlyProxyInvoke(method="restyle",
+                                  list(line = list(width=2,
+                                                   color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
+                                  as.integer(match(reg,my_traces())-1))
+        
+      } 
       plotlyProxyInvoke(ppb, "deleteTraces",list(as.integer(1)))%>%
         plotlyProxyInvoke(method = "restyle",list(opacity = 1))
 
@@ -963,27 +968,34 @@ server <- function(input, output,session) {
       ppb <- plotlyProxy("disease_graph_bar", session)
       lp <- leafletProxy("map",session)
       if (is.null(event)){
-        ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+        for (reg in my_traces()){
+          ppl %>% plotlyProxyInvoke(method="restyle",
+                                    list(line = list(width=2,
+                                                     color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
+                                    as.integer(match(reg,my_traces())-1))
+          
+        } 
         ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
                 plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
         lp %>% clearGroup('selected')
       }else{
-       ppl %>%
-        plotlyProxyInvoke(
-          method = "restyle",
-          list(line = list(width = 0.5),
-               color = list(~HEALTH_BOUND_NAME),
-               colors = list(if(input$health_bound_d == "Health Authorities")
-                 setNames(HA_colours$Colors,HA_colours$Regions) 
-                 else 
-                   setNames(CHSA_colours$Colors,CHSA_colours$Regions) ))
-        ) %>%
-        plotlyProxyInvoke(
-          method = "restyle",
-          "line",
-          list(width = 3),
-          as.integer(match(event[["x"]],my_traces())-1)
-        )
+        for (reg in my_traces()){
+          ppl %>%
+            plotlyProxyInvoke(
+              method = "restyle",
+              list(line = list(width = 0.5,
+                               color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
+              as.integer(match(reg,my_traces())-1)
+            )
+        }
+        ppl %>%
+          plotlyProxyInvoke(
+            method = "restyle",
+            "line",
+            list(width = 3,
+                 color = CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]),
+            as.integer(match(event[["x"]],my_traces())-1)
+          )
         ppb %>%
           plotlyProxyInvoke(
             method = "restyle",
