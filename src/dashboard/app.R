@@ -593,13 +593,14 @@ server <- function(input, output,session) {
       filter(HEALTH_BOUND_NAME %in% input$region_d)
     
     d |>
-    highlight_key(~HEALTH_BOUND_NAME)|>
+    # highlight_key(~HEALTH_BOUND_NAME)|>
     plot_ly(
       x= d$YEAR,
       y=d[[rateInput_d()]],
       source = "disease_graph_line",
       type = "scatter",
       mode="lines",
+      customdata = ~HEALTH_BOUND_NAME,
       line = list(width=2),
       color = ~HEALTH_BOUND_NAME,
       colors = if(input$health_bound_d == "Health Authorities")
@@ -674,6 +675,7 @@ server <- function(input, output,session) {
 
     p <- plotlyProxy("disease_graph_line", session)
     if(input$modeldata_d_switch==TRUE){
+      print("Switch True")
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
 
@@ -687,12 +689,19 @@ server <- function(input, output,session) {
                               type = "scatter",
                               mode="lines",
                               name=reg,
+                              customdata = df$HEALTH_BOUND_NAME,
                               line = list(width=2,
-                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])
+                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
+                              hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
+                                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                                     '<br><b>Year</b>: %{x}',
+                                                     '<extra></extra>'
+                              )
                             ))
 
       }
     }else{
+      print("Switch False")
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       for(reg in input$region_d){
@@ -705,8 +714,14 @@ server <- function(input, output,session) {
                               type = "scatter",
                               mode="lines",
                               name=reg,
+                              customdata = df$HEALTH_BOUND_NAME,
                               line = list(width=2,
-                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])
+                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
+                              hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
+                                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                                     '<br><b>Year</b>: %{x}',
+                                                     '<extra></extra>'
+                              )
                             ))
 
       }
@@ -924,7 +939,7 @@ server <- function(input, output,session) {
 
   # TEST
   output$hover_stuff <- renderPrint({
-    input$region_d
+    event_data("plotly_hover",source = "disease_graph_line")$fullData
     
   })
   
@@ -1035,7 +1050,7 @@ server <- function(input, output,session) {
           method = "restyle",
           "line",
           list(width = 3),
-          as.integer(match(event[["key"]],my_traces())-1)
+          as.integer(match(event[["customdata"]],my_traces())-1)
         )
       
       ppb %>%
@@ -1047,20 +1062,20 @@ server <- function(input, output,session) {
           method = "addTraces",
           list(
             x=list(event[["key"]]),
-            y=list(bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
+            y=list(bar_data[[rateInput_d()]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]),
             error_y=list(
               type = "data",
               symmetric = FALSE,
-              arrayminus = list(bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
-              array = list(bar_data[[error$upper]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event[["key"]],bar_data$HEALTH_BOUND_NAME)]),
+              arrayminus = list(bar_data[[rateInput_d()]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]),
+              array = list(bar_data[[error$upper]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]),
               color = '#000000',
               width = 10),
             type='bar',
             marker = list(opacity = 1,
                           color = if(input$health_bound_d == "Health Authorities")
-                                    HA_colours$Colors[match(event[["key"]],HA_colours$Regions)]
+                                    HA_colours$Colors[match(event[["customdata"]],HA_colours$Regions)]
                                   else
-                                    CHSA_colours$Colors[match(event[["key"]],CHSA_colours$Regions)]
+                                    CHSA_colours$Colors[match(event[["customdata"]],CHSA_colours$Regions)]
                           )
           ))
       lp %>%
@@ -1068,7 +1083,7 @@ server <- function(input, output,session) {
           data=subset(spdf_d(),
                       (if(input$health_bound_d == "Health Authorities") HA_Name 
                        else CHSA_Name) 
-                      == event[["key"]]),
+                      == event[["customdata"]]),
           stroke= TRUE,
           weight = 2,
           color = "black",
