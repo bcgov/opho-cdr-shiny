@@ -971,7 +971,12 @@ server <- function(input, output,session) {
        ppl %>%
         plotlyProxyInvoke(
           method = "restyle",
-          list(line = list(width = 0.5))
+          list(line = list(width = 0.5),
+               color = list(~HEALTH_BOUND_NAME),
+               colors = list(if(input$health_bound_d == "Health Authorities")
+                 setNames(HA_colours$Colors,HA_colours$Regions) 
+                 else 
+                   setNames(CHSA_colours$Colors,CHSA_colours$Regions) ))
         ) %>%
         plotlyProxyInvoke(
           method = "restyle",
@@ -1036,7 +1041,12 @@ server <- function(input, output,session) {
     ppb <- plotlyProxy("disease_graph_bar", session)
     lp <- leafletProxy("map",session)
     if (is.null(event)){
-      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2)))
+      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2),
+                                                      color = list(~HEALTH_BOUND_NAME),
+                                                      colors = list(if(input$health_bound_d == "Health Authorities")
+                                                        setNames(HA_colours$Colors,HA_colours$Regions) 
+                                                        else 
+                                                          setNames(CHSA_colours$Colors,CHSA_colours$Regions) )))
       ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
               plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
       lp %>% clearGroup('selected')
@@ -1044,12 +1054,18 @@ server <- function(input, output,session) {
       ppl %>%
         plotlyProxyInvoke(
           method = "restyle",
-          list(line = list(width = 0.5))
+          list(line = list(width = 0.5),
+               color = list(~HEALTH_BOUND_NAME),
+               colors = list(if(input$health_bound_d == "Health Authorities")
+                 setNames(HA_colours$Colors,HA_colours$Regions) 
+                 else 
+                   setNames(CHSA_colours$Colors,CHSA_colours$Regions) ))
         ) %>%
         plotlyProxyInvoke(
           method = "restyle",
           "line",
-          list(width = 3),
+          list(width = 3,
+               color = CHSA_colours$Colors[match(event[["customdata"]],CHSA_colours$Regions)]),
           as.integer(match(event[["customdata"]],my_traces())-1)
         )
       
@@ -1061,7 +1077,7 @@ server <- function(input, output,session) {
         plotlyProxyInvoke(
           method = "addTraces",
           list(
-            x=list(event[["key"]]),
+            x=list(event[["customdata"]]),
             y=list(bar_data[[rateInput_d()]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]),
             error_y=list(
               type = "data",
