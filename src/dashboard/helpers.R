@@ -141,3 +141,8 @@ vline <- function(x = 0, color = "gray40") {
     line = list(color = color, dash="dot")
   )
 }
+
+# To format and round all values to 2 decimals
+format_round <- function(x, dec = 2){
+  format(round(x,2),2)
+}

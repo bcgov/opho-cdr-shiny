@@ -665,7 +665,7 @@ server <- function(input, output,session) {
         plotlyProxyInvoke("relayout",
                           list(
                             yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
-                                                    font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
+                                                    font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
                                        gridcolor = "#d9dadb",
                                        showline= T, linewidth=1, linecolor='black',
                                        rangemode = "nonnegative")
