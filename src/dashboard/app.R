@@ -259,13 +259,6 @@ ui <- fluidPage(
                    DTOutput("data_table")
                  )
                )),
-      
-      
-      #########################
-      # Model Tab UI Side Logic
-      #########################
-      tabPanel("Model",
-      ),
 
       
       #############
