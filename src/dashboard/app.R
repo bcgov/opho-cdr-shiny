@@ -462,10 +462,10 @@ server <- function(input, output,session) {
     
   })
   output$text_d3 <- renderText({
-    avg_rate <- mean(filter_df_d()[[rateInput_d()]])
+    avg_rate <- median(filter_df_d()[[rateInput_d()]])
     
     paste0(
-      "Average Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
+      "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
       "<br>", "<div id=stat>",round(avg_rate,2),"</div>"
     )
     
@@ -473,14 +473,14 @@ server <- function(input, output,session) {
   output$text_d4 <- renderText({
     data<-filter_df_d()|>
       group_by(YEAR)|>
-      summarize_at(rateInput_d(),mean)
+      summarize_at(rateInput_d(),median)
     year_max <- data|>
       arrange(desc(data[[rateInput_d()]]))|>
       slice(1)|>
       pull(YEAR)
   
     paste0(
-      "Year of Highest Average Recorded ",input$dataset_d,
+      "Year of Highest Median Recorded ",input$dataset_d,
       "<br>", "<div id=stat>", year_max,"</div>"
     )
     
@@ -609,7 +609,6 @@ server <- function(input, output,session) {
                   setNames(HA_colours$Colors,HA_colours$Regions) 
                else 
                 setNames(CHSA_colours$Colors,CHSA_colours$Regions),
-      
       hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
                             '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                             '<br><b>Year</b>: %{x}',
@@ -655,7 +654,8 @@ server <- function(input, output,session) {
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
-                          yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                          yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
+                                                  font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
                                      gridcolor = "#d9dadb",
                                      showline= T, linewidth=1, linecolor='black',
                                      rangemode = "tozero")
@@ -664,7 +664,8 @@ server <- function(input, output,session) {
       p%>%
         plotlyProxyInvoke("relayout",
                           list(
-                            yaxis=list(title = paste0(input$dataset_d," Per 1000"),
+                            yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
+                                                    font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
                                        gridcolor = "#d9dadb",
                                        showline= T, linewidth=1, linecolor='black',
                                        rangemode = "nonnegative")
