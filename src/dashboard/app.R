@@ -52,7 +52,9 @@ ui <- fluidPage(
                  h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
                  h6("UBC Master of Data Science Capstone Project"),
                  p(HTML(about_info)),
-                 hr(),
+                 hr(style = "margin-bottom: 20px;
+                            border: 0;
+                            border-top: 1px solid #eee"),
                  helpText(HTML("For internal use only. Do not distribute.<br/>
                                For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
                  ),
@@ -81,7 +83,7 @@ ui <- fluidPage(
                    id="filters_d",
                    width = 3,
                    h2("Filters"),
-                   hr(style = "border-top: 1px solid #000000"),
+                   hr(),
                    selectInput("disease_d",
                                label= "Select Disease",
                                choices = sort(unique(inc_rate_df$DISEASE))),
@@ -156,7 +158,7 @@ ui <- fluidPage(
                    id="filters_r",
                    width = 3,
                    h2("Filters"),
-                   hr(style = "border-top: 1px solid #000000"),
+                   hr(),
                    
                    radioButtons(
                      "region_tab_geography_selected",
@@ -232,7 +234,7 @@ ui <- fluidPage(
                    id="filters_data",
                    width = 3,
                    h2("Filters"),
-                   hr(style = "border-top: 1px solid #000000"),
+                   hr(),
                    
                    selectInput("dataset_data", 
                                label = "Select Rate Type",
@@ -275,7 +277,9 @@ ui <- fluidPage(
                  mainPanel(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
-                   hr(),
+                   hr(style = "margin-bottom: 20px;
+                      border: 0;
+                      border-top: 1px solid #eee"),
                    DTOutput("data_table")
                  )
                )),

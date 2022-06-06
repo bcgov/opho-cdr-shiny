@@ -173,7 +173,7 @@ data_dict_info <-"
   missing due to low rates. Additional information about the modelling procedure can be found <a href='https://github.com/bcgov/opho-cdr-shiny'>here</a>.
   <br/>
 
-  <table border='1'>
+  <table border='1'; id ='datadict'>
     <tr>
       <th>Variable Name</th>
       <th>Description</th>
