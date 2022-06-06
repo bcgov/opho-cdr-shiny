@@ -166,9 +166,9 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
 data_dict_info <-"
   <table border='1'>
     <tr>
-      <th>Variable Name</th>
-      <th>Description</th>
-      <th>Sample Values</th>
+      <th><h3>Variable Name</h3></th>
+      <th><h3>Description</h3></th>
+      <th><h3>Sample Values</h3></th>
     </tr>
     <tr>
       <td>Fiscal Year</td>
