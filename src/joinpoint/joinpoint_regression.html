@@ -1743,6 +1743,8 @@ pre code {
 </div>
 
 
+<pre class="r"><code>library(dplyr)
+library(readr)</code></pre>
 <div id="highlevel-tasks" class="section level1">
 <h1>Highlevel tasks:</h1>
 <div id="literature-review-write-rationale-will-write-rationale-of-this-approach" class="section level2">
@@ -1757,6 +1759,22 @@ joinpoint regression analysis of 1,922,167 cases (<span class="citation">Lui et 
 temporal trends of malignant melanoma mortality in Ecuador. (<span class="citation">Núñez-González et al. (2020)</span>) - Worldwide
 suicide mortality trends by firearm (1990–2019): A joinpoint regression
 analysis (<span class="citation">Ilic et al. (2022)</span>)</p>
+</div>
+<div id="data-pre-processing" class="section level2">
+<h2>Data Pre-processing:</h2>
+<div id="loading-the-data" class="section level3">
+<h3>Loading the data</h3>
+<pre class="r"><code>df &lt;- read_csv(&quot;/Users/mahmood/UBCMDS/591_capstone/master_df.csv&quot;) |&gt; 
+    mutate( RATE = as.factor(RATE)) |&gt; 
+    mutate( DISEASE = as.factor(DISEASE)) |&gt; 
+    mutate( SEX = as.factor(SEX)) |&gt; 
+    mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |&gt; 
+    mutate( GEOGRAPHY = as.factor(GEOGRAPHY))</code></pre>
+</div>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-ilic2022worldwide" class="csl-entry">
 Ilic, Irena, Ivana Zivanovic Macuzic, Sanja Kocic, and Milena Ilic.
@@ -1785,7 +1803,6 @@ Núñez-González, Solange, Estefania Bedoya, Daniel Simancas-Racines, and
 Christopher Gault. 2020. <span>“Spatial Clusters and Temporal Trends of
 Malignant Melanoma Mortality in Ecuador.”</span> <em>SAGE Open
 Medicine</em> 8: 2050312120918285.
-</div>
 </div>
 </div>
 </div>

@@ -10,8 +10,13 @@ bibliography: joinpoint_ref.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ```
+```{r libraries}
+library(dplyr)
+library(readr)
+```
+
 
 # Highlevel tasks:
 
@@ -22,3 +27,44 @@ List of papers:
  - Global increasing incidence of young-onset colorectal cancer across 5 continents: a joinpoint regression analysis of 1,922,167 cases (@lui2019global)
  - Spatial clusters and temporal trends of malignant melanoma mortality in Ecuador. (@nunez2020spatial)
  - Worldwide suicide mortality trends by firearm (1990–2019): A joinpoint regression analysis (@ilic2022worldwide)
+ 
+## Data Pre-processing:
+
+### Loading the data
+
+```{r Load Data}
+df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |> 
+    mutate( RATE = as.factor(RATE)) |> 
+    mutate( DISEASE = as.factor(DISEASE)) |> 
+    mutate( SEX = as.factor(SEX)) |> 
+    mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |> 
+    mutate( GEOGRAPHY = as.factor(GEOGRAPHY))
+
+```
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+# References
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
