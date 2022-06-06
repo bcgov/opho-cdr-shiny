@@ -489,26 +489,36 @@ server <- function(input, output,session) {
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
-      dummyData |>
-      plot_ly(
-              x=dummyData$HEALTH_BOUND_NAME,
-              y=dummyData[[rateInput_d()]],
-              source = "disease_graph_bar",
-              type = 'bar',
-              error_y=list(
-                type = "data",
-                symmetric = FALSE,
-                arrayminus =dummyData[[rateInput_d()]]- dummyData[[error$lower]],
-                array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
-                color = '#000000',
-                width = 10),
-              marker = list(color = if(input$health_bound_d == "Health Authorities")
-                                    HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]
-                                    else
-                                    CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
-                              ),
-              hoverinfo="skip"
-              )%>%
+    p <- plot_ly(source = "disease_graph_bar",)
+    for(reg in input$region_d){
+      df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
+      p <- p |>
+        add_trace(x=df$HEALTH_BOUND_NAME,
+                  y=df[[rateInput_d()]],
+                  type = 'bar',
+                  error_y=list(
+                    type = "data",
+                    symmetric = FALSE,
+                    arrayminus =df[[rateInput_d()]]- df[[error$lower]],
+                    array = df[[error$upper]]- df[[rateInput_d()]],
+                    color = '#000000',
+                    width = 10),
+                  marker = list(color = if(input$health_bound_d == "Health Authorities")
+                                  HA_colours$Colors[match(df$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                                else
+                                  CHSA_colours$Colors[match(df$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                  ),
+                  hovertemplate = paste('<b>Health Region</b>: %{x}',
+                                        '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                        '<br><b>95% Confidence Interval</b>: (',format_round(df[[error$lower]]), ',',
+                                        format_round(df[[error$upper]]),')',
+                                        '<extra></extra>')
+        )
+                  
+      
+    }
+    
+   p %>%
       layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05),
                         title = list(text = paste0(input$dataset_d," Per 1000"),
                                      font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
@@ -527,13 +537,53 @@ server <- function(input, output,session) {
              margin = list(t = 80,b=50),
              # plot_bgcolor= '#d9dadb'
              showlegend = FALSE
-            ) %>%
+      ) %>%
       event_register('plotly_hover')
+    
+      # dummyData |>
+      # plot_ly(
+      #         x=dummyData$HEALTH_BOUND_NAME,
+      #         y=dummyData[[rateInput_d()]],
+      #         source = "disease_graph_bar",
+      #         type = 'bar',
+      #         error_y=list(
+      #           type = "data",
+      #           symmetric = FALSE,
+      #           arrayminus =dummyData[[rateInput_d()]]- dummyData[[error$lower]],
+      #           array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
+      #           color = '#000000',
+      #           width = 10),
+      #         marker = list(color = if(input$health_bound_d == "Health Authorities")
+      #                               HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]
+      #                               else
+      #                               CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+      #                         ),
+      #         hoverinfo="skip"
+      #         )%>%
+      # layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05),
+      #                   title = list(text = paste0(input$dataset_d," Per 1000"),
+      #                                font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
+      #                   ),
+      #                   gridcolor = "#d9dadb",
+      #                   showline= T, linewidth=1, linecolor='black',
+      #                   rangemode="nonnegative"),
+      #        xaxis = list(title = list(text = 'Health Region', standoff = 0),
+      #                     categoryorder = "category ascending",
+      #                     tickfont = list(size = 10),
+      #                     showline= T, linewidth=1, linecolor='black'),
+      #        title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
+      #                     y=0.92,
+      #                     font = list(size = 16)),
+      #        barmode = "overlay",
+      #        margin = list(t = 80,b=50),
+      #        # plot_bgcolor= '#d9dadb'
+      #        showlegend = FALSE
+      #       ) %>%
+      # event_register('plotly_hover')
   })
   
   # Update Disease Bar Graph with filter changes
   observe({
-    
     newdata <- filter_df_d()|>
       filter((YEAR == input$year_d)&
                ((HEALTH_BOUND_NAME %in% input$region_d)))
@@ -543,25 +593,35 @@ server <- function(input, output,session) {
     
     p <- plotlyProxy("disease_graph_bar", session)
     
-    p %>%
-      plotlyProxyInvoke("restyle",
-                        list(
-                          x = list(newdata$HEALTH_BOUND_NAME),
-                          y= list(newdata[[rateInput_d()]]),
+    for(reg in seq_along(input$region_d)){
+      df <- newdata[which(newdata$HEALTH_BOUND_NAME==input$region_d[reg]),]
+      p |>
+        plotlyProxyInvoke("restyle",
+                          "y",
+                          list(list(df[[rateInput_d()]])),
+                          as.integer(reg)-1
+        )|>
+        plotlyProxyInvoke("restyle",
+                          list(
                           error_y=list(
                             type = "data",
                             symmetric = FALSE,
-                            arrayminus =newdata[[rateInput_d()]]- newdata[[error$lower]],
-                            array = newdata[[error$upper]]- newdata[[rateInput_d()]],
+                            arrayminus =list(df[[rateInput_d()]]- df[[error$lower]]),
+                            array = list(df[[error$upper]]- df[[rateInput_d()]]),
                             color = '#000000',
                             width = 10),
-                          marker = list(color = if(input$health_bound_d == "Health Authorities")
-                            HA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,HA_colours$Regions)]
-                            else
-                            CHSA_colours$Colors[match(newdata$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
-                          )
-                        ))|>
-      plotlyProxyInvoke("relayout",
+                          hovertemplate = paste('<b>Health Region</b>: %{x}',
+                                                '<br><b>Num</b>: %{y:.2f}<br>',
+                                                '<b>Year</b>: 2001',
+                                                '<br><b>Upper</b>',df$UPPER,
+                                                '<br><b>Lower</b>',df$LOWER,
+                                                '<extra></extra>'
+                          )),
+                          as.integer(reg)-1)
+                          
+    }
+  
+    p %>%  plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
                           yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=TRUE)*1.05),
@@ -893,25 +953,10 @@ server <- function(input, output,session) {
           list(opacity=0.2)
         ) %>%
         plotlyProxyInvoke(
-          method = "addTraces",
-          list(
-            x=list(event_info$id),
-            y=list(bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
-            error_y=list(
-              type = "data",
-              symmetric = FALSE,
-              arrayminus = list(bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
-              array = list(bar_data[[error$upper]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event_info$id,bar_data$HEALTH_BOUND_NAME)]),
-              color = '#000000',
-              width = 10),
-            type='bar',
-            marker = list(opacity = 1,
-                          color = if(input$health_bound_d == "Health Authorities")
-                                    HA_colours$Colors[match(event_info$id,HA_colours$Regions)]
-                                  else
-                                    CHSA_colours$Colors[match(event_info$id,CHSA_colours$Regions)]
-                          )
-          ))
+          method = "restyle",
+          list(opacity = 1),
+          as.integer(match(event_info$id, my_traces())-1))
+          
    }
   })
   
@@ -931,8 +976,7 @@ server <- function(input, output,session) {
                                   as.integer(match(reg,my_traces())-1))
         
       } 
-      plotlyProxyInvoke(ppb, "deleteTraces",list(as.integer(1)))%>%
-        plotlyProxyInvoke(method = "restyle",list(opacity = 1))
+      ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
 
     }else{
       rv_location_move_old$lat <- event_info$lat
@@ -974,8 +1018,7 @@ server <- function(input, output,session) {
                                     as.integer(match(reg,my_traces())-1))
           
         } 
-        ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
-                plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
+        ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
         lp %>% clearGroup('selected')
       }else{
         for (reg in my_traces()){
@@ -1001,32 +1044,9 @@ server <- function(input, output,session) {
             list(opacity=0.2)
           ) %>%
           plotlyProxyInvoke(
-            method = "addTraces",
-            list(
-              x=list(event[["x"]]),
-              y=list(event[["y"]]),
-              type='bar',
-              error_y=list(
-                type = "data",
-                symmetric = FALSE,
-                arrayminus = list(event[["y"]]- bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]),
-                array = list(bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]- event[["y"]]),
-                color = '#000000',
-                width = 10),
-              marker = list(opacity = 1,
-                            color = if(input$health_bound_d == "Health Authorities")
-                                      HA_colours$Colors[match(event[["x"]],HA_colours$Regions)]
-                                    else
-                                      CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]
-                            
-                            ),
-              hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                    '<br><b>Year</b>: ',input$year_d,
-                                    '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                    '<br><b>95% Confidence Interval</b>: (',format_round(bar_data[[error$lower]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]), ',',
-                                                                            format_round(bar_data[[error$upper]][match(event[["x"]],bar_data$HEALTH_BOUND_NAME)]),')',
-                                    '<extra></extra>')
-            )
+            method = "restyle",
+            list(opacity = 1),
+            as.integer(match(event[["x"]], my_traces())-1)
           )
       lp %>%
         addPolygons(
@@ -1058,8 +1078,7 @@ server <- function(input, output,session) {
                                 as.integer(match(reg,my_traces())-1))
                                 
       }                                  
-      ppb %>% plotlyProxyInvoke("deleteTraces",list(as.integer(1)))%>%
-              plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
+      ppb %>%  plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
       lp %>% clearGroup('selected')
     }else{
       for (reg in my_traces()){
@@ -1086,25 +1105,10 @@ server <- function(input, output,session) {
           list(opacity=0.2)
         ) %>%
         plotlyProxyInvoke(
-          method = "addTraces",
-          list(
-            x=list(event[["customdata"]]),
-            y=list(bar_data[[rateInput_d()]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]),
-            error_y=list(
-              type = "data",
-              symmetric = FALSE,
-              arrayminus = list(bar_data[[rateInput_d()]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[error$lower]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]),
-              array = list(bar_data[[error$upper]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]- bar_data[[rateInput_d()]][match(event[["customdata"]],bar_data$HEALTH_BOUND_NAME)]),
-              color = '#000000',
-              width = 10),
-            type='bar',
-            marker = list(opacity = 1,
-                          color = if(input$health_bound_d == "Health Authorities")
-                                    HA_colours$Colors[match(event[["customdata"]],HA_colours$Regions)]
-                                  else
-                                    CHSA_colours$Colors[match(event[["customdata"]],CHSA_colours$Regions)]
-                          )
-          ))
+          method = "restyle",
+          list(opacity = 1),
+          as.integer(match(event[["customdata"]],my_traces())-1)
+          )
       lp %>%
         addPolygons(
           data=subset(spdf_d(),

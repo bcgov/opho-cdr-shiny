@@ -202,7 +202,7 @@ data_dict_info <-"
     <tr>
       <td><b>Health Boundary</b></td>
       <td>The HA or CHSA region of interest.</td>
-      <td><q>Fraser<q>, </q>Vancouver Coastal</q>, <q>Fernie</q>, <q>Campbell River</q></td>
+      <td><q>Fraser</q>, <q>Vancouver Coastal</q>, <q>Fernie</q>, <q>Campbell River</q></td>
     </tr>
     <tr>
       <td><b>Numerator</b></td>
