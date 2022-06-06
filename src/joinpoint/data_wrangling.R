@@ -15,4 +15,24 @@ df_life_raw <- list.files(path="src/joinpoint/LifePrevalence", full.names = TRUE
   lapply(read_csv) %>% 
   bind_rows
 
+dfList = list(df_hscp_raw, df_incidence_raw, df_life_raw)
+
+wrangling <- function(data) { 
+  data %>%       
+    mutate(YEAR = as.numeric(substr(FISC_YR_LABEL, 4, 7))) %>% 
+    mutate( DISEASE = as.factor(DISEASE)) %>% 
+    mutate( SEX = as.factor(CLNT_GENDER_LABEL)) %>% 
+    mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) %>% 
+    mutate( GEOGRAPHY = as.factor(GEOGRAPHY)) %>% 
+    mutate(across(c(STD_RATE_PER_1000, 
+                    STD_UCL_95, 
+                    STD_LCL_95), round, 2)) %>%
+    select(YEAR, SEX, DISEASE,
+           GEOGRAPHY, HEALTH_BOUNDARIES,
+           STD_RATE_PER_1000, 
+           STD_UCL_95, STD_LCL_95)
+}
+
+df_temp <- dfList %>%
+  lapply( wrangling )
 
