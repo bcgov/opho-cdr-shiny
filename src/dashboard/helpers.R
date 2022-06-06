@@ -146,3 +146,31 @@ vline <- function(x = 0, color = "gray40") {
 format_round <- function(x, dec = 2){
   format(round(x,2),2)
 }
+
+# Dynamic Health Boundaries selection
+health_bounds <- function(input){
+  (
+  if(input == "Health Authorities") 
+   return(c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
+  else 
+    return(c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))
+  )
+
+}
+
+# Fiscal year tooltip
+ fisc_year_tt <- function(id){
+   bsTooltip(id = id, 
+             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+             placement = "right"
+   )
+ }
+ 
+ # Sex radio button template
+ sex_radio_buttons <- function(id){
+   radioButtons(id=id, 
+                label = ("Select Sex"),
+                choices = c("Male","Female","Total"), 
+                selected = "Total",
+                inline = TRUE)
+ }

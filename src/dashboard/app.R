@@ -93,12 +93,7 @@ ui <- fluidPage(
                                 choices = GEOGRAPHY_CHOICES,
                                 selected= GEOGRAPHY_CHOICES[1]),
                    uiOutput("region_d"),
-                   radioButtons("gender_d", 
-                                label = ("Select Sex"),
-                                choices = c("Male","Female","Total"), 
-                                selected = "Total",
-                                inline=TRUE),
-                
+                   sex_radio_buttons("gender_d"),
                    sliderInput("year_d", 
                                label = tags$span(
                                  "Select Year  ", 
@@ -114,10 +109,7 @@ ui <- fluidPage(
                                ticks = TRUE,
                                animate = animationOptions(interval = 1000)
                               ),
-                   bsTooltip(id = "year_info_d", 
-                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
-                             placement = "right"
-                             ),
+                   fisc_year_tt("year_info_d"),
                    br(),
                    actionButton("reset_d", "Reset")
                ),
@@ -176,14 +168,7 @@ ui <- fluidPage(
                    ),
                    
                    uiOutput("region_tab_diseases_selected"),
-                   
-                   radioButtons(
-                     "region_tab_sex_selected",
-                     label = ("Select Sex"),
-                     choices = c("Male", "Female", "Total"),
-                     selected = "Total",
-                     inline = TRUE
-                   ),
+                   sex_radio_buttons("region_tab_sex_selected"),
                    
                    sliderInput(
                      "region_tab_year_range_selected",
@@ -201,11 +186,7 @@ ui <- fluidPage(
                      sep = "",
                      animate = animationOptions(interval = 1000)
                    ),
-                   
-                   bsTooltip(id = "region_tab_year_slider_info", 
-                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
-                             placement = "right"
-                   ),
+                   fisc_year_tt("region_tab_year_slider_info"),
                    br(),
                    actionButton("region_tab_reset_button", "Reset")
                  ),
@@ -260,17 +241,8 @@ ui <- fluidPage(
                                  )),
                                min = 2001, max = 2020, value = c(2001, 2020),
                                sep = ""),
-                   
-                   bsTooltip(id = "year_info_data", 
-                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
-                             placement = "right"
-                   ),
-                   
-                   radioButtons("gender_data", 
-                                label = ("Select Sex"),
-                                choices = c("Male","Female","Total"), 
-                                selected = "Total",
-                                inline = TRUE),
+                   fisc_year_tt("year_info_data"),
+                   sex_radio_buttons("gender_data"),
                    br(),br(),
                    actionButton("reset_data", "Reset")
                  ),
@@ -364,7 +336,6 @@ server <- function(input, output,session) {
                       "Age Standardized Incidence Rate",
                       "Crude Life Prevalence",
                       "Age Standardized Life Prevalence")
-                 
                 ),
                 selected = "Crude Incidence Rate",
                 multiple = FALSE,
@@ -375,11 +346,7 @@ server <- function(input, output,session) {
   output$region_d <- renderUI({
     selectInput("region_d",
                 label = "Select Health Boundaries",
-                choices = (
-                  if(input$health_bound_d == "Health Authorities") 
-                    c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME)))
-                  else 
-                    c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME)))),
+                choices = health_bounds(input$health_bound_d),
                 multiple = TRUE,
                 selected = (
                   if(input$health_bound_d == "Health Authorities") HA_CHOICES
@@ -1388,11 +1355,7 @@ server <- function(input, output,session) {
   output$region_data <- renderUI({
     selectInput("region_data",
                 label = "Select Health Boundaries",
-                choices = (
-                  if(input$health_bound_data == "Health Authorities") 
-                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
-                  else 
-                    c(append("All",sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))),
+                choices = append("All",health_bounds(input$health_bound_data)),
                 multiple = TRUE,
                 selected = "All")
   })
