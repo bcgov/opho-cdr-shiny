@@ -36,3 +36,13 @@ wrangling <- function(data) {
 df_temp <- dfList %>%
   lapply( wrangling )
 
+df_merged <- bind_rows(df_temp, .id = "keys") %>%
+  mutate(keys = as.factor(keys)) %>% 
+  mutate(RATE = recode_factor(keys, 
+                              '1' = "HSC", 
+                              '2' = "INCIDENCE", 
+                              '3' = "LIFE_PREV")) %>%
+  select(-c(keys)) %>%
+  select(RATE, everything())
+
+write.csv(df_merged,"/Users/mahmood/UBCMDS/591_capstone/master_df.csv", row.names = FALSE)
