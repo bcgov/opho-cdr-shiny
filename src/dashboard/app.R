@@ -514,7 +514,8 @@ server <- function(input, output,session) {
                                      font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
                         ),
                         gridcolor = "#d9dadb",
-                        showline= T, linewidth=1, linecolor='black'),
+                        showline= T, linewidth=1, linecolor='black',
+                        rangemode="nonnegative"),
              xaxis = list(title = list(text = 'Health Region', standoff = 0),
                           categoryorder = "category ascending",
                           tickfont = list(size = 10),
@@ -567,7 +568,8 @@ server <- function(input, output,session) {
                                      title = list(text = paste0(input$dataset_d," Per 1000"),
                                                   font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
                                      gridcolor = "#d9dadb",
-                                     showline= T, linewidth=1, linecolor='black'),
+                                     showline= T, linewidth=1, linecolor='black',
+                                     rangemode="nonnegative"),
                           xaxis=list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 0),
                                      categoryorder = "category ascending",
@@ -747,7 +749,7 @@ server <- function(input, output,session) {
         left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
     }
     
-    legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#cccccc")
     labels<-c(paste0("< ",mybins[2]),
@@ -825,7 +827,7 @@ server <- function(input, output,session) {
         "<b>95% Confidence Interval</b>: (",format_round(current_map_spdf@data[[error$lower]]),",",format_round(current_map_spdf@data[[error$upper]]),")")
   }
 
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.001,0.1))
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
     labels<-c(paste0("< ",mybins[2]),
