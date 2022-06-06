@@ -164,6 +164,12 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
 
 
 data_dict_info <-"
+  Modeled data is available for all Age-Standardized rates in CHSAs for Total Sex data. The modelled curves
+  show the changes in disease rates smoothened out over time to capture the overall trends within
+  each health boundary. For rare conditions or smaller regions, the modelled data may appear to be 
+  missing due to low rates. Additional information about the modelling procedure can be found <a href='https://github.com/bcgov/opho-cdr-shiny'>here</a>.
+
+
   <table border='1'>
     <tr>
       <th>Variable Name</th>
