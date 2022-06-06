@@ -1,0 +1,24 @@
+---
+title: 'DRAFT: BC Chronic Diseases trends by Sex (2001–2020): A joinpoint regression analysis'
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: 'Mahmoodur Rahman'
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+bibliography: joinpoint_ref.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Highlevel tasks:
+
+## Literature review / Write Rationale: (Will write rationale of this approach)
+List of papers:
+ - segmented: an R Package to Fit Regression Models with Broken-Line Relationships. (@muggeo2008segmented)
+ - Estimating regression models with unknown break-points. (@muggeo2003estimating)
+ - Global increasing incidence of young-onset colorectal cancer across 5 continents: a joinpoint regression analysis of 1,922,167 cases (@lui2019global)
+ - Spatial clusters and temporal trends of malignant melanoma mortality in Ecuador. (@nunez2020spatial)
+ - Worldwide suicide mortality trends by firearm (1990–2019): A joinpoint regression analysis (@ilic2022worldwide)
