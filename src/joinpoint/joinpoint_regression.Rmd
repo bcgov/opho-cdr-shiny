@@ -12,15 +12,20 @@ bibliography: joinpoint_ref.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ```
+
+
+
 ```{r libraries}
 library(dplyr)
 library(readr)
+library(plotly)
+library(crosstalk)
 ```
 
 
 # Highlevel tasks:
 
-## Literature review / Write Rationale: (Will write rationale of this approach)
+## Background / Methodology / Literature review / Rationale: (Will write rationale of this approach)
 List of papers:
  - segmented: an R Package to Fit Regression Models with Broken-Line Relationships. (@muggeo2008segmented)
  - Estimating regression models with unknown break-points. (@muggeo2003estimating)
@@ -30,7 +35,7 @@ List of papers:
  
 ## Data Pre-processing:
 
-### Loading the data
+### Loading data
 
 ```{r Load Data}
 df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |> 
@@ -39,9 +44,34 @@ df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |>
     mutate( SEX = as.factor(SEX)) |> 
     mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |> 
     mutate( GEOGRAPHY = as.factor(GEOGRAPHY))
+```
+
+Explore trends in rates as per diseases and regions
+
+```{r eda}
+
+# pic <- df %>% 
+#   plot_ly(type = 'scatter', mode = 'lines') %>%
+#   add_trace(x = ~YEAR, y = ~STD_RATE_PER_1000, name = 'STD_RATE_PER_1000') 
+# 
+# 
+# df <- highlight_key(df)
+# 
+# widgets <- bscols(
+#   widths = c(12),
+#   filter_select("DISEASE", "Choose Variable", df, ~DISEASE)
+# )
+# 
+# bscols(
+#   widths = c(2,10), widgets, 
+#   plot_ly(df, type = 'scatter', mode = 'lines') %>%
+#   add_trace(x = ~YEAR, y = ~STD_RATE_PER_1000, name = 'STD_RATE_PER_1000')  %>%
+#     layout(xaxis = list(nticks = 10,
+#                         tickformat = ".2f")
+#            , showlegend = F)  )
+
 
 ```
- 
  
 
 

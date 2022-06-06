@@ -1747,9 +1747,9 @@ pre code {
 library(readr)</code></pre>
 <div id="highlevel-tasks" class="section level1">
 <h1>Highlevel tasks:</h1>
-<div id="literature-review-write-rationale-will-write-rationale-of-this-approach" class="section level2">
-<h2>Literature review / Write Rationale: (Will write rationale of this
-approach)</h2>
+<div id="background-methodology-literature-review-rationale-will-write-rationale-of-this-approach" class="section level2">
+<h2>Background / Methodology / Literature review / Rationale: (Will
+write rationale of this approach)</h2>
 <p>List of papers: - segmented: an R Package to Fit Regression Models
 with Broken-Line Relationships. (<span class="citation">Muggeo et al.
 (2008)</span>) - Estimating regression models with unknown break-points.
@@ -1770,6 +1770,12 @@ analysis (<span class="citation">Ilic et al. (2022)</span>)</p>
     mutate( SEX = as.factor(SEX)) |&gt; 
     mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |&gt; 
     mutate( GEOGRAPHY = as.factor(GEOGRAPHY))</code></pre>
+<p>Sampling the data to include one region and one disease</p>
+<pre class="r"><code>sample_df &lt;- df %&gt;%
+  filter(RATE == &quot;HSC&quot; &amp;
+           DISEASE == &quot;AMI_EPI&quot; &amp; 
+           GEOGRAPHY == &quot;HA&quot; &amp;
+           HEALTH_BOUNDARIES == &quot;1 Interior&quot;) </code></pre>
 </div>
 </div>
 </div>
