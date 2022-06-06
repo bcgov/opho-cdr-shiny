@@ -68,7 +68,7 @@ Explore trends in rates as per diseases and regions
 #   add_trace(x = ~YEAR, y = ~STD_RATE_PER_1000, name = 'STD_RATE_PER_1000')  %>%
 #     layout(xaxis = list(nticks = 10,
 #                         tickformat = ".2f")
-#            , showlegend = F)  )
+#            , showlegend = F))
 
 
 ```
