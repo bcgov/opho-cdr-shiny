@@ -1188,7 +1188,8 @@ server <- function(input, output,session) {
         color = ~ DISEASE,
         showlegend = T,
         hovertemplate = paste0(
-          '<br><b>%{yaxis.title.text}</b>: %{y:.1f}',
+          '<br><b>Disease</b>: %{fullData.name}',
+          '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
           '<br><b>Year</b>: %{x}',
           '<extra></extra>')) |>
       layout(
@@ -1245,10 +1246,12 @@ server <- function(input, output,session) {
           color = '#000000',
           width = 10
         ),
-        hovertemplate = paste('<br><b>%{yaxis.title.text}</b>: %{y:.1f}',
+        hovertemplate = paste('<br><b>Disease</b>: %{fullData.name}',
+                              '<br><b>Year</b>: ', input$region_tab_year_range_selected[1],
+                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                               '<br><b>95% Confidence Interval</b>: (',
-                              bar_chart_data[[error$lower]], ',',
-                              bar_chart_data[[error$upper]],')',
+                              format_round(bar_chart_data[[error$lower]]), ',',
+                              format_round(bar_chart_data[[error$upper]]),')',
                               '<extra></extra>')
       ) %>%
       layout(
