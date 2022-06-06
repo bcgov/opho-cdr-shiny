@@ -611,10 +611,9 @@ server <- function(input, output,session) {
                             color = '#000000',
                             width = 10),
                           hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                                '<br><b>Num</b>: %{y:.2f}<br>',
-                                                '<b>Year</b>: 2001',
-                                                '<br><b>Upper</b>',df$UPPER,
-                                                '<br><b>Lower</b>',df$LOWER,
+                                                '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                                '<br><b>95% Confidence Interval</b>: (',format_round(df[[error$lower]]),',',
+                                                format_round(df[[error$upper]]),')',
                                                 '<extra></extra>'
                           )),
                           as.integer(reg)-1)
