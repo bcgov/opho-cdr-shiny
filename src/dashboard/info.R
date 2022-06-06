@@ -164,11 +164,14 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
 
 
 data_dict_info <-"
+  Data for Health Boundaries containing 25% First Nations population or larger are suppressed, and will be shown as NA.  
+  True zeros (0) remain in the data set.
+  <br/><br/>
   Modeled data is available for all Age-Standardized rates in CHSAs for Total Sex data. The modelled curves
   show the changes in disease rates smoothened out over time to capture the overall trends within
   each health boundary. For rare conditions or smaller regions, the modelled data may appear to be 
   missing due to low rates. Additional information about the modelling procedure can be found <a href='https://github.com/bcgov/opho-cdr-shiny'>here</a>.
-
+  <br/>
 
   <table border='1'>
     <tr>
