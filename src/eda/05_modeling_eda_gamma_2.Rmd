@@ -177,7 +177,9 @@ compare_models <- function(data, chsa, rate_label) {
     if (any(disease_data$STD_RATE_PER_1000 == 0)) {
       tryCatch(
         {plot_df <- rbind(fit_inla_rw1(disease_data), fit_inla_rw2(disease_data), fit_loess(disease_data))
+        
           p <- plot_models(disease_data, plot_df, d, chsa, rate_label)
+          
           print(p)
         },
         error = function(e) {
@@ -257,7 +259,7 @@ Unfortunately, the CI ranges are much wider than our baseline loess model.
 
 Let's try this again on Vanderhoof but only with rw1 models.
 
-```{r Compare 3 Models for 1 Outcome, fig.show="hold", out.width="25%"}
+```{r, fig.show="hold", out.width="25%"}
 #' Generate line plot to compare loess, random walk 1, and random walk 2 models
 #' Only fits data without 0 values due to limitations with Gamma likelihood.
 #'
