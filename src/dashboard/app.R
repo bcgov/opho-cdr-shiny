@@ -133,7 +133,7 @@ ui <- fluidPage(
                           # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,
                                           materialSwitch(
                                             inputId = "yax_switch",
@@ -143,7 +143,7 @@ ui <- fluidPage(
                                           )),
                                    column(4,
                                           uiOutput("modeldata_d"))),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
                           )))
                )),
       
@@ -825,7 +825,7 @@ server <- function(input, output,session) {
         "<b>95% Confidence Interval</b>: (",format_round(current_map_spdf@data[[error$lower]]),",",format_round(current_map_spdf@data[[error$upper]]),")")
   }
 
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.001,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
     labels<-c(paste0("< ",mybins[2]),
