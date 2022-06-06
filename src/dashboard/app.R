@@ -153,7 +153,7 @@ ui <- fluidPage(
       tabPanel("By Region",
                sidebarLayout(
                  sidebarPanel(
-                   id="filters_d",
+                   id="filters_r",
                    width = 3,
                    h2("Filters"),
                    hr(style = "border-top: 1px solid #000000"),
@@ -175,16 +175,6 @@ ui <- fluidPage(
                    
                    uiOutput("region_tab_diseases_selected"),
                    
-                   sliderInput(
-                     "region_tab_year_range_selected",
-                     label = "Select Year Range",
-                     min = 2001,
-                     max = 2020,
-                     value = c(2001, 2020),
-                     step = 1,
-                     sep = ""
-                   ),
-                   
                    radioButtons(
                      "region_tab_sex_selected",
                      label = ("Select Sex"),
@@ -192,6 +182,30 @@ ui <- fluidPage(
                      selected = "Total",
                      inline = TRUE
                    ),
+                   
+                   sliderInput(
+                     "region_tab_year_range_selected",
+                     label = tags$span(
+                       "Select Year  ", 
+                       tags$i(
+                         id = "region_tab_year_slider_info",
+                         class = "glyphicon glyphicon-info-sign", 
+                         style = "color:#0072B2;"
+                       )),
+                     min = 2001,
+                     max = 2020,
+                     value = 2001,
+                     step = 1,
+                     sep = "",
+                     animate = animationOptions(interval = 1000)
+                   ),
+                   
+                   bsTooltip(id = "region_tab_year_slider_info", 
+                             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+                             placement = "right"
+                   ),
+                   br(),
+                   actionButton("region_tab_reset_button", "Reset")
                  ),
                  
                  mainPanel(
@@ -1128,6 +1142,12 @@ server <- function(input, output,session) {
   # By Region Tab Server Side Logic
   ################################
   
+  # Reset filters
+  observeEvent(input$region_tab_reset_button, {
+    reset("filters_r")
+  })
+  
+  
   region_tab_dataset_used <- reactive({
     switch(input$region_tab_rate_type_selected,
            "Crude Incidence Rate" = inc_rate_df,
@@ -1172,9 +1192,9 @@ server <- function(input, output,session) {
     region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
                 (DISEASE %in% input$region_tab_diseases_selected) &
-                (YEAR %in% seq(input$region_tab_year_range_selected[1], 
-                               input$region_tab_year_range_selected[2], 
-                               by = 1)) &
+                # (YEAR %in% seq(input$region_tab_year_range_selected, 
+                #                input$region_tab_year_range_selected, 
+                #                by = 1)) &
                 (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
   
@@ -1246,7 +1266,7 @@ server <- function(input, output,session) {
     p |>
       plotlyProxyInvoke("relayout",
                         list(
-                          shapes = list(vline(input$region_tab_year_range_selected[1]))
+                          shapes = list(vline(input$region_tab_year_range_selected))
                         ))
   })
    
@@ -1280,7 +1300,7 @@ server <- function(input, output,session) {
                               title = list(
                                 text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
                                 font = list(size = ifelse(
-                                  startsWith(input$region_tab_rate_type_selected, "STD"), 12, 14
+                                  startsWith(input$region_tab_rate_type_selected, "Age"), 12, 14
                                 ))
                               ),
                               gridcolor = "#d9dadb",
@@ -1299,7 +1319,7 @@ server <- function(input, output,session) {
    
   output$region_tab_bar_chart <- renderPlotly({
     bar_chart_data <- region_tab_filtered_data() |>
-      filter(YEAR == input$region_tab_year_range_selected[1])
+      filter(YEAR == input$region_tab_year_range_selected)
     error$lower <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <-
@@ -1320,7 +1340,7 @@ server <- function(input, output,session) {
           width = 10
         ),
         hovertemplate = paste('<br><b>Disease</b>: %{fullData.name}',
-                              '<br><b>Year</b>: ', input$region_tab_year_range_selected[1],
+                              '<br><b>Year</b>: ', input$region_tab_year_range_selected,
                               '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                               '<br><b>95% Confidence Interval</b>: (',
                               format_round(bar_chart_data[[error$lower]]), ',',
@@ -1347,7 +1367,7 @@ server <- function(input, output,session) {
                     "<b>Disease Distribution by ",
                     input$region_tab_rate_type_selected,
                     " in ",
-                    input$region_tab_year_range_selected[1],
+                    input$region_tab_year_range_selected,
                     "</b>"),
           y = 0.92,
           font = list(size = 16)
