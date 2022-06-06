@@ -1192,9 +1192,6 @@ server <- function(input, output,session) {
     region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
                 (DISEASE %in% input$region_tab_diseases_selected) &
-                # (YEAR %in% seq(input$region_tab_year_range_selected, 
-                #                input$region_tab_year_range_selected, 
-                #                by = 1)) &
                 (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
   
