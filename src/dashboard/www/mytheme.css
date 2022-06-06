@@ -75,7 +75,7 @@
   background-color: var(--yellow);
 }
 
-td,tr{
+#datadict td,#datadict tr{
   padding: 5px;
 }
 
