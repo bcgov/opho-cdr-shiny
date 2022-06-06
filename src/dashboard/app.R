@@ -133,7 +133,7 @@ ui <- fluidPage(
                           # verbatimTextOutput("hover_stuff2")
                           ),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=300)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,
                                           materialSwitch(
                                             inputId = "yax_switch",
@@ -143,7 +143,7 @@ ui <- fluidPage(
                                           )),
                                    column(4,
                                           uiOutput("modeldata_d"))),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=300)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
                           )))
                )),
       
@@ -529,12 +529,13 @@ server <- function(input, output,session) {
                               ),
               hoverinfo="skip"
               )%>%
-      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
+      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05),
                         title = list(text = paste0(input$dataset_d," Per 1000"),
                                      font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
                         ),
                         gridcolor = "#d9dadb",
-                        showline= T, linewidth=1, linecolor='black'),
+                        showline= T, linewidth=1, linecolor='black',
+                        rangemode="nonnegative"),
              xaxis = list(title = list(text = 'Health Region', standoff = 0),
                           categoryorder = "category ascending",
                           tickfont = list(size = 10),
@@ -583,11 +584,12 @@ server <- function(input, output,session) {
       plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
+                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=TRUE)*1.05),
                                      title = list(text = paste0(input$dataset_d," Per 1000"),
                                                   font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
                                      gridcolor = "#d9dadb",
-                                     showline= T, linewidth=1, linecolor='black'),
+                                     showline= T, linewidth=1, linecolor='black',
+                                     rangemode="nonnegative"),
                           xaxis=list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 0),
                                      categoryorder = "category ascending",
@@ -767,7 +769,7 @@ server <- function(input, output,session) {
         left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
     }
     
-    legend_inc <- round_any(unname(quantile(dummyData[[rateInput_d()]],0.8))/5,0.1)
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
     mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#cccccc")
     labels<-c(paste0("< ",mybins[2]),
@@ -845,7 +847,7 @@ server <- function(input, output,session) {
         "<b>95% Confidence Interval</b>: (",format_round(current_map_spdf@data[[error$lower]]),",",format_round(current_map_spdf@data[[error$upper]]),")")
   }
 
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.8))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<1,0.005,0.1))
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
     labels<-c(paste0("< ",mybins[2]),
