@@ -196,9 +196,15 @@ ui <- fluidPage(
                  
                  mainPanel(
                    width = 9,
-                   fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()),
-                   br(),
-                   fluidRow(plotlyOutput("region_tab_bar_chart") %>% withSpinner()))
+                   fluidRow(plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
+                   fluidRow(column(4,
+                                   materialSwitch(
+                                     inputId = "region_tab_line_y0switch",
+                                     label = "Y-axis from 0",
+                                     right = TRUE,
+                                     inline = TRUE
+                                   ))),
+                   fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()))
                  
               )), 
       
@@ -1172,9 +1178,12 @@ server <- function(input, output,session) {
                 (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
   
+  #####################
+  # Line Chart Related Logic
+  #####################
+  
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
-  # 
   output$region_tab_line_chart <- renderPlotly({
     data <- region_tab_filtered_data()
     
@@ -1191,10 +1200,17 @@ server <- function(input, output,session) {
           '<br><b>Disease</b>: %{fullData.name}',
           '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
           '<br><b>Year</b>: %{x}',
-          '<extra></extra>')) |>
+          '<extra></extra>'
+        )
+      ) |>
       layout(
         yaxis = list(
-          title = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+          title = list(
+            text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+            font = list(size = ifelse(
+              startsWith(input$region_tab_rate_type_selected, "Age"), 12, 14
+            ))
+          ),
           gridcolor = "#d9dadb",
           showline = T,
           linewidth = 1,
@@ -1216,9 +1232,66 @@ server <- function(input, output,session) {
           font = list(size = 16)
         ),
         margin = list(t = 80, b = 50),
-        legend = list(title = list(text = 'Disease'))
-      )
+        legend = list(title = list(text = 'Disease')),
+        shapes = list(vline(2001))
+      )  |>
+      event_register('plotly_hover')
       
+  })
+  
+  # Update the vertical line in the line graph with year input
+  observe({
+    p <- plotlyProxy("region_tab_line_chart", session)
+    
+    p |>
+      plotlyProxyInvoke("relayout",
+                        list(
+                          shapes = list(vline(input$region_tab_year_range_selected[1]))
+                        ))
+  })
+   
+  # Modify line chart's yaxis to start from 0 when user toggles the switch
+  observeEvent(input$region_tab_line_y0switch, {
+    p <- plotlyProxy("region_tab_line_chart", session)
+    
+    if (input$region_tab_line_y0switch == TRUE) {
+      p |>
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis = list(
+                              title = list(
+                                text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+                                font = list(size = ifelse(
+                                  startsWith(input$region_tab_rate_type_selected, "Age"), 12, 14
+                                ))
+                              ),
+                              gridcolor = "#d9dadb",
+                              showline = T,
+                              linewidth = 1,
+                              linecolor = 'black',
+                              rangemode = "tozero"
+                            )
+                          ))
+    } else {
+      p %>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis = list(
+                              title = list(
+                                text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
+                                font = list(size = ifelse(
+                                  startsWith(input$region_tab_rate_type_selected, "STD"), 12, 14
+                                ))
+                              ),
+                              gridcolor = "#d9dadb",
+                              showline = T,
+                              linewidth = 1,
+                              linecolor = 'black',
+                              rangemode = "nonnegative"
+                            )
+                          ))
+      
+    }
   })
   
   # Plot a bar chart comparing rates for diseases in a year
@@ -1256,7 +1329,7 @@ server <- function(input, output,session) {
       ) %>%
       layout(
         yaxis = list(
-          # range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.1),
+          range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.1),
           title = paste0(input$region_tab_rate_type_selected, " Per 1000"),
           gridcolor = "#d9dadb",
           showline = T,
@@ -1265,18 +1338,17 @@ server <- function(input, output,session) {
         ),
         xaxis = list(
           categoryorder = "category ascending",
-          # tickfont = list(size = 10),
           showline = T,
           linewidth = 1,
           linecolor = 'black'
         ),
         title = list(
           text = paste0(
-                    "Distribution of Diseases by ",
+                    "<b>Disease Distribution by ",
                     input$region_tab_rate_type_selected,
                     " in ",
-                    input$region_tab_year_range_selected[1]
-                  ),
+                    input$region_tab_year_range_selected[1],
+                    "</b>"),
           y = 0.92,
           font = list(size = 16)
         ),
