@@ -559,47 +559,7 @@ server <- function(input, output,session) {
              showlegend = FALSE
       ) %>%
       event_register('plotly_hover')
-    
-      # dummyData |>
-      # plot_ly(
-      #         x=dummyData$HEALTH_BOUND_NAME,
-      #         y=dummyData[[rateInput_d()]],
-      #         source = "disease_graph_bar",
-      #         type = 'bar',
-      #         error_y=list(
-      #           type = "data",
-      #           symmetric = FALSE,
-      #           arrayminus =dummyData[[rateInput_d()]]- dummyData[[error$lower]],
-      #           array = dummyData[[error$upper]]- dummyData[[rateInput_d()]],
-      #           color = '#000000',
-      #           width = 10),
-      #         marker = list(color = if(input$health_bound_d == "Health Authorities")
-      #                               HA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,HA_colours$Regions)]
-      #                               else
-      #                               CHSA_colours$Colors[match(dummyData$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
-      #                         ),
-      #         hoverinfo="skip"
-      #         )%>%
-      # layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05),
-      #                   title = list(text = paste0(input$dataset_d," Per 1000"),
-      #                                font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
-      #                   ),
-      #                   gridcolor = "#d9dadb",
-      #                   showline= T, linewidth=1, linecolor='black',
-      #                   rangemode="nonnegative"),
-      #        xaxis = list(title = list(text = 'Health Region', standoff = 0),
-      #                     categoryorder = "category ascending",
-      #                     tickfont = list(size = 10),
-      #                     showline= T, linewidth=1, linecolor='black'),
-      #        title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
-      #                     y=0.92,
-      #                     font = list(size = 16)),
-      #        barmode = "overlay",
-      #        margin = list(t = 80,b=50),
-      #        # plot_bgcolor= '#d9dadb'
-      #        showlegend = FALSE
-      #       ) %>%
-      # event_register('plotly_hover')
+
   })
   
   # Update Disease Bar Graph with filter changes
@@ -1494,6 +1454,17 @@ server <- function(input, output,session) {
                                   ))
   
 }
+    
+    ################################
+    # Mahmood Tab Server Side Logic
+    ################################
+
+
+
+
+
+
+
 
 ################################
 # Run App
