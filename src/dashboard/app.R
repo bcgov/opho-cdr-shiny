@@ -509,7 +509,7 @@ server <- function(input, output,session) {
                               ),
               hoverinfo="skip"
               )%>%
-      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.05),
+      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05),
                         title = list(text = paste0(input$dataset_d," Per 1000"),
                                      font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
                         ),
@@ -564,7 +564,7 @@ server <- function(input, output,session) {
       plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]])*1.05),
+                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=TRUE)*1.05),
                                      title = list(text = paste0(input$dataset_d," Per 1000"),
                                                   font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
                                      gridcolor = "#d9dadb",
