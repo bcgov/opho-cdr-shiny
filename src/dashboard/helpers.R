@@ -166,11 +166,16 @@ health_bounds <- function(input){
    )
  }
  
- # Sex radio button template
+ # Sex radio buttons template
  sex_radio_buttons <- function(id){
-   radioButtons(id=id, 
+   radioButtons(id, 
                 label = ("Select Sex"),
                 choices = c("Male","Female","Total"), 
                 selected = "Total",
                 inline = TRUE)
+ }
+ 
+ # Geography radio buttons template
+ geography_radio_buttons <- function(id){
+   
  }

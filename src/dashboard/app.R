@@ -88,27 +88,10 @@ ui <- fluidPage(
                                label= "Select Disease",
                                choices = sort(unique(inc_rate_df$DISEASE))),
                    uiOutput("dataset_d"),
-                   radioButtons("health_bound_d",
-                                label= "Select Health Boundary Type",
-                                choices = GEOGRAPHY_CHOICES,
-                                selected= GEOGRAPHY_CHOICES[1]),
+                   health_bound_data("health_bound_d"),
                    uiOutput("region_d"),
                    sex_radio_buttons("gender_d"),
-                   sliderInput("year_d", 
-                               label = tags$span(
-                                 "Select Year  ", 
-                                 tags$i(
-                                   id = "year_info_d",
-                                   class = "glyphicon glyphicon-info-sign", 
-                                   style = "color:#0072B2;"
-                                 )),
-                               min = 2001,
-                               max=2020,
-                               value = 2001,
-                               sep = "",
-                               ticks = TRUE,
-                               animate = animationOptions(interval = 1000)
-                              ),
+                   year_range_data("year_d"),
                    fisc_year_tt("year_info_d"),
                    br(),
                    actionButton("reset_d", "Reset")
@@ -151,41 +134,12 @@ ui <- fluidPage(
                    width = 3,
                    h2("Filters"),
                    hr(),
-                   
-                   radioButtons(
-                     "region_tab_geography_selected",
-                     label = "Select Geography",
-                     choices = GEOGRAPHY_CHOICES,
-                     selected = GEOGRAPHY_CHOICES[1]
-                   ),
-                   
+                   health_bound_d("region_tab_geography_selected"),
                    uiOutput("region_tab_region_selected"),
-                   
-                   selectInput(
-                     "region_tab_rate_type_selected",
-                     label = "Select Rate Type",
-                     choices = RATE_TYPE_CHOICES
-                   ),
-                   
+                   rate_type_input("region_tab_rate_type_selected"),
                    uiOutput("region_tab_diseases_selected"),
                    sex_radio_buttons("region_tab_sex_selected"),
-                   
-                   sliderInput(
-                     "region_tab_year_range_selected",
-                     label = tags$span(
-                       "Select Year  ", 
-                       tags$i(
-                         id = "region_tab_year_slider_info",
-                         class = "glyphicon glyphicon-info-sign", 
-                         style = "color:#0072B2;"
-                       )),
-                     min = 2001,
-                     max = 2020,
-                     value = 2001,
-                     step = 1,
-                     sep = "",
-                     animate = animationOptions(interval = 1000)
-                   ),
+                   year_range_data("region_tab_year_range_selected"),
                    fisc_year_tt("region_tab_year_slider_info"),
                    br(),
                    actionButton("region_tab_reset_button", "Reset")
@@ -216,31 +170,11 @@ ui <- fluidPage(
                    width = 3,
                    h2("Filters"),
                    hr(),
-                   
-                   selectInput("dataset_data", 
-                               label = "Select Rate Type",
-                               choices = RATE_TYPE_CHOICES,
-                               selected = RATE_TYPE_CHOICES[1]),
-                   
+                   region_tab_rate_type_selected("dataset_data"),
                    uiOutput("disease_data"),
-                   
-                   radioButtons("health_bound_data",
-                                label= "Select Health Boundary Type",
-                                choices = GEOGRAPHY_CHOICES,
-                                selected=GEOGRAPHY_CHOICES[1]),
-                   
+                   geography_radio_buttons("health_bound_data"),
                    uiOutput("region_data"),
-                   
-                   sliderInput("year_range_data", 
-                               label = tags$span(
-                                 "Select Year Range  ",
-                                 tags$i(
-                                   id = "year_info_data",
-                                   class = "glyphicon glyphicon-info-sign",
-                                   style = "color:#0072B2;"
-                                 )),
-                               min = 2001, max = 2020, value = c(2001, 2020),
-                               sep = ""),
+                   year_slider("year_range_data",anim = FALSE),
                    fisc_year_tt("year_info_data"),
                    sex_radio_buttons("gender_data"),
                    br(),br(),
@@ -358,13 +292,7 @@ server <- function(input, output,session) {
   datasetInput_d <- reactive({
     shiny::validate(need(input$dataset_d, message=F))
     if(!is.null(input$dataset_d)){
-    switch(input$dataset_d,
-           "Crude Incidence Rate" = inc_rate_df,
-           "Age Standardized Incidence Rate" = inc_rate_df,
-           "Crude Life Prevalence" = life_prev_df,
-           "Age Standardized Life Prevalence" = life_prev_df,
-           "Crude HSC Prevalence" = hsc_prev_df,
-           "Age Standardized HSC Prevalence" = hsc_prev_df)
+      dataset_switch(input$dataset_d)
     }
   })
   
@@ -372,13 +300,7 @@ server <- function(input, output,session) {
   rateInput_d <- reactive({
     shiny::validate(need(input$dataset_d, message=F))
     if(!is.null(input$dataset_d)){
-    switch(input$dataset_d,
-           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
-           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
-           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
+      rate_switch(input$dataset_d)
     }
   })
   
@@ -1085,31 +1007,18 @@ server <- function(input, output,session) {
   
   
   region_tab_dataset_used <- reactive({
-    switch(input$region_tab_rate_type_selected,
-           "Crude Incidence Rate" = inc_rate_df,
-           "Age Standardized Incidence Rate" = inc_rate_df,
-           "Crude Life Prevalence" = life_prev_df,
-           "Age Standardized Life Prevalence" = life_prev_df,
-           "Crude HSC Prevalence" = hsc_prev_df,
-           "Age Standardized HSC Prevalence" = hsc_prev_df)
+    dataset_switch(input$region_tab_rate_type_selected)
   })
   
   region_tab_rate_as_variable <- reactive({
-    ifelse(startsWith(input$region_tab_rate_type_selected, "Age Standardized"),
-           "STD_RATE_PER_1000",
-           "CRUDE_RATE_PER_1000")
+    rate_switch(input$region_tab_rate_type_selected)
   })
   
   output$region_tab_region_selected <- renderUI({
     selectInput(
       "region_tab_region_selected",
       label = "Select Health Boundary",
-      choices = (
-        if (input$region_tab_geography_selected == "Health Authorities")
-          HA_CHOICES
-        else
-          sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
-      ),
+      choices = health_bounds(input$region_tab_geography_selected),
       multiple = FALSE,
       selected = HA_CHOICES[1]
     )
@@ -1324,24 +1233,12 @@ server <- function(input, output,session) {
   
   # Select dataset based on user input
   datasetInput_data <- reactive({
-    switch(input$dataset_data,
-           "Crude Incidence Rate" = inc_rate_df,
-           "Age Standardized Incidence Rate" = inc_rate_df,
-           "Crude Life Prevalence" = life_prev_df,
-           "Age Standardized Life Prevalence" = life_prev_df,
-           "Crude HSC Prevalence" = hsc_prev_df,
-           "Age Standardized HSC Prevalence" = hsc_prev_df)
+    dataset_switch(input$dataset_data)
   })
   
   # Select rate based on user input
   rateInput_data <- reactive({
-    switch(input$dataset_data,
-           "Crude Incidence Rate" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Incidence Rate" = "STD_RATE_PER_1000",
-           "Crude Life Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized Life Prevalence" = "STD_RATE_PER_1000",
-           "Crude HSC Prevalence" = "CRUDE_RATE_PER_1000",
-           "Age Standardized HSC Prevalence" = "STD_RATE_PER_1000")
+    rate_switch(input$dataset_data)
   })
   
   # Select geography based on user input
