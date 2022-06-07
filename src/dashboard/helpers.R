@@ -146,3 +146,127 @@ vline <- function(x = 0, color = "gray40") {
 format_round <- function(x, dec = 2){
   format(round(x,2),2)
 }
+
+# Dynamic Health Boundaries selection
+health_bounds <- function(input){
+  (
+  if(input == "Health Authorities") 
+   return(c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="HA")$HEALTH_BOUND_NAME))))
+  else 
+    return(c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))
+  )
+
+}
+
+# Fiscal year tooltip
+ fisc_year_tt <- function(id){
+   bsTooltip(id = id, 
+             title="Years are based on Ministry of Health fiscal years. For example, the year 2001 represents data from April 1, 2001 to March 31, 2002",
+             placement = "right"
+   )
+ }
+ 
+ # Sex radio buttons template
+ sex_radio_buttons <- function(id){
+   radioButtons(id, 
+                label = ("Select Sex"),
+                choices = c("Male","Female","Total"), 
+                selected = "Total",
+                inline = TRUE)
+ }
+ 
+ # Geography radio buttons template
+ geography_radio_buttons <- function(id){
+   radioButtons(id,
+                label= "Select Health Boundary Type",
+                choices = GEOGRAPHY_CHOICES,
+                selected=GEOGRAPHY_CHOICES[1])
+ }
+ 
+ # Year slider input template
+ year_slider <- function(id, anim=TRUE){
+   if (anim==TRUE){
+     return(sliderInput(id, 
+                 label = tags$span(
+                   "Select Year  ", 
+                   tags$i(
+                     id = "year_info_d",
+                     class = "glyphicon glyphicon-info-sign", 
+                     style = "color:#0072B2;"
+                   )),
+                 min = 2001,
+                 max=2020,
+                 value = 2001,
+                 sep = "",
+                 ticks = TRUE,
+               animate = animationOptions(interval = 1000)
+   ))
+     }else{
+     sliderInput(id, 
+                 label = tags$span(
+                   "Select Year Range  ",
+                   tags$i(
+                     id = "year_info_data",
+                     class = "glyphicon glyphicon-info-sign",
+                     style = "color:#0072B2;"
+                   )),
+                 min = 2001, max = 2020, value = c(2001, 2020),
+                 sep = "")
+   }
+ }
+ 
+ # Rate type dropdown template
+ rate_type_input <- function(id){
+   selectInput(
+     id,
+     label = "Select Rate Type",
+     choices = RATE_TYPE_CHOICES
+   )
+ }
+ 
+ # Dataset switch function
+ dataset_switch <- function (input){
+   switch(input,
+          "Crude Incidence Rate" = inc_rate_df,
+          "Age Standardized Incidence Rate" = inc_rate_df,
+          "Crude Life Prevalence" = life_prev_df,
+          "Age Standardized Life Prevalence" = life_prev_df,
+          "Crude HSC Prevalence" = hsc_prev_df,
+          "Age Standardized HSC Prevalence" = hsc_prev_df)
+ }
+ 
+ # Rate input switch function
+ rate_switch <- function(input){
+   ifelse(startsWith(input, "Age"),
+          "STD_RATE_PER_1000",
+          "CRUDE_RATE_PER_1000")
+ }
+ 
+ # Toggle template
+ material_switch <- function(id, lab){
+   materialSwitch(
+     inputId = id,
+     label = lab,
+     right = TRUE,
+     inline= TRUE
+   )
+ }
+ 
+ # Hover template for line chart 
+ hovertemplate_line <- paste0('<b>Health Region</b>: %{fullData.name}',
+                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                              '<br><b>Year</b>: %{x}',
+                              '<extra></extra>'
+ )
+ 
+ # Graph y-axis options template
+ y_axis_spec <- function(input,range_mode){
+   list(title = list(text = paste0(input," Per 1000"),
+                     font = list(size = ifelse(startsWith(input,"Age"),12,14))),
+        gridcolor = "#d9dadb",
+        showline= T, 
+        linewidth=1, 
+        linecolor='black',
+        rangemode = range_mode)
+   
+ }

@@ -173,81 +173,81 @@ data_dict_info <-"
   missing due to low rates. Additional information about the modelling procedure can be found <a href='https://github.com/bcgov/opho-cdr-shiny'>here</a>.
   <br/>
 
-  <table border='1'>
+  <table border='1'; id ='datadict'>
     <tr>
       <th>Variable Name</th>
       <th>Description</th>
       <th>Sample Values</th>
     </tr>
     <tr>
-      <td>Fiscal Year</td>
+      <td><b>Fiscal Year</b></td>
       <td>Label for the fiscal year (April 1 to March 31 of the following year).</td>
       <td><q>2001/2002</q> up to <q>2020/2021</q></td>
     </tr>
     <tr>
-      <td>Disease</td>
+      <td><b>Disease</b></td>
       <td>Name of the chronic condition.</td>
       <td><q>Asthma</q>, <q>Depression</q>, <q>Heart Failure</q></td>
     </tr>
     <tr>
-      <td>Sex</td>
+      <td><b>Sex</b></td>
       <td>Gender category.</td>
       <td><q>T</q>, <q>M</q>, or <q>F</q>. T includes Male, Female, and Unknown.</td>
     </tr>
     <tr>
-      <td>Geography</td>
+      <td><b>Geography</b></td>
       <td>The type of health boundary used to separate geographic areas.</td>
       <td><q>HA</q> or <q>CHSA</q></td>
     </tr>
     <tr>
-      <td>Health Boundary</td>
+      <td><b>Health Boundary</b></td>
       <td>The HA or CHSA region of interest.</td>
-      <td><q>Fraser<q>, </q>Vancouver Coastal</q>, <q>Fernie</q>, <q>Campbell River</q></td>
+      <td><q>Fraser</q>, <q>Vancouver Coastal</q>, <q>Fernie</q>, <q>Campbell River</q></td>
     </tr>
     <tr>
-      <td>Numerator</td>
+      <td><b>Numerator</b></td>
       <td>Incidence: Number of newly identified cases in a reporting year.
       <br/> Life prevalence: Number of residents ever identified with a disease in a reporting year. 
       <br/> Active healthcare contact prevalence: Number of patients receiving healthcare services for a disease in a reporting year.</td>
       <td>0, 1, 2, 23, 103, 457, 685</q></td>
     </tr>
     <tr>
-      <td>Denominator</td>
+      <td><b>Denominator</b></td>
       <td>Incidence: Mid-year population at risk in the reporting year.
       <br/>Life prevalence and active healthcare contact prevalence: Mid-year population in the reporting year.</td>
       <td>11, 269, 3972, 10185, 52974, 80356</q></td>
     </tr>
     <tr>
-      <td>Crude Rate Per 1000</td>
+      <td><b>Crude Rate Per 1000</b></td>
       <td>Crude rate per 1000 people. Equivalent to Numerator/Denominator * 1000.</td>
       <td> 0 (if Numerator = 0), 0.95, 5.87, 19.46</q></td>
     </tr>
     <tr>
-      <td>Crude 95% CI</td>
+      <td><b>Crude 95% CI</b></td>
       <td>95% lower and upper confidence level on the crude rate per 1000 people. 
       <br/>Assumes Numerator is normally-distributed and Denominator is known exactly.</td>
       <td> (NA,NA) (if Numerator = 0), (0.12,3.4), (2.15,12.77), (9.33,35.78)</q></td>
     </tr>
     <tr>
-      <td>Crude Variance</td>
+      <td><b>Crude Variance</b></td>
       <td>Variance on the crude rate per 1000 people. 
       <br/>Calculated assuming Numerator is Poisson-distributed and Denominator is known exactly.</td>
       <td>0 (if Numerator = 0), 4.54E-07, 1.35E-06, 3.79E-05</q></td>
     </tr>
     <tr>
-      <td>Std Rate Per 1000</td>
+      <td><b>Std Rate Per 1000</b></td>
       <td>Age-standardized rate per 1000 people. Calculated using a weighted average of the number
       <br/>of occurrences in the local population according to the age distribution of the standard population.</td>
       <td> 0 (if Numerator = 0), 0.76, 6.11, 15.36</q></td>
     </tr>
     <tr>
-      <td>Standardized 95% CI</td>
+      <td><b>Standardized 95% CI</b></td>
       <td>95% lower and upper confidence level on the age-standardized rate per 1000 people. 
       <br/>Assumes Numerator is normally-distributed and Denominator is known exactly.</td>
       <td> (NA,NA) (if Numerator = 0), (0.09,2.78), (4.74,7.75), (14.57,16.54)</q></td>
     </tr>
     <tr>
-      <td>Std Variance</td>
+      <td><b>Std Variance</b></td>
       <td>Calculated assuming age-weighted Numerator is Poisson-distributed and Denominator is known exactly.</td>
       <td>  0 (if Numerator = 0), 2.96E-07, 5.52E-07, 3.53E-07</q></td>
     </tr>
