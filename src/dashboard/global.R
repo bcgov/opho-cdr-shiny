@@ -177,5 +177,5 @@ for (i in seq(1,5)){
 }
 
 # Define dataframe of Disease colour mappings
-DISEASE_colors <- data.frame(DISEASE = unique(inc_rate_df$DISEASE))
+DISEASE_colors <- data.frame(DISEASE = sample(unique(inc_rate_df$DISEASE)))
 DISEASE_colors$Colors <- colorRampPalette(c(HA_colours[,2]))(length(unique(inc_rate_df$DISEASE))) 

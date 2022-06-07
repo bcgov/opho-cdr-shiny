@@ -993,10 +993,9 @@ server <- function(input, output,session) {
         type = "scatter",
         mode = "lines",
         line = list(width = 2),
-        color = ~ DISEASE,
+        color = ~DISEASE,
         showlegend = T,
-        marker = list(
-          color = DISEASE_colors$Colors[match(dummy_df$DISEASE,DISEASE_colors$DISEASE)]),
+        colors = setNames(DISEASE_colors$Colors, DISEASE_colors$DISEASE),
         hovertemplate = region_tab_hovertemplate_line
       ) |>
       layout(
@@ -1090,7 +1089,7 @@ server <- function(input, output,session) {
                   ),
                   marker = list(
                     color = DISEASE_colors$Colors[match(dummy_df$DISEASE,DISEASE_colors$DISEASE)]),
-                  hovertemplate = paste('<br><b>Disease</b>: %{fullData.name}',
+                  hovertemplate = paste('<br><b>Disease</b>: %{x}',
                                         '<br><b>Year</b>: ', input$region_tab_year_range_selected,
                                         '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                                         '<br><b>95% Confidence Interval</b>: (',
