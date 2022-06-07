@@ -22,6 +22,7 @@ wrangling <- function(data) {
     mutate(YEAR = as.numeric(substr(FISC_YR_LABEL, 4, 7))) %>% 
     mutate( DISEASE = as.factor(DISEASE)) %>% 
     mutate( SEX = as.factor(CLNT_GENDER_LABEL)) %>% 
+    filter(SEX != "T") %>%
     mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) %>% 
     mutate( GEOGRAPHY = as.factor(GEOGRAPHY)) %>% 
     mutate(across(c(STD_RATE_PER_1000, 
