@@ -20,6 +20,7 @@ library(dplyr)
 library(readr)
 library(plotly)
 library(lubridate)
+library(segmented)
 ```
 # Highlevel tasks:
 
@@ -43,9 +44,7 @@ df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |>
     mutate( DISEASE = as.factor(DISEASE)) |> 
     mutate( SEX = as.factor(SEX)) |> 
     mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |> 
-    mutate( GEOGRAPHY = as.factor(GEOGRAPHY)) |> 
-    mutate( YEAR = as.Date(ISOdate(YEAR, 1, 1)),
-            YEAR = format(YEAR,'%Y'))
+    mutate( GEOGRAPHY = as.factor(GEOGRAPHY))
 
 ```
 
@@ -94,10 +93,20 @@ Observations: (Will elaborate later)
 
  - None of the three rates, namely, HSC Prevalence, Age-Standardized Incidence Rate, and  Age-Standardized Life Prevalence have any negative value
 
+## Building the Model:
 
+### Specifics :
 
-
-
+ - Model : Linear regression 
+ - Response (y): Rates 
+ - Predictors : Sex*Year
+ - `segmented.lm` is used
+ 
+```{r linear regression}
+attach(sample_df)
+lm <- lm(STD_RATE_PER_1000~SEX*YEAR)
+seg_model<-segmented(lm,seg.Z=~YEAR)
+```
 
 
 
