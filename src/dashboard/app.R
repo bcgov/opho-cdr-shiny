@@ -18,8 +18,9 @@ library(shinyWidgets)
 library(DT)
 library(shinyBS)
 })
+
 ################################
-# Source helper functions
+# Source helper functions and templates
 # 
 # Define and load all the global variables, including the data frames and shape files
 ################################
@@ -53,10 +54,10 @@ ui <- fluidPage(
                  h6("UBC Master of Data Science Capstone Project"),
                  p(HTML(about_info)),
                  hr(style = "margin-bottom: 20px;
-                            border: 0;
-                            border-top: 1px solid #eee"),
+                             border: 0;
+                             border-top: 1px solid #eee"),
                  helpText(HTML("For internal use only. Do not distribute.<br/>
-                               For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
+                                For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
                  ),
         tabPanel("Rate Types",
                  p(HTML("<u><h2>Rate Types</h2></u></br>")),
@@ -82,11 +83,11 @@ ui <- fluidPage(
                  sidebarPanel(
                    id="filters_d",
                    width = 3,
-                   h2("Filters"),
+                   h2("Data Selection"),
                    hr(),
                    selectInput("disease_d",
                                label= "Select Disease",
-                               choices = sort(unique(inc_rate_df$DISEASE))),
+                               choices = ALL_DISEASES,
                    uiOutput("dataset_d"),
                    geography_radio_buttons("health_bound_d"),
                    uiOutput("region_d"),
@@ -125,7 +126,7 @@ ui <- fluidPage(
                  sidebarPanel(
                    id="filters_r",
                    width = 3,
-                   h2("Filters"),
+                   h2("Data Selection"),
                    hr(),
                    geography_radio_buttons("region_tab_geography_selected"),
                    uiOutput("region_tab_region_selected"),
@@ -154,7 +155,7 @@ ui <- fluidPage(
                  sidebarPanel(
                    id="filters_data",
                    width = 3,
-                   h2("Filters"),
+                   h2("Data Selection"),
                    hr(),
                    rate_type_input("dataset_data"),
                    uiOutput("disease_data"),
@@ -421,10 +422,7 @@ server <- function(input, output,session) {
    p %>%
       layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
                              y_axis_spec(input$dataset_d,"nonnegative")),
-             xaxis = list(title = list(text = 'Health Region', standoff = 0),
-                          categoryorder = "category ascending",
-                          tickfont = list(size = 10),
-                          showline= T, linewidth=1, linecolor='black'),
+             xaxis = x_axis_bar_spec('Health Region'),
              title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
                           y=0.92,
                           font = list(size = 16)),
@@ -481,12 +479,8 @@ server <- function(input, output,session) {
                           autosize = F,
                           yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
                                         y_axis_spec(input$dataset_d,"nonnegative")),
-                          xaxis = list(fixedrange = TRUE,
-                                     title = list(text = 'Health Region', standoff = 0),
-                                     categoryorder = "category ascending",
-                                     tickfont = list(size = 10),
-                                     automargin = TRUE,
-                                     showline= T, linewidth=1, linecolor='black'),
+                          xaxis = append(list(fixedrange = TRUE),
+                                         x_axis_bar_spec('Health Region')),
                           title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
                                        y=0.92,
                                        font = list(size = 16)
@@ -520,9 +514,7 @@ server <- function(input, output,session) {
       
     )%>%
       layout(yaxis = y_axis_spec(input$dataset_d,"nonnegative"),
-             xaxis = list(title = list(text = 'Year', standoff = 10),
-                          gridcolor = "#d9dadb",
-                          showline= T, linewidth=1, linecolor='black'),
+             xaxis = x_axis_line_spec('Year'),
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
                           y=0.92,
                           font = list(size = 16)),
@@ -965,16 +957,16 @@ server <- function(input, output,session) {
   output$region_tab_diseases_selected <- renderUI({
     selectizeInput("region_tab_diseases_selected", 
                    label = "Select Disease(s)",
-                choices = unique(region_tab_dataset_used()$DISEASE),
-                multiple = TRUE,
-                selected = unique(region_tab_dataset_used()$DISEASE)[1])
+                   choices = unique(region_tab_dataset_used()$DISEASE),
+                   multiple = TRUE,
+                   selected = unique(region_tab_dataset_used()$DISEASE)[1])
   }) 
   
   region_tab_filtered_data <- reactive({
     region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
-                (DISEASE %in% input$region_tab_diseases_selected) &
-                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
+             (DISEASE %in% input$region_tab_diseases_selected) &
+             (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
   
   #####################
@@ -999,13 +991,7 @@ server <- function(input, output,session) {
       ) |>
       layout(
         yaxis = y_axis_spec(input$region_tab_rate_type_selected,"nonnegative"),
-        xaxis = list(
-          title = list(text = 'Year', standoff = 10),
-          gridcolor = "#d9dadb",
-          showline = T,
-          linewidth = 1,
-          linecolor = 'black'
-        ),
+        xaxis = x_axis_line_spec('Year'),
         title = list(
           text = paste0('<b>',
                         input$region_tab_rate_type_selected,
@@ -1088,12 +1074,7 @@ server <- function(input, output,session) {
       layout(
         yaxis = append(c(range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.05)),
                        y_axis_spec(input$region_tab_rate_type_selected,"tozero")),
-        xaxis = list(
-          categoryorder = "category ascending",
-          showline = T,
-          linewidth = 1,
-          linecolor = 'black'
-        ),
+        xaxis = x_axis_bar_spec(NA),
         title = list(
           text = paste0(
                     "<b>Disease Distribution by ",
