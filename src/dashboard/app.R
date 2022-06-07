@@ -1,6 +1,7 @@
 ################################
 # Load packages
 # ################################
+suppressPackageStartupMessages({
 library(shiny)
 library(shinyjs)
 library(plyr)
@@ -16,7 +17,7 @@ library(rgeos)
 library(shinyWidgets)
 library(DT)
 library(shinyBS)
-
+})
 ################################
 # Source helper functions
 # 
