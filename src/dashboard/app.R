@@ -110,7 +110,7 @@ ui <- fluidPage(
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
-                                   column(4,uiOutput("modeldata_d"))),
+                                   column(8,uiOutput("modeldata_d"))),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
                           )))
                )),
@@ -228,7 +228,7 @@ server <- function(input, output,session) {
        input$health_bound_d=="Community Health Service Areas" &&
        startsWith(input$dataset_d,"Age")){
       output$modeldata_d <- renderUI({
-        material_switch("modeldata_d_switch","Modeled Data")
+        material_switch("modeldata_d_switch","Smoothed Time Trends ")
       })
     }else{
       output$modeldata_d <- renderUI({ })
@@ -543,7 +543,8 @@ server <- function(input, output,session) {
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
-                          yaxis = y_axis_spec(input$dataset_d,"tozero")
+                          append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                                 y_axis_spec(input$dataset_d,"tozero")),
                         ))
     }else{
       p%>%
@@ -551,6 +552,7 @@ server <- function(input, output,session) {
                           list(
                             yaxis = list(title = list(text = paste0(input$dataset_d," Per 1000"),
                                                       font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
+                                         range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05),
                                          gridcolor = "#d9dadb",
                                          showline= T, linewidth=1, linecolor='black',
                                          rangemode = "nonnegative")
@@ -568,7 +570,7 @@ server <- function(input, output,session) {
     if(input$modeldata_d_switch==TRUE){
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
-
+      
       for(reg in input$region_d){
         df <- data[which(data$HEALTH_BOUND_NAME==reg),]
         p |>
