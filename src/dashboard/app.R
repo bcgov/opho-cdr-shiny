@@ -437,6 +437,7 @@ server <- function(input, output,session) {
   
   # Update Disease Bar Graph with filter changes
   observe({
+    invalidateLater(500)
     newdata <- filter_df_d()|>
       filter((YEAR == input$year_d)&
                ((HEALTH_BOUND_NAME %in% input$region_d)))
@@ -477,7 +478,7 @@ server <- function(input, output,session) {
     p %>%  plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
+                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=T)*1.05)),
                                         y_axis_spec(input$dataset_d,"nonnegative")),
                           xaxis = list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 0),
@@ -792,14 +793,14 @@ server <- function(input, output,session) {
   
 
   # TEST
-  output$hover_stuff <- renderPrint({
-    event_data("plotly_hover",source = "disease_graph_line")$fullData
-    
-  })
-  
-  output$hover_stuff2 <- renderPrint({
-    event_data("plotly_hover",source = "disease_graph_line")
-  })
+  # output$hover_stuff <- renderPrint({
+  #   event_data("plotly_hover",source = "disease_graph_line")$fullData
+  #   
+  # })
+  # 
+  # output$hover_stuff2 <- renderPrint({
+  #   event_data("plotly_hover",source = "disease_graph_line")
+  # })
   
 
   # Define graph traces 
