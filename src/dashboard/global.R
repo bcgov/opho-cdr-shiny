@@ -75,7 +75,7 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
 HA_CHOICES <- c("Fraser", "Interior", "Northern", "Vancouver Coastal", "Vancouver Island")
 
-HSC_disease<- c("Acute Myocardial Infarction",
+HSC_DISEASES<- c("Acute Myocardial Infarction",
                 "Asthma",
                 "Depression",
                 "Gout and Crystal Arthropathies",
@@ -98,7 +98,7 @@ RATE_TYPE_CHOICES <- c(
 
 # CHSA_CHOICES <- sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
 
-ALL_DISEASES <- sort(unique(inc_rate_df$DISEASE))
+
 
 
 ################################
@@ -175,3 +175,7 @@ for (i in seq(1,5)){
     dplyr::rename(Regions = HEALTH_BOUND_NAME)
   CHSA_colours<- rbind(CHSA_colours,chsas_colors)
 }
+
+
+
+ALL_DISEASES <- sort(unique(inc_rate_df$DISEASE))

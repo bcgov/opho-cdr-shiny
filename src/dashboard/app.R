@@ -87,7 +87,7 @@ ui <- fluidPage(
                    hr(),
                    selectInput("disease_d",
                                label= "Select Disease",
-                               choices = ALL_DISEASES,
+                               choices = ALL_DISEASES),
                    uiOutput("dataset_d"),
                    geography_radio_buttons("health_bound_d"),
                    uiOutput("region_d"),
@@ -184,7 +184,7 @@ ui <- fluidPage(
                mainPanel(
                  img(src='model_image2.png',align="center",style="width: 1000px"),
                ))
-  ))
+  )
 )
 
 ################################
@@ -243,7 +243,7 @@ server <- function(input, output,session) {
     selectInput("dataset_d", 
                 label = "Select Rate Type",
                 choices = (
-                  if(input$disease_d %in% HSC_disease) RATE_TYPE_CHOICES
+                  if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
                   else
                     c("Crude Incidence Rate",
                       "Age Standardized Incidence Rate",
