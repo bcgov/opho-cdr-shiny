@@ -176,6 +176,5 @@ for (i in seq(1,5)){
   CHSA_colours<- rbind(CHSA_colours,chsas_colors)
 }
 
-
-
+# Define list of all diseases
 ALL_DISEASES <- sort(unique(inc_rate_df$DISEASE))

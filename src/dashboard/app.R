@@ -106,10 +106,7 @@ ui <- fluidPage(
                    column(3,htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height=645)%>% withSpinner(),
-                          # verbatimTextOutput("hover_stuff"),
-                          # verbatimTextOutput("hover_stuff2")
-                          ),
+                   column(6, leafletOutput("map",height=645)%>% withSpinner()),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
@@ -436,7 +433,7 @@ server <- function(input, output,session) {
   
   # Update Disease Bar Graph with filter changes
   observe({
-    invalidateLater(500)
+    invalidateLater(300)
     newdata <- filter_df_d()|>
       filter((YEAR == input$year_d)&
                ((HEALTH_BOUND_NAME %in% input$region_d)))
@@ -527,7 +524,7 @@ server <- function(input, output,session) {
   
   # Update disease line graph with year 
   observe({
-    invalidateLater(500)
+    invalidateLater(300)
     p <- plotlyProxy("disease_graph_line", session)
     
     p %>%
@@ -785,18 +782,6 @@ server <- function(input, output,session) {
     }
   })
   
-
-  # TEST
-  # output$hover_stuff <- renderPrint({
-  #   event_data("plotly_hover",source = "disease_graph_line")$fullData
-  #   
-  # })
-  # 
-  # output$hover_stuff2 <- renderPrint({
-  #   event_data("plotly_hover",source = "disease_graph_line")
-  # })
-  
-
   # Define graph traces 
   my_traces <- reactive({
     sort(input$region_d)
