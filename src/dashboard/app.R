@@ -23,9 +23,10 @@ library(shinyBS)
 # 
 # Define and load all the global variables, including the data frames and shape files
 ################################
-source('global.R', local = T) 
 source('info.R', local = T)
 source('helpers.R', local = T)
+source('global.R', local = T) 
+
 options(spinner.color="#003366")
 
 ################################
@@ -1214,7 +1215,7 @@ server <- function(input, output,session) {
         mode = "lines",
         line = list(width = 2),
         color = ~ DISEASE,
-        showlegend = T,
+        showlegend = TRUE,
         hovertemplate = paste0(
           '<br><b>Disease</b>: %{fullData.name}',
           '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
@@ -1313,12 +1314,17 @@ server <- function(input, output,session) {
     }
   })
   
+  #####################
+  # Bar Chart Related Logic
+  #####################
+  
   # Plot a bar chart comparing rates for diseases in a year
   # x is DISEASE, y is the selected rate type, color is DISEASE
    
   output$region_tab_bar_chart <- renderPlotly({
     bar_chart_data <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_range_selected)
+    
     error$lower <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <-
@@ -1345,8 +1351,7 @@ server <- function(input, output,session) {
                               format_round(bar_chart_data[[error$lower]]), ',',
                               format_round(bar_chart_data[[error$upper]]),')',
                               '<extra></extra>')
-      ) %>%
-      layout(
+      ) |> layout(
         yaxis = list(
           range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.1),
           title = paste0(input$region_tab_rate_type_selected, " Per 1000"),
@@ -1374,8 +1379,62 @@ server <- function(input, output,session) {
         barmode = "overlay",
         margin = list(t = 80, b = 50),
         showlegend = FALSE
-      )
-    #   event_register('plotly_hover')
+      ) |> 
+      event_register('plotly_hover')
+  })
+  
+  
+  # Update bar graph when filter changes
+  observe({
+    bar_chart_data <- region_tab_filtered_data() |>
+      filter(YEAR == input$region_tab_year_range_selected &
+               DISEASE %in% input$region_tab_diseases_selected)
+    
+    print(paste0("I'm called \n", bar_chart_data))
+    
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95") 
+    
+    plotlyProxy("region_tab_bar_chart", session) |> 
+      plotlyProxyInvoke("restyle",
+                        list(
+                          x = bar_chart_data$DISEASE,
+                          y = bar_chart_data[[region_tab_rate_as_variable()]],
+                          error_y=list(
+                            type = "data",
+                            symmetric = FALSE,
+                            arrayminus = bar_chart_data[[region_tab_rate_as_variable()]] - bar_chart_data[[error$lower]],
+                            array = bar_chart_data[[error$upper]] - bar_chart_data[[region_tab_rate_as_variable()]],
+                            color = '#000000',
+                            width = 10))) |> 
+      plotlyProxyInvoke("relayout",
+                        list(
+                          autosize = F,
+                          yaxis=list(range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.1),
+                                     title = list(text = 
+                                                    paste0(input$region_tab_rate_type_selected," Per 1000"),
+                                                  font = list(
+                                                    size = ifelse(startsWith(input$dataset_d,"Age"), 12, 14))),
+                                     gridcolor = "#d9dadb",
+                                     showline= T, linewidth=1, linecolor='black',
+                                     rangemode="nonnegative"),
+                          xaxis=list(fixedrange = TRUE,
+                                     categoryorder = "category ascending",
+                                     tickfont = list(size = 10),
+                                     automargin = TRUE,
+                                     showline= T, linewidth=1, linecolor='black'),
+                          title = list(text = 
+                                         HTML(paste0(
+                                           "<b>Disease Distribution by ",
+                                           input$region_tab_rate_type_selected,
+                                           " in ",
+                                           input$region_tab_year_range_selected,
+                                           "</b>")),
+                                       y=0.92,
+                                       font = list(size = 16)
+                          )
+                        ))
+    
   })
   
   
