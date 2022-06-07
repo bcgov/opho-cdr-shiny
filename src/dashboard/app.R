@@ -356,10 +356,9 @@ server <- function(input, output,session) {
   
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
-    
     paste0(
       "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
-      "<br>", "<div id=stat>",format_round(avg_rate),"</div>"
+      "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
     )
   })
   
@@ -535,12 +534,21 @@ server <- function(input, output,session) {
       event_register('plotly_hover')
   })
   
-  # Update disease line graph with year 
+  # Update disease line graph new data 
   observe({
     invalidateLater(500)
+    
+    newdata <- filter_df_d()|>
+      filter(HEALTH_BOUND_NAME %in% input$region_d)
+    
     p <- plotlyProxy("disease_graph_line", session)
     
+    
     p %>%
+      # plotlyProxy("restyle",
+      #             list(
+      #               y= list(newdata[[rateInput_d()]]),
+      #             ))%>%
       plotlyProxyInvoke("relayout",
                         list(
                           shapes = list(vline(input$year_d))
