@@ -433,7 +433,7 @@ server <- function(input, output,session) {
   
   # Update Disease Bar Graph with filter changes
   observe({
-    invalidateLater(300)
+    invalidateLater(500)
     newdata <- filter_df_d()|>
       filter((YEAR == input$year_d)&
                ((HEALTH_BOUND_NAME %in% input$region_d)))
@@ -510,7 +510,8 @@ server <- function(input, output,session) {
       
       
     )%>%
-      layout(yaxis = y_axis_spec(input$dataset_d,"nonnegative"),
+      layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                                    y_axis_spec(input$dataset_d,"nonnegative")),
              xaxis = x_axis_line_spec('Year'),
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
                           y=0.92,
@@ -524,7 +525,7 @@ server <- function(input, output,session) {
   
   # Update disease line graph with year 
   observe({
-    invalidateLater(300)
+    invalidateLater(500)
     p <- plotlyProxy("disease_graph_line", session)
     
     p %>%
@@ -585,6 +586,7 @@ server <- function(input, output,session) {
                             ))
 
       }
+
     }else{
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
