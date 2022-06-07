@@ -109,7 +109,20 @@ seg_model<-segmented(lm,seg.Z=~YEAR)
 ```
 
 
+### Model daignostics:
 
+#### Regression coefficients:
+
+```{r}
+print(seg_model, include.psi=TRUE)
+```
+#### average annual per cent (AAPC) change:
+
+To summarize piecewise linear relationships in segmented
+regression models.
+```{r aapc}
+print(aapc(seg_model, wrong.se = FALSE))
+```
 
 
 

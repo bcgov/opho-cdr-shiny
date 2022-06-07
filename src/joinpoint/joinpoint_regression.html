@@ -1844,6 +1844,32 @@ value</li>
 lm &lt;- lm(STD_RATE_PER_1000~SEX*YEAR)
 seg_model&lt;-segmented(lm,seg.Z=~YEAR)</code></pre>
 </div>
+<div id="model-daignostics" class="section level3">
+<h3>Model daignostics:</h3>
+<div id="regression-coefficients" class="section level4">
+<h4>Regression coefficients:</h4>
+<pre class="r"><code>print(seg_model, include.psi=TRUE)</code></pre>
+<pre><code>## Call: segmented.lm(obj = lm, seg.Z = ~YEAR)
+## 
+## Meaningful coefficients of the linear terms:
+## (Intercept)         SEXM         SEXT         YEAR      U1.YEAR    SEXM:YEAR  
+##  -608.57571     82.53432     23.12559      0.30645     -0.42739     -0.04160  
+##   SEXT:YEAR  
+##    -0.01181  
+## 
+## Estimated Break-Point(s):
+## psi1.YEAR  
+##      2009</code></pre>
+</div>
+<div id="average-annual-per-cent-aapc-change" class="section level4">
+<h4>average annual per cent (AAPC) change:</h4>
+<p>To summarize piecewise linear relationships in segmented regression
+models.</p>
+<pre class="r"><code>print(aapc(seg_model, wrong.se = FALSE))</code></pre>
+<pre><code>##        Est.      St.Err   CI(95%).l   CI(95%).u 
+##  0.05901356  0.06459755 -0.06759531  0.18562243</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
