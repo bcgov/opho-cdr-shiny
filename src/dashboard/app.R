@@ -310,6 +310,16 @@ server <- function(input, output,session) {
       )
   })
   
+  filter_df_reg_d <- reactive({
+    filter_df_d() |> 
+      filter (HEALTH_BOUND_NAME %in% input$region_d)
+  })
+  
+  filter_df_yr_d <- reactive({
+    filter_df_d() |> 
+      filter (YEAR == input$year_d)
+  })
+  
   # Define reactive error bounds 
   error <- reactiveValues(
     lower = NULL,
@@ -405,12 +415,10 @@ server <- function(input, output,session) {
                                         format_round(dummy_df[[error$upper]]),')',
                                         '<extra></extra>')
         )
-                  
-      
     }
     
    p %>%
-      layout(yaxis = append(c(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05)),
+      layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=T)*1.05)),
                              y_axis_spec(input$dataset_d,"nonnegative")),
              xaxis = list(title = list(text = 'Health Region', standoff = 0),
                           categoryorder = "category ascending",
@@ -469,7 +477,7 @@ server <- function(input, output,session) {
     p %>%  plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis = append(c(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=TRUE)*1.05)),
+                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
                                         y_axis_spec(input$dataset_d,"nonnegative")),
                           xaxis = list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 0),
@@ -603,12 +611,9 @@ server <- function(input, output,session) {
                                           color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
                               hovertemplate = hovertemplate_line
                             ))
-
       }
     }
     })
-
-
 
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
@@ -630,63 +635,29 @@ server <- function(input, output,session) {
         left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
     }
     
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
-    mybins <- append(seq(round_any(min(dummyData[[rateInput_d()]]),0.05, f = floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], bins=mybins,na.color="#cccccc")
-    labels<-c(paste0("< ",mybins[2]),
-              paste0(mybins[2]," - ",mybins[3]),
-              paste0(mybins[3]," - ",mybins[4]),
-              paste0(mybins[4]," - ",mybins[5]),
-              paste0(mybins[5]," + ")
-              )
-    
-    mytext <- paste(
-      "<b>CHSA</b>: ",(if(input$health_bound_d == "Health Authorities")"N/A" else dummy_spdf@data$CHSA_Name),"<br/>",
-      "<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
-      paste0(input$dataset_d,":"), format_round(dummy_spdf@data[[rateInput_d()]]),
-      sep="") |>
-      lapply(htmltools::HTML)
-    
-    m<-leaflet(dummy_spdf) %>% 
+    leaflet(dummy_spdf)%>%
       setView( lat=53.5, lng=-127 , zoom=4.5) %>%
       addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
-      addPolygons( 
+      addPolygons(
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
-        fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
-        stroke=TRUE, 
-        fillOpacity = 0.9, 
-        color="gray", 
+        stroke=TRUE,
+        fillOpacity = 0.9,
+        color="gray",
         weight=1,
-        label = mytext,
         highlight = highlightOptions(
           weight = 2,
           color = "black",
-          opacity = 1.0),
-        labelOptions = labelOptions( 
-          style = list("font-weight" = "normal", padding = "3px 8px"), 
-          textsize = "13px", 
-          direction = "auto"
-        ),
-      ) |>
-      addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
-                 labFormat = function(type, cuts, p) {  
-                   paste0(labels)
-                 })
-    m
-    
+          opacity = 1.0)
+    )
   })
   
 #Update map with filter changes
   observe({
   
-    year_filtered_map_df <- filter(filter_df_d(),YEAR == input$year_d)
-    
+    year_filtered_map_df <- filter_df_yr_d()
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-
     current_map_spdf <- data.table::copy(spdf_d())
-    
     if(input$health_bound_d == "Health Authorities"){
       current_map_spdf@data <- spdf_d()@data|>
         left_join(year_filtered_map_df,by=c("HA_Name"="HEALTH_BOUND_NAME"))
@@ -698,19 +669,28 @@ server <- function(input, output,session) {
     if(input$health_bound_d == "Health Authorities"){
       current_map_spdf@data$text <- paste0(
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>",format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
-        "<b>95% Confidence Interval</b>: (",format_round(current_map_spdf@data[[error$lower]]),",",format_round(current_map_spdf@data[[error$upper]]),")")
+        "<b>",input$dataset_d,": ","</b>",
+        format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
+        "<b>95% Confidence Interval</b>: (",
+        format_round(current_map_spdf@data[[error$lower]]),",",
+        format_round(current_map_spdf@data[[error$upper]]),")")
     }else{
       current_map_spdf@data$text <- paste0(
         "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
         "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>", format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
-        "<b>95% Confidence Interval</b>: (",format_round(current_map_spdf@data[[error$lower]]),",",format_round(current_map_spdf@data[[error$upper]]),")")
+        "<b>",input$dataset_d,": ","</b>",
+        format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
+        "<b>95% Confidence Interval</b>: (",
+        format_round(current_map_spdf@data[[error$lower]]),",",
+        format_round(current_map_spdf@data[[error$upper]]),")")
   }
 
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
-    mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], bins=mybins, na.color="#cccccc")
+    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,
+                            ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
+    mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),
+                         by=legend_inc,length.out=5),Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], 
+                           bins=mybins, na.color="#cccccc")
     labels<-c(paste0("< ",mybins[2]),
               paste0(mybins[2]," - ",mybins[3]),
               paste0(mybins[3]," - ",mybins[4]),
@@ -721,12 +701,17 @@ server <- function(input, output,session) {
     leafletProxy("map",data = current_map_spdf) %>%
       clearMarkers() %>%
       clearControls()%>%
-      addLegend( pal=mypalette, values=current_map_spdf@data[[rateInput_d()]], opacity=0.9,
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+      addLegend( pal=mypalette, 
+                 values=current_map_spdf@data[[rateInput_d()]], 
+                 opacity=0.9,
+                 title = paste0(input$dataset_d," Per 1000"),
+                 position = "bottomleft",
                  labFormat = function(type, cuts, p) {  
                    paste0(labels)
                  })%>%
-      setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
+      setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") 
+                                ~HA_Name
+                               else ~CHSA_Name),
                     fillColor = mypalette(current_map_spdf@data[[rateInput_d()]]),
                     label = current_map_spdf@data$text
                     )
@@ -744,7 +729,7 @@ server <- function(input, output,session) {
     event_info <- input$map_shape_mouseover
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-    bar_data<- filter(filter_df_d(),YEAR == input$year_d)
+    bar_data<- filter_df_yr_d()
     ppl <-  plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
     rv_location$id <- event_info$id
@@ -827,7 +812,7 @@ server <- function(input, output,session) {
       event <- event_data("plotly_hover",source = "disease_graph_bar")
       error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
       error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-      bar_data<- filter(filter_df_d(),YEAR == input$year_d)
+      bar_data<- filter_df_yr_d()
       ppl <-plotlyProxy("disease_graph_line", session)
       ppb <- plotlyProxy("disease_graph_bar", session)
       lp <- leafletProxy("map",session)
@@ -888,7 +873,7 @@ server <- function(input, output,session) {
     event <- event_data("plotly_hover",source = "disease_graph_line")
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-    bar_data<- filter(filter_df_d(),YEAR == input$year_d)
+    bar_data<- filter_df_yr_d()
     ppl <-plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
     lp <- leafletProxy("map",session)
@@ -972,7 +957,6 @@ server <- function(input, output,session) {
       selected = HA_CHOICES[1]
     )
   })
-  
   
   output$region_tab_diseases_selected <- renderUI({
     selectizeInput("region_tab_diseases_selected", 
