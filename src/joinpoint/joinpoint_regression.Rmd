@@ -1,5 +1,5 @@
 ---
-title: 'DRAFT: BC Chronic Diseases trends by Sex (2001–2020): A joinpoint regression analysis'
+title: 'DRAFT: BC Chronic Diseases trends: A joinpoint regression analysis'
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 author: 'Mahmoodur Rahman'
 output:
@@ -41,8 +41,7 @@ List of papers:
 ```{r Load Data}
 df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |> 
     mutate( RATE = as.factor(RATE)) |> 
-    mutate( DISEASE = as.factor(DISEASE)) |> 
-    mutate( SEX = as.factor(SEX)) |> 
+    mutate( DISEASE = as.factor(DISEASE)) |>
     mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |> 
     mutate( GEOGRAPHY = as.factor(GEOGRAPHY))
 
@@ -52,7 +51,7 @@ df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |>
 
 #### Plotting of Rate against Time: 
 
-The following graph plots Sex-wise Age-standardized Incidence Rate of ALZHEIMER_DEMENTIA in from 2001 to 2020  (Will label the graph)
+The following graph plots Age-standardized Incidence Rate of ALZHEIMER_DEMENTIA in from 2001 to 2020  (Will label the graph)
 
 ```{r eda}
 # sample data
@@ -63,7 +62,7 @@ sample_df <- df %>%
            HEALTH_BOUNDARIES == "1110 Fernie")
 
 sample_df %>%
-  ggplot( aes(x=YEAR, y=STD_RATE_PER_1000, group=SEX, color=SEX)) +
+  ggplot( aes(x=YEAR, y=STD_RATE_PER_1000)) +
   geom_line()
 
 ```
@@ -99,12 +98,12 @@ Observations: (Will elaborate later)
 
  - Model : Linear regression 
  - Response (y): Rates 
- - Predictors : Sex*Year
+ - Predictors : Year
  - `segmented.lm` is used
  
 ```{r linear regression}
 attach(sample_df)
-lm <- lm(STD_RATE_PER_1000~SEX*YEAR)
+lm <- lm(STD_RATE_PER_1000~YEAR)
 seg_model<-segmented(lm,seg.Z=~YEAR)
 ```
 
@@ -114,8 +113,12 @@ seg_model<-segmented(lm,seg.Z=~YEAR)
 #### Regression coefficients:
 
 ```{r}
-print(seg_model, include.psi=TRUE)
+print(summary(seg_model))
 ```
+Observations: (Will elaborate later)
+
+ - Breakpoint is in Year 2009
+
 #### average annual per cent (AAPC) change:
 
 To summarize piecewise linear relationships in segmented
@@ -123,8 +126,19 @@ regression models.
 ```{r aapc}
 print(aapc(seg_model, wrong.se = FALSE))
 ```
+Observations: (Will elaborate later)
 
+ - Positive aapc refers to an increasing trend
 
+#### Plotting:
+
+```{r}
+plot(seg_model, conf.level=.95, is=TRUE, isV=FALSE, col=1, shade = TRUE, res=TRUE, res.col=1, pch=19)
+```
+
+Observations: (Will elaborate later)
+
+ - Epidemiological emphasis: Causes can be explored looking at the "Breakpoint" of Year 2004
 
 
 

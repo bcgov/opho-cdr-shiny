@@ -1,17 +1,17 @@
-setwd("/Users/mahmood/UBCMDS/591_capstone/opho-cdr-shiny")
+setwd("/Users/mahmood/UBCMDS/591_capstone")
 
 library(dplyr)
 library(readr)
 
-df_hscp_raw <- list.files(path="src/joinpoint/HSCPrevalence", full.names = TRUE) %>% 
+df_hscp_raw <- list.files(path="data_source/HSCPrevalence", full.names = TRUE) %>% 
   lapply(read_csv) %>% 
   bind_rows
   
-df_incidence_raw <- list.files(path="src/joinpoint/IncidenceRate", full.names = TRUE) %>% 
+df_incidence_raw <- list.files(path="data_source/IncidenceRate", full.names = TRUE) %>% 
   lapply(read_csv) %>% 
   bind_rows
 
-df_life_raw <- list.files(path="src/joinpoint/LifePrevalence", full.names = TRUE) %>% 
+df_life_raw <- list.files(path="data_source/LifePrevalence", full.names = TRUE) %>% 
   lapply(read_csv) %>% 
   bind_rows
 
@@ -20,11 +20,10 @@ dfList = list(df_hscp_raw, df_incidence_raw, df_life_raw)
 wrangling <- function(data) { 
   data %>%       
     mutate(YEAR = as.numeric(substr(FISC_YR_LABEL, 4, 7))) %>% 
-    mutate( SEX = as.factor(CLNT_GENDER_LABEL)) %>% 
     mutate(across(c(STD_RATE_PER_1000, 
                     STD_UCL_95, 
                     STD_LCL_95), round, 2)) %>%
-    select(YEAR, SEX, DISEASE,
+    select(YEAR, DISEASE,
            GEOGRAPHY, HEALTH_BOUNDARIES,
            STD_RATE_PER_1000, 
            STD_UCL_95, STD_LCL_95)
