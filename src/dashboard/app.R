@@ -527,6 +527,7 @@ server <- function(input, output,session) {
   
   # Update disease line graph with year 
   observe({
+    invalidateLater(500)
     p <- plotlyProxy("disease_graph_line", session)
     
     p %>%
