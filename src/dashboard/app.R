@@ -387,27 +387,28 @@ server <- function(input, output,session) {
 
     p <- plot_ly(source = "disease_graph_bar",)
     for(reg in input$region_d){
-      df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
+      dummy_df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
       p <- p |>
-        add_trace(x=df$HEALTH_BOUND_NAME,
-                  y=df[[rateInput_d()]],
+        add_trace(x=dummy_df$HEALTH_BOUND_NAME,
+                  y=dummy_df[[rateInput_d()]],
                   type = 'bar',
                   error_y=list(
                     type = "data",
                     symmetric = FALSE,
-                    arrayminus =df[[rateInput_d()]]- df[[error$lower]],
-                    array = df[[error$upper]]- df[[rateInput_d()]],
+                    arrayminus =dummy_df[[rateInput_d()]]- dummy_df[[error$lower]],
+                    array = dummy_df[[error$upper]]- dummy_df[[rateInput_d()]],
                     color = '#000000',
                     width = 10),
                   marker = list(color = if(input$health_bound_d == "Health Authorities")
-                                  HA_colours$Colors[match(df$HEALTH_BOUND_NAME,HA_colours$Regions)]
+                                  HA_colours$Colors[match(dummy_df$HEALTH_BOUND_NAME,HA_colours$Regions)]
                                 else
-                                  CHSA_colours$Colors[match(df$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
+                                  CHSA_colours$Colors[match(dummy_df$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
                   ),
                   hovertemplate = paste('<b>Health Region</b>: %{x}',
                                         '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                        '<br><b>95% Confidence Interval</b>: (',format_round(df[[error$lower]]), ',',
-                                        format_round(df[[error$upper]]),')',
+                                        '<br><b>95% Confidence Interval</b>: (',
+                                        format_round(dummy_df[[error$lower]]), ',',
+                                        format_round(dummy_df[[error$upper]]),')',
                                         '<extra></extra>')
         )
                   
@@ -415,13 +416,8 @@ server <- function(input, output,session) {
     }
     
    p %>%
-      layout(yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05),
-                        title = list(text = paste0(input$dataset_d," Per 1000"),
-                                     font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))
-                        ),
-                        gridcolor = "#d9dadb",
-                        showline= T, linewidth=1, linecolor='black',
-                        rangemode="nonnegative"),
+      layout(yaxis = append(c(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=T)*1.05)),
+                             y_axis_spec(input$dataset_d,"nonnegative")),
              xaxis = list(title = list(text = 'Health Region', standoff = 0),
                           categoryorder = "category ascending",
                           tickfont = list(size = 10),
@@ -431,7 +427,6 @@ server <- function(input, output,session) {
                           font = list(size = 16)),
              barmode = "overlay",
              margin = list(t = 80,b=50),
-             # plot_bgcolor= '#d9dadb'
              showlegend = FALSE
       ) %>%
       event_register('plotly_hover')
@@ -479,13 +474,9 @@ server <- function(input, output,session) {
     p %>%  plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis=list(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=TRUE)*1.05),
-                                     title = list(text = paste0(input$dataset_d," Per 1000"),
-                                                  font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
-                                     gridcolor = "#d9dadb",
-                                     showline= T, linewidth=1, linecolor='black',
-                                     rangemode="nonnegative"),
-                          xaxis=list(fixedrange = TRUE,
+                          yaxis = append(c(range=list(0,max(filter(filter_df_d(),HEALTH_BOUND_NAME %in% input$region_d)[[error$upper]],na.rm=TRUE)*1.05)),
+                                        y_axis_spec(input$dataset_d,"nonnegative")),
+                          xaxis = list(fixedrange = TRUE,
                                      title = list(text = 'Health Region', standoff = 0),
                                      categoryorder = "category ascending",
                                      tickfont = list(size = 10),
@@ -519,19 +510,11 @@ server <- function(input, output,session) {
                   setNames(HA_colours$Colors,HA_colours$Regions) 
                else 
                 setNames(CHSA_colours$Colors,CHSA_colours$Regions),
-      hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
-                            '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                            '<br><b>Year</b>: %{x}',
-                            '<extra></extra>'
-                            )
+      hovertemplate = hovertemplate_line
       
       
     )%>%
-      layout(yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
-                                     font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
-                        gridcolor = "#d9dadb",
-                        showline= T, linewidth=1, linecolor='black',
-                        rangemode="nonnegative"),
+      layout(yaxis = y_axis_spec(input$dataset_d,"nonnegative"),
              xaxis = list(title = list(text = 'Year', standoff = 10),
                           gridcolor = "#d9dadb",
                           showline= T, linewidth=1, linecolor='black'),
@@ -564,21 +547,17 @@ server <- function(input, output,session) {
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
-                          yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
-                                                  font = list(size = ifelse(startsWith(input$dataset_d,"Age"),12,14))),
-                                     gridcolor = "#d9dadb",
-                                     showline= T, linewidth=1, linecolor='black',
-                                     rangemode = "tozero")
+                          yaxis = y_axis_spec(input$dataset_d,"tozero")
                         ))
     }else{
       p%>%
         plotlyProxyInvoke("relayout",
                           list(
-                            yaxis=list(title = list(text = paste0(input$dataset_d," Per 1000"),
-                                                    font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
-                                       gridcolor = "#d9dadb",
-                                       showline= T, linewidth=1, linecolor='black',
-                                       rangemode = "nonnegative")
+                            yaxis = list(title = list(text = paste0(input$dataset_d," Per 1000"),
+                                                      font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
+                                         gridcolor = "#d9dadb",
+                                         showline= T, linewidth=1, linecolor='black',
+                                         rangemode = "nonnegative")
                           ))
       
     }
@@ -607,11 +586,7 @@ server <- function(input, output,session) {
                               customdata = df$HEALTH_BOUND_NAME,
                               line = list(width=2,
                                           color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
-                              hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
-                                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                                     '<br><b>Year</b>: %{x}',
-                                                     '<extra></extra>'
-                              )
+                              hovertemplate = hovertemplate_line
                             ))
 
       }
@@ -631,11 +606,7 @@ server <- function(input, output,session) {
                               customdata = df$HEALTH_BOUND_NAME,
                               line = list(width=2,
                                           color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
-                              hovertemplate = paste0('<b>Health Region</b>: %{fullData.name}',
-                                                     '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                                     '<br><b>Year</b>: %{x}',
-                                                     '<extra></extra>'
-                              )
+                              hovertemplate = hovertemplate_line
                             ))
 
       }
@@ -1041,27 +1012,10 @@ server <- function(input, output,session) {
         line = list(width = 2),
         color = ~ DISEASE,
         showlegend = T,
-        hovertemplate = paste0(
-          '<br><b>Disease</b>: %{fullData.name}',
-          '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-          '<br><b>Year</b>: %{x}',
-          '<extra></extra>'
-        )
+        hovertemplate = hovertemplate_line
       ) |>
       layout(
-        yaxis = list(
-          title = list(
-            text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-            font = list(size = ifelse(
-              startsWith(input$region_tab_rate_type_selected, "Age"), 12, 14
-            ))
-          ),
-          gridcolor = "#d9dadb",
-          showline = T,
-          linewidth = 1,
-          linecolor = 'black',
-          rangemode = "nonnegative"
-        ),
+        yaxis = y_axis_spec(input$region_tab_rate_type_selected,"nonnegative"),
         xaxis = list(
           title = list(text = 'Year', standoff = 10),
           gridcolor = "#d9dadb",
@@ -1103,37 +1057,13 @@ server <- function(input, output,session) {
       p |>
         plotlyProxyInvoke("relayout",
                           list(
-                            yaxis = list(
-                              title = list(
-                                text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-                                font = list(size = ifelse(
-                                  startsWith(input$region_tab_rate_type_selected, "Age"), 12, 14
-                                ))
-                              ),
-                              gridcolor = "#d9dadb",
-                              showline = T,
-                              linewidth = 1,
-                              linecolor = 'black',
-                              rangemode = "tozero"
-                            )
+                            yaxis = y_axis_spec(input$region_tab_rate_type_selected,"tozero")
                           ))
     } else {
       p %>%
         plotlyProxyInvoke("relayout",
                           list(
-                            yaxis = list(
-                              title = list(
-                                text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-                                font = list(size = ifelse(
-                                  startsWith(input$region_tab_rate_type_selected, "Age"), 12, 14
-                                ))
-                              ),
-                              gridcolor = "#d9dadb",
-                              showline = T,
-                              linewidth = 1,
-                              linecolor = 'black',
-                              rangemode = "nonnegative"
-                            )
+                            yaxis = y_axis_spec(input$region_tab_rate_type_selected,"nonnegative")
                           ))
       
     }
@@ -1173,14 +1103,8 @@ server <- function(input, output,session) {
                               '<extra></extra>')
       ) %>%
       layout(
-        yaxis = list(
-          range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.1),
-          title = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-          gridcolor = "#d9dadb",
-          showline = T,
-          linewidth = 1,
-          linecolor = 'black'
-        ),
+        yaxis = append(c(range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.05)),
+                       y_axis_spec(input$region_tab_rate_type_selected,"tozero")),
         xaxis = list(
           categoryorder = "category ascending",
           showline = T,

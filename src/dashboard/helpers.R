@@ -251,3 +251,22 @@ health_bounds <- function(input){
      inline= TRUE
    )
  }
+ 
+ # Hover template for line chart 
+ hovertemplate_line <- paste0('<b>Health Region</b>: %{fullData.name}',
+                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                              '<br><b>Year</b>: %{x}',
+                              '<extra></extra>'
+ )
+ 
+ # Graph y-axis options template
+ y_axis_spec <- function(input,range_mode){
+   list(title = list(text = paste0(input," Per 1000"),
+                     font = list(size = ifelse(startsWith(input,"Age"),12,14))),
+        gridcolor = "#d9dadb",
+        showline= T, 
+        linewidth=1, 
+        linecolor='black',
+        rangemode = range_mode)
+   
+ }
