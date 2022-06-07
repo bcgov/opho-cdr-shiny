@@ -995,6 +995,8 @@ server <- function(input, output,session) {
         line = list(width = 2),
         color = ~ DISEASE,
         showlegend = T,
+        marker = list(
+          color = DISEASE_colors$Colors[match(dummy_df$DISEASE,DISEASE_colors$DISEASE)]),
         hovertemplate = region_tab_hovertemplate_line
       ) |>
       layout(
@@ -1054,70 +1056,85 @@ server <- function(input, output,session) {
   
   #####################
   # Bar Chart Related Logic
-  #####################
   
   # Plot a bar chart comparing rates for diseases in a year
   # x is DISEASE, y is the selected rate type, color is DISEASE
-   
+  #####################
+  
+  # First use dummy data to plot a basic chart
   output$region_tab_bar_chart <- renderPlotly({
-    bar_chart_data <- region_tab_filtered_data() |>
-      filter(YEAR == input$region_tab_year_range_selected)
+
+    dummyData <- region_tab_filtered_data() |>
+      filter(YEAR == 2001)
     
     error$lower <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
+
+    p <- plot_ly(source = "region_tab_bar_chart")
     
-    bar_chart_data |>
-      plot_ly(
-        x = bar_chart_data$DISEASE,
-        y = bar_chart_data[[region_tab_rate_as_variable()]],
-        color = ~ DISEASE,
-        type = 'bar',
-        error_y = list(
-          type = "data",
-          symmetric = FALSE,
-          arrayminus = bar_chart_data[[region_tab_rate_as_variable()]] - bar_chart_data[[error$lower]],
-          array = bar_chart_data[[error$upper]] - bar_chart_data[[region_tab_rate_as_variable()]],
-          color = '#000000',
-          width = 10
-        ),
-        hovertemplate = paste('<br><b>Disease</b>: %{fullData.name}',
-                              '<br><b>Year</b>: ', input$region_tab_year_range_selected,
-                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                              '<br><b>95% Confidence Interval</b>: (',
-                              format_round(bar_chart_data[[error$lower]]), ',',
-                              format_round(bar_chart_data[[error$upper]]),')',
-                              '<extra></extra>')
-      ) %>%
+    for(disease in input$region_tab_diseases_selected){
+      dummy_df <- dummyData[which(dummyData$DISEASE == disease),]
+      p <- p |>
+        add_trace(x = dummy_df$DISEASE,
+                  y = dummy_df[[region_tab_rate_as_variable()]],
+                  type = 'bar',
+                  error_y = list(
+                    type = "data",
+                    symmetric = FALSE,
+                    arrayminus = dummy_df[[region_tab_rate_as_variable()]] - dummy_df[[error$lower]],
+                    array = dummy_df[[error$upper]] - dummy_df[[region_tab_rate_as_variable()]],
+                    color = '#000000',
+                    width = 10
+                  ),
+                  marker = list(
+                    color = DISEASE_colors$Colors[match(dummy_df$DISEASE,DISEASE_colors$DISEASE)]),
+                  hovertemplate = paste('<br><b>Disease</b>: %{fullData.name}',
+                                        '<br><b>Year</b>: ', input$region_tab_year_range_selected,
+                                        '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                                        '<br><b>95% Confidence Interval</b>: (',
+                                        format_round(dummy_df[[error$lower]]), ',',
+                                        format_round(dummy_df[[error$upper]]),')',
+                                        '<extra></extra>')
+        )
+    }
+
+    p %>%
       layout(
-        yaxis = append(c(range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.05)),
-                       y_axis_spec(input$region_tab_rate_type_selected,"tozero")),
+        yaxis = append(
+          list(range = list(
+            0, max(region_tab_filtered_data()[[error$upper]], na.rm = TRUE) * 1.05
+          )),
+          y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
+        ),
         xaxis = list(
           categoryorder = "category ascending",
+          tickfont = list(size = 10),
           showline = T,
           linewidth = 1,
           linecolor = 'black'
         ),
         title = list(
           text = paste0(
-                    "<b>Disease Distribution by ",
-                    input$region_tab_rate_type_selected,
-                    " in ",
-                    input$region_tab_year_range_selected,
-                    "</b>"),
+            "<b>Disease Distribution by ",
+            input$region_tab_rate_type_selected,
+            " in ",
+            input$region_tab_year_range_selected,
+            "</b>"),
           y = 0.92,
           font = list(size = 16)
         ),
         barmode = "overlay",
         margin = list(t = 80, b = 50),
         showlegend = FALSE
-      ) |> 
+      ) %>%
       event_register('plotly_hover')
+
   })
+   
   
-  
-  # Update bar graph when filter changes
+  # Then use proxy to update bar graph when filter changes
   observe({
     bar_chart_data <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_range_selected &
