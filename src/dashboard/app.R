@@ -381,10 +381,17 @@ server <- function(input, output,session) {
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
     
-    dummyData <- filter_df_d()|>
-      filter(HEALTH_BOUND_NAME %in% input$region_d,
-             YEAR == 2001
-             )
+    # dummyData <- filter_df_d()|>
+    #   filter(HEALTH_BOUND_NAME %in% input$region_d,
+    #          YEAR == 2001
+    #          )
+    
+    dummyData <- datasetInput_d() |>
+      filter(CLNT_GENDER_LABEL=='T',
+             HEALTH_BOUND_NAME %in% input$region_d,
+             DISEASE=="Asthma",
+             YEAR==2001)
+    
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
@@ -417,10 +424,10 @@ server <- function(input, output,session) {
     }
     
    p %>%
-      layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
+      layout(yaxis = append(list(range=list(0,max(dummyData[[error$upper]],na.rm=TRUE)*1.05)),
                              y_axis_spec(input$dataset_d,"nonnegative")),
              xaxis = x_axis_bar_spec('Health Region'),
-             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
+             title = list(text = paste0('<b>',input$dataset_d," of \n", "Asthma in 2001 </b>"),
                           y=0.92,
                           font = list(size = 16)),
              barmode = "overlay",
@@ -488,6 +495,11 @@ server <- function(input, output,session) {
   
   # Render disease line graph 
   output$disease_graph_line <- renderPlotly({
+    
+    dummyData <- datasetInput_d() |>
+      filter(CLNT_GENDER_LABEL=='T',
+             HEALTH_BOUND_NAME %in% input$region_d,
+             DISEASE=="Asthma")
     
     d <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d)
