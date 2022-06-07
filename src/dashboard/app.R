@@ -544,7 +544,7 @@ server <- function(input, output,session) {
       plotlyProxyInvoke("relayout",
                         list(
                           append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
-                                 y_axis_spec(input$dataset_d,"tozero")),
+                                 y_axis_spec(input$dataset_d,"tozero"))
                         ))
     }else{
       p%>%
