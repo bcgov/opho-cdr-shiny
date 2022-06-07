@@ -495,11 +495,6 @@ server <- function(input, output,session) {
   # Render disease line graph 
   output$disease_graph_line <- renderPlotly({
     
-    dummyData <- datasetInput_d() |>
-      filter(CLNT_GENDER_LABEL=='T',
-             HEALTH_BOUND_NAME %in% input$region_d,
-             DISEASE=="Asthma")
-    
     d <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d)
     
@@ -519,7 +514,6 @@ server <- function(input, output,session) {
                 setNames(CHSA_colours$Colors,CHSA_colours$Regions),
       hovertemplate = hovertemplate_line
       
-      
     )%>%
       layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
                                     y_axis_spec(input$dataset_d,"nonnegative")),
@@ -538,17 +532,9 @@ server <- function(input, output,session) {
   observe({
     invalidateLater(500)
     
-    newdata <- filter_df_d()|>
-      filter(HEALTH_BOUND_NAME %in% input$region_d)
-    
     p <- plotlyProxy("disease_graph_line", session)
     
-    
     p %>%
-      # plotlyProxy("restyle",
-      #             list(
-      #               y= list(newdata[[rateInput_d()]]),
-      #             ))%>%
       plotlyProxyInvoke("relayout",
                         list(
                           shapes = list(vline(input$year_d))
