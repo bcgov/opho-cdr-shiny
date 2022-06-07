@@ -17,7 +17,6 @@ library(shinyWidgets)
 library(DT)
 library(shinyBS)
 
-
 ################################
 # Source helper functions
 # 
@@ -112,8 +111,7 @@ ui <- fluidPage(
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
-                                   column(4,
-                                          uiOutput("modeldata_d"))),
+                                   column(4,uiOutput("modeldata_d"))),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
                           )))
                )),
@@ -138,7 +136,6 @@ ui <- fluidPage(
                    br(),
                    actionButton("region_tab_reset_button", "Reset")
                  ),
-                 
                  mainPanel(
                    width = 9,
                    fluidRow(plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
@@ -172,13 +169,12 @@ ui <- fluidPage(
                    width = 9,
                    downloadButton("download_data", label = "Download Data"),
                    hr(style = "margin-bottom: 20px;
-                      border: 0;
-                      border-top: 1px solid #eee"),
+                               border: 0;
+                               border-top: 1px solid #eee"),
                    DTOutput("data_table")
                  )
                )),
 
-      
       #############
       # MAHMOOD TAB
       #############
@@ -227,7 +223,7 @@ server <- function(input, output,session) {
     reset("filters_d")
   })
   
-  # Show modeled data toggle switch
+  # Conditionally show modeled data toggle switch
   observe({
     if(input$gender_d =="Total"&& 
        input$health_bound_d=="Community Health Service Areas" &&
@@ -238,9 +234,7 @@ server <- function(input, output,session) {
     }else{
       output$modeldata_d <- renderUI({ })
     }
-
   })
-
 
   # Dynamic UI for rate selection
   output$dataset_d <- renderUI({
@@ -316,6 +310,7 @@ server <- function(input, output,session) {
       )
   })
   
+  # Define reactive error bounds 
   error <- reactiveValues(
     lower = NULL,
     upper = NULL
@@ -333,8 +328,8 @@ server <- function(input, output,session) {
       healthboundInput_d()," with Highest Maximum ",input$dataset_d,
       " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
-    
   })
+  
   output$text_d2 <- renderText({
     data <- filter_df_d()|>
       group_by(HEALTH_BOUND_NAME)|>
@@ -348,8 +343,8 @@ server <- function(input, output,session) {
       healthboundInput_d()," with Highest Average ",input$dataset_d,
       " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
-    
   })
+  
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
     
@@ -357,8 +352,8 @@ server <- function(input, output,session) {
       "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
       "<br>", "<div id=stat>",format_round(avg_rate),"</div>"
     )
-    
   })
+  
   output$text_d4 <- renderText({
     data<-filter_df_d()|>
       group_by(YEAR)|>
@@ -372,7 +367,6 @@ server <- function(input, output,session) {
       "Year of Highest Median Recorded ",input$dataset_d,
       "<br>", "<div id=stat>", year_max,"</div>"
     )
-    
   })  
   
   # Render disease bar graph for each rate/disease 
@@ -385,7 +379,7 @@ server <- function(input, output,session) {
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
-    p <- plot_ly(source = "disease_graph_bar",)
+    p <- plot_ly(source = "disease_graph_bar")
     for(reg in input$region_d){
       dummy_df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
       p <- p |>
@@ -463,7 +457,8 @@ server <- function(input, output,session) {
                             width = 10),
                           hovertemplate = paste('<b>Health Region</b>: %{x}',
                                                 '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                                '<br><b>95% Confidence Interval</b>: (',format_round(df[[error$lower]]),',',
+                                                '<br><b>95% Confidence Interval</b>: (',
+                                                format_round(df[[error$lower]]),',',
                                                 format_round(df[[error$upper]]),')',
                                                 '<extra></extra>'
                           )),
