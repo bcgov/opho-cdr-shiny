@@ -259,6 +259,13 @@ health_bounds <- function(input){
                               '<extra></extra>'
  )
  
+ # Hover template for line chart in the region tab
+ region_tab_hovertemplate_line <- paste0('<b>Disease</b>: %{fullData.name}',
+                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                              '<br><b>Year</b>: %{x}',
+                              '<extra></extra>'
+ )
+ 
  # Graph y-axis options template
  y_axis_spec <- function(input,range_mode){
    list(title = list(text = paste0(input," Per 1000"),

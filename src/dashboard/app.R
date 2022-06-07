@@ -967,7 +967,7 @@ server <- function(input, output,session) {
                    label = "Select Disease(s)",
                 choices = unique(region_tab_dataset_used()$DISEASE),
                 multiple = TRUE,
-                selected = unique(region_tab_dataset_used()$DISEASE)[1])
+                selected = unique(region_tab_dataset_used()$DISEASE)[1:3])
   }) 
   
   region_tab_filtered_data <- reactive({
@@ -995,7 +995,7 @@ server <- function(input, output,session) {
         line = list(width = 2),
         color = ~ DISEASE,
         showlegend = T,
-        hovertemplate = hovertemplate_line
+        hovertemplate = region_tab_hovertemplate_line
       ) |>
       layout(
         yaxis = y_axis_spec(input$region_tab_rate_type_selected,"nonnegative"),
@@ -1122,8 +1122,6 @@ server <- function(input, output,session) {
     bar_chart_data <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_range_selected &
                DISEASE %in% input$region_tab_diseases_selected)
-    
-    print(paste0("I'm called \n", bar_chart_data))
     
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95") 
