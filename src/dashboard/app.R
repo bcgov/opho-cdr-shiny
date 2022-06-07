@@ -88,10 +88,10 @@ ui <- fluidPage(
                                label= "Select Disease",
                                choices = sort(unique(inc_rate_df$DISEASE))),
                    uiOutput("dataset_d"),
-                   health_bound_data("health_bound_d"),
+                   geography_radio_buttons("health_bound_d"),
                    uiOutput("region_d"),
                    sex_radio_buttons("gender_d"),
-                   year_range_data("year_d"),
+                   year_slider("year_d"),
                    fisc_year_tt("year_info_d"),
                    br(),
                    actionButton("reset_d", "Reset")
@@ -111,13 +111,7 @@ ui <- fluidPage(
                           ),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
-                          fluidRow(column(4,
-                                          materialSwitch(
-                                            inputId = "yax_switch",
-                                            label = "Y-axis from 0",
-                                            right = TRUE,
-                                            inline= TRUE
-                                          )),
+                          fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
                                    column(4,
                                           uiOutput("modeldata_d"))),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
@@ -134,12 +128,12 @@ ui <- fluidPage(
                    width = 3,
                    h2("Filters"),
                    hr(),
-                   health_bound_d("region_tab_geography_selected"),
+                   geography_radio_buttons("region_tab_geography_selected"),
                    uiOutput("region_tab_region_selected"),
                    rate_type_input("region_tab_rate_type_selected"),
                    uiOutput("region_tab_diseases_selected"),
                    sex_radio_buttons("region_tab_sex_selected"),
-                   year_range_data("region_tab_year_range_selected"),
+                   year_slider("region_tab_year_range_selected"),
                    fisc_year_tt("region_tab_year_slider_info"),
                    br(),
                    actionButton("region_tab_reset_button", "Reset")
@@ -148,13 +142,7 @@ ui <- fluidPage(
                  mainPanel(
                    width = 9,
                    fluidRow(plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
-                   fluidRow(column(4,
-                                   materialSwitch(
-                                     inputId = "region_tab_line_y0switch",
-                                     label = "Y-axis from 0",
-                                     right = TRUE,
-                                     inline = TRUE
-                                   ))),
+                   fluidRow(column(4,material_switch("region_tab_line_y0switch","Y-axis from 0"))),
                    fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()))
                  
               )), 
@@ -170,7 +158,7 @@ ui <- fluidPage(
                    width = 3,
                    h2("Filters"),
                    hr(),
-                   region_tab_rate_type_selected("dataset_data"),
+                   rate_type_input("dataset_data"),
                    uiOutput("disease_data"),
                    geography_radio_buttons("health_bound_data"),
                    uiOutput("region_data"),
@@ -245,12 +233,7 @@ server <- function(input, output,session) {
        input$health_bound_d=="Community Health Service Areas" &&
        startsWith(input$dataset_d,"Age")){
       output$modeldata_d <- renderUI({
-        materialSwitch(
-          inputId = "modeldata_d_switch",
-          label = "Modeled Data",
-          right = TRUE,
-          inline = TRUE
-        )
+        material_switch("modeldata_d_switch","Modeled Data")
       })
     }else{
       output$modeldata_d <- renderUI({ })
@@ -328,8 +311,8 @@ server <- function(input, output,session) {
   filter_df_d <- reactive({
     datasetInput_d() |> 
       filter ((GEOGRAPHY == healthboundInput_d())&
-                (DISEASE == input$disease_d) &
-                (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
+              (DISEASE == input$disease_d) &
+              (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
       )
   })
   
@@ -575,9 +558,9 @@ server <- function(input, output,session) {
   
   
   # Switch to change line graph to start at 0 
-  observeEvent(input$yax_switch,{
+  observeEvent(input$yax_switch_d,{
     p <- plotlyProxy("disease_graph_line", session)
-    if(input$yax_switch==TRUE){
+    if(input$yax_switch_d==TRUE){
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
@@ -1322,12 +1305,6 @@ server <- function(input, output,session) {
     ################################
     # Mahmood Tab Server Side Logic
     ################################
-
-
-
-
-
-
 
 
 ################################

@@ -177,5 +177,77 @@ health_bounds <- function(input){
  
  # Geography radio buttons template
  geography_radio_buttons <- function(id){
-   
+   radioButtons(id,
+                label= "Select Health Boundary Type",
+                choices = GEOGRAPHY_CHOICES,
+                selected=GEOGRAPHY_CHOICES[1])
+ }
+ 
+ # Year slider input template
+ year_slider <- function(id, anim=TRUE){
+   if (anim==TRUE){
+     return(sliderInput(id, 
+                 label = tags$span(
+                   "Select Year  ", 
+                   tags$i(
+                     id = "year_info_d",
+                     class = "glyphicon glyphicon-info-sign", 
+                     style = "color:#0072B2;"
+                   )),
+                 min = 2001,
+                 max=2020,
+                 value = 2001,
+                 sep = "",
+                 ticks = TRUE,
+               animate = animationOptions(interval = 1000)
+   ))
+     }else{
+     sliderInput(id, 
+                 label = tags$span(
+                   "Select Year Range  ",
+                   tags$i(
+                     id = "year_info_data",
+                     class = "glyphicon glyphicon-info-sign",
+                     style = "color:#0072B2;"
+                   )),
+                 min = 2001, max = 2020, value = c(2001, 2020),
+                 sep = "")
+   }
+ }
+ 
+ # Rate type dropdown template
+ rate_type_input <- function(id){
+   selectInput(
+     id,
+     label = "Select Rate Type",
+     choices = RATE_TYPE_CHOICES
+   )
+ }
+ 
+ # Dataset switch function
+ dataset_switch <- function (input){
+   switch(input,
+          "Crude Incidence Rate" = inc_rate_df,
+          "Age Standardized Incidence Rate" = inc_rate_df,
+          "Crude Life Prevalence" = life_prev_df,
+          "Age Standardized Life Prevalence" = life_prev_df,
+          "Crude HSC Prevalence" = hsc_prev_df,
+          "Age Standardized HSC Prevalence" = hsc_prev_df)
+ }
+ 
+ # Rate input switch function
+ rate_switch <- function(input){
+   ifelse(startsWith(input, "Age"),
+          "STD_RATE_PER_1000",
+          "CRUDE_RATE_PER_1000")
+ }
+ 
+ # Toggle template
+ material_switch <- function(id, lab){
+   materialSwitch(
+     inputId = id,
+     label = lab,
+     right = TRUE,
+     inline= TRUE
+   )
  }
