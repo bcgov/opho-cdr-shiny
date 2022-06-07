@@ -160,7 +160,7 @@ HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Va
                          Colors = c("#3891A7","#C3860D","#C42E2E", "#67A63C","#914FAB"))
 
 # Define dataframe of CHSA colours
-CHSA_colours<-data.frame()
+CHSA_colours <- data.frame()
 for (i in seq(1,5)){
   chsas <- inc_rate_df|>
     filter(GEOGRAPHY=="CHSA",
@@ -175,3 +175,7 @@ for (i in seq(1,5)){
     dplyr::rename(Regions = HEALTH_BOUND_NAME)
   CHSA_colours<- rbind(CHSA_colours,chsas_colors)
 }
+
+# Define dataframe of Disease colour mappings
+DISEASE_colors <- data.frame(DISEASE = unique(inc_rate_df$DISEASE))
+DISEASE_colors$Colors <- colorRampPalette(c(HA_colours[,2]))(length(unique(inc_rate_df$DISEASE))) 
