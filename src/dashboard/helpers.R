@@ -277,3 +277,18 @@ health_bounds <- function(input){
         rangemode = range_mode)
    
  }
+ 
+ # Bar Graph x-axis options template
+ x_axis_bar_spec <- function(title,so=0 ){
+   list(title = list(text = title, standoff = so),
+        categoryorder = "category ascending",
+        tickfont = list(size = 10),
+        showline= T, linewidth=1, linecolor='black')
+ }
+ 
+ # Line Graph x-axis options template
+ x_axis_line_spec <- function(title,so=10 ){
+   list(title = list(text = title, standoff = 10),
+        gridcolor = "#d9dadb",
+        showline= T, linewidth=1, linecolor='black')
+ }

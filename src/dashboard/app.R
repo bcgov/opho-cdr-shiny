@@ -1,6 +1,7 @@
 ################################
 # Load packages
 # ################################
+suppressPackageStartupMessages({
 library(shiny)
 library(shinyjs)
 library(plyr)
@@ -16,9 +17,10 @@ library(rgeos)
 library(shinyWidgets)
 library(DT)
 library(shinyBS)
+})
 
 ################################
-# Source helper functions
+# Source helper functions and templates
 # 
 # Define and load all the global variables, including the data frames and shape files
 ################################
@@ -53,10 +55,10 @@ ui <- fluidPage(
                  h6("UBC Master of Data Science Capstone Project"),
                  p(HTML(about_info)),
                  hr(style = "margin-bottom: 20px;
-                            border: 0;
-                            border-top: 1px solid #eee"),
+                             border: 0;
+                             border-top: 1px solid #eee"),
                  helpText(HTML("For internal use only. Do not distribute.<br/>
-                               For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
+                                For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
                  ),
         tabPanel("Rate Types",
                  p(HTML("<u><h2>Rate Types</h2></u></br>")),
@@ -82,11 +84,11 @@ ui <- fluidPage(
                  sidebarPanel(
                    id="filters_d",
                    width = 3,
-                   h2("Filters"),
+                   h2("Data Selection"),
                    hr(),
                    selectInput("disease_d",
                                label= "Select Disease",
-                               choices = sort(unique(inc_rate_df$DISEASE))),
+                               choices = ALL_DISEASES),
                    uiOutput("dataset_d"),
                    geography_radio_buttons("health_bound_d"),
                    uiOutput("region_d"),
@@ -105,14 +107,11 @@ ui <- fluidPage(
                    column(3,htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height=645)%>% withSpinner(),
-                          # verbatimTextOutput("hover_stuff"),
-                          # verbatimTextOutput("hover_stuff2")
-                          ),
+                   column(6, leafletOutput("map",height=645)%>% withSpinner()),
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
-                                   column(4,uiOutput("modeldata_d"))),
+                                   column(8,uiOutput("modeldata_d"))),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
                           )))
                )),
@@ -125,7 +124,7 @@ ui <- fluidPage(
                  sidebarPanel(
                    id="filters_r",
                    width = 3,
-                   h2("Filters"),
+                   h2("Data Selection"),
                    hr(),
                    geography_radio_buttons("region_tab_geography_selected"),
                    uiOutput("region_tab_region_selected"),
@@ -154,7 +153,7 @@ ui <- fluidPage(
                  sidebarPanel(
                    id="filters_data",
                    width = 3,
-                   h2("Filters"),
+                   h2("Data Selection"),
                    hr(),
                    rate_type_input("dataset_data"),
                    uiOutput("disease_data"),
@@ -230,7 +229,7 @@ server <- function(input, output,session) {
        input$health_bound_d=="Community Health Service Areas" &&
        startsWith(input$dataset_d,"Age")){
       output$modeldata_d <- renderUI({
-        material_switch("modeldata_d_switch","Modeled Data")
+        material_switch("modeldata_d_switch","Smoothed Time Trends ")
       })
     }else{
       output$modeldata_d <- renderUI({ })
@@ -242,7 +241,7 @@ server <- function(input, output,session) {
     selectInput("dataset_d", 
                 label = "Select Rate Type",
                 choices = (
-                  if(input$disease_d %in% HSC_disease) RATE_TYPE_CHOICES
+                  if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
                   else
                     c("Crude Incidence Rate",
                       "Age Standardized Incidence Rate",
@@ -358,10 +357,9 @@ server <- function(input, output,session) {
   
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
-    
     paste0(
       "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
-      "<br>", "<div id=stat>",format_round(avg_rate),"</div>"
+      "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
     )
   })
   
@@ -383,10 +381,17 @@ server <- function(input, output,session) {
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
     
-    dummyData <- filter_df_d()|>
-      filter(HEALTH_BOUND_NAME %in% input$region_d,
-             YEAR == 2001
-             )
+    # dummyData <- filter_df_d()|>
+    #   filter(HEALTH_BOUND_NAME %in% input$region_d,
+    #          YEAR == 2001
+    #          )
+    
+    dummyData <- datasetInput_d() |>
+      filter(CLNT_GENDER_LABEL=='T',
+             HEALTH_BOUND_NAME %in% input$region_d,
+             DISEASE=="Asthma",
+             YEAR==2001)
+    
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
@@ -419,13 +424,10 @@ server <- function(input, output,session) {
     }
     
    p %>%
-      layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
+      layout(yaxis = append(list(range=list(0,max(dummyData[[error$upper]],na.rm=TRUE)*1.05)),
                              y_axis_spec(input$dataset_d,"nonnegative")),
-             xaxis = list(title = list(text = 'Health Region', standoff = 0),
-                          categoryorder = "category ascending",
-                          tickfont = list(size = 10),
-                          showline= T, linewidth=1, linecolor='black'),
-             title = list(text = paste0('<b>',input$dataset_d," of \n",input$disease_d, " in 2001 </b>"),
+             xaxis = x_axis_bar_spec('Health Region'),
+             title = list(text = paste0('<b>',input$dataset_d," of \n", "Asthma in 2001 </b>"),
                           y=0.92,
                           font = list(size = 16)),
              barmode = "overlay",
@@ -481,12 +483,8 @@ server <- function(input, output,session) {
                           autosize = F,
                           yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
                                         y_axis_spec(input$dataset_d,"nonnegative")),
-                          xaxis = list(fixedrange = TRUE,
-                                     title = list(text = 'Health Region', standoff = 0),
-                                     categoryorder = "category ascending",
-                                     tickfont = list(size = 10),
-                                     automargin = TRUE,
-                                     showline= T, linewidth=1, linecolor='black'),
+                          xaxis = append(list(fixedrange = TRUE),
+                                         x_axis_bar_spec('Health Region')),
                           title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
                                        y=0.92,
                                        font = list(size = 16)
@@ -517,12 +515,10 @@ server <- function(input, output,session) {
                 setNames(CHSA_colours$Colors,CHSA_colours$Regions),
       hovertemplate = hovertemplate_line
       
-      
     )%>%
-      layout(yaxis = y_axis_spec(input$dataset_d,"nonnegative"),
-             xaxis = list(title = list(text = 'Year', standoff = 10),
-                          gridcolor = "#d9dadb",
-                          showline= T, linewidth=1, linecolor='black'),
+      layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                                    y_axis_spec(input$dataset_d,"nonnegative")),
+             xaxis = x_axis_line_spec('Year'),
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
                           y=0.92,
                           font = list(size = 16)),
@@ -533,8 +529,10 @@ server <- function(input, output,session) {
       event_register('plotly_hover')
   })
   
-  # Update disease line graph with year 
+  # Update disease line graph new data 
   observe({
+    invalidateLater(500)
+    
     p <- plotlyProxy("disease_graph_line", session)
     
     p %>%
@@ -552,7 +550,8 @@ server <- function(input, output,session) {
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
-                          yaxis = y_axis_spec(input$dataset_d,"tozero")
+                          append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                                 y_axis_spec(input$dataset_d,"tozero"))
                         ))
     }else{
       p%>%
@@ -560,6 +559,7 @@ server <- function(input, output,session) {
                           list(
                             yaxis = list(title = list(text = paste0(input$dataset_d," Per 1000"),
                                                       font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
+                                         range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05),
                                          gridcolor = "#d9dadb",
                                          showline= T, linewidth=1, linecolor='black',
                                          rangemode = "nonnegative")
@@ -577,7 +577,7 @@ server <- function(input, output,session) {
     if(input$modeldata_d_switch==TRUE){
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
-
+      
       for(reg in input$region_d){
         df <- data[which(data$HEALTH_BOUND_NAME==reg),]
         p |>
@@ -595,6 +595,7 @@ server <- function(input, output,session) {
                             ))
 
       }
+
     }else{
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
@@ -792,18 +793,6 @@ server <- function(input, output,session) {
     }
   })
   
-
-  # TEST
-  # output$hover_stuff <- renderPrint({
-  #   event_data("plotly_hover",source = "disease_graph_line")$fullData
-  #   
-  # })
-  # 
-  # output$hover_stuff2 <- renderPrint({
-  #   event_data("plotly_hover",source = "disease_graph_line")
-  # })
-  
-
   # Define graph traces 
   my_traces <- reactive({
     sort(input$region_d)
@@ -965,16 +954,17 @@ server <- function(input, output,session) {
   output$region_tab_diseases_selected <- renderUI({
     selectizeInput("region_tab_diseases_selected", 
                    label = "Select Disease(s)",
-                choices = unique(region_tab_dataset_used()$DISEASE),
-                multiple = TRUE,
-                selected = unique(region_tab_dataset_used()$DISEASE)[1:3])
+                   choices = unique(region_tab_dataset_used()$DISEASE),
+                   multiple = TRUE,
+                   selected = unique(region_tab_dataset_used()$DISEASE)[1:3])
+
   }) 
   
   region_tab_filtered_data <- reactive({
     region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
-                (DISEASE %in% input$region_tab_diseases_selected) &
-                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
+             (DISEASE %in% input$region_tab_diseases_selected) &
+             (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
   
   #####################
@@ -1000,13 +990,7 @@ server <- function(input, output,session) {
       ) |>
       layout(
         yaxis = y_axis_spec(input$region_tab_rate_type_selected,"nonnegative"),
-        xaxis = list(
-          title = list(text = 'Year', standoff = 10),
-          gridcolor = "#d9dadb",
-          showline = T,
-          linewidth = 1,
-          linecolor = 'black'
-        ),
+        xaxis = x_axis_line_spec('Year'),
         title = list(
           text = paste0('<b>',
                         input$region_tab_rate_type_selected,

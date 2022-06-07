@@ -75,7 +75,7 @@ disease_dict <- c("ALZHEIMER_DEMENTIA" = "Alzheimer's and Other Types of Dementi
 GEOGRAPHY_CHOICES <- c("Health Authorities","Community Health Service Areas")
 HA_CHOICES <- c("Fraser", "Interior", "Northern", "Vancouver Coastal", "Vancouver Island")
 
-HSC_disease<- c("Acute Myocardial Infarction",
+HSC_DISEASES<- c("Acute Myocardial Infarction",
                 "Asthma",
                 "Depression",
                 "Gout and Crystal Arthropathies",
@@ -179,3 +179,7 @@ for (i in seq(1,5)){
 # Define dataframe of Disease colour mappings
 DISEASE_colors <- data.frame(DISEASE = sample(unique(inc_rate_df$DISEASE)))
 DISEASE_colors$Colors <- colorRampPalette(c(HA_colours[,2]))(length(unique(inc_rate_df$DISEASE))) 
+
+# Define list of all diseases
+ALL_DISEASES <- sort(unique(inc_rate_df$DISEASE))
+

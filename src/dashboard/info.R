@@ -8,7 +8,7 @@ about_info<-"<br/><br/>
   Detailed information and definitions of the data can be found in the corresponding information pages.
   
   <br/><br/>
-  The dashboard contains 3 tabs, each of which are described as follows: <br/>
+  The dashboard contains 3 data tabs, each of which are described as follows: <br/>
   <ul>
    <li><b>By Disease</b></li>
    This tab allows for the comparisons of one disease over several HAs or CHSAs.
@@ -16,9 +16,11 @@ about_info<-"<br/><br/>
    The user can specify multiple HAs or CHSAs. After data has been selected, the following
    visualizations will be displayed:
    <ul>
-    <li> A choropleth map showing the distribution of the chosen rate type across the Province of British Columbia in a given year </li>
-    <li> A bar graph showing the chosen rate type for all selected health regions, with upper and lower bounds of the rate </li>
-    <li> A line chart showing trend of chosen rate type for all selected health regions from 2001 to 2020. </li>
+    <li> A choropleth map showing the distribution of the selected rate type across 
+    the selected type of health boundaries Province of BC in the selected year </li>
+    <li> A bar graph showing the selected rate type for all selected health regions, 
+    with upper and lower bounds of the rate </li>
+    <li> A line chart showing trend of selected rate type for all selected health regions from 2001 to 2020. </li>
    </ul>
    All visualizations have interactive elements, where detailed information will appear upon mouse hover. 
    An animation of changes over year is also available. 
@@ -29,9 +31,9 @@ about_info<-"<br/><br/>
    year, and gender. After data has been selected, the following
    visualizations will be displayed:
    <ul>
-    <li> A bar graph showing the chosen rate type for all selected diseases </li>
-    <li> A line chart showing trend of chosen rate type for all selected diseases from 2001 to 2020. </li>
-    <li> A map showing location of selected health region </li>
+    <li> A bar graph showing the selected rate type for all selected diseases,
+    with upper and lower bounds of the rate</li>
+    <li> A line chart showing the trend of the selected rate type for all selected diseases from 2001 to 2020. </li>
    </ul>
    <li><b>Data</b></li>
    This tab retrieves all data specified by the user. In this tab the user should select a rate type, 
