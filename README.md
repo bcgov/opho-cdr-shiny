@@ -32,39 +32,27 @@ Rscript -e "rmarkdown::render('docs/proposal/capstone-proposal.Rmd')"
 
 ### Usage
 
-Describe data being used (links), and how to run. Eg:
+Our data product is currently available for internal use only. Please contact the CDR Working Group to request access to the data.
 
-There are four core scripts that are required for the analysis, they
-need to be run in order:
+#### Temporal Modelling
 
--   01_clean.R
--   02_analysis.R
--   03_visualize.R
--   04_output.R
+To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are installed, then follow these instructions:
 
-#### Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-## basic example code
-```
-
-### Project Status
-
-### Getting Help or Reporting an Issue
-
-To report bugs/issues/feature requests, please file an
-[issue](https://github.com/bcgov/opho-cdr-shiny/issues/).
-
-### How to Contribute
-
-If you would like to contribute, please see our
-[CONTRIBUTING](CONTRIBUTING.md) guidelines.
-
-Please note that this project is released with a [Contributor Code of
-Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree
-to abide by its terms.
+1. Clone this Github repository.
+2. Create a folder named "data" in the root directory of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
+3. Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the following command in the R console to install the package dependencies or as listed below:
+    ```
+    renv::restore()
+    ```
+4. Run the following command using the command line/terminal from the root directory of the project:
+    ```
+    make all
+    ```
+5. To view the temporal model visualizations in a Shiny document, check that results have been output to "results/model". 
+    Run the following command in the R console:
+    ```
+    rmarkdown::run('src/model/02_visualize.Rmd')
+    ```
 
 ### Dependencies
 
@@ -88,6 +76,22 @@ to abide by its terms.
     -   rgeos=0.5-9
 
 -   GNU make 3.81
+
+### Project Status
+
+### Getting Help or Reporting an Issue
+
+To report bugs/issues/feature requests, please file an
+[issue](https://github.com/bcgov/opho-cdr-shiny/issues/).
+
+### How to Contribute
+
+If you would like to contribute, please see our
+[CONTRIBUTING](CONTRIBUTING.md) guidelines.
+
+Please note that this project is released with a [Contributor Code of
+Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree
+to abide by its terms.
 
 ### License
 
