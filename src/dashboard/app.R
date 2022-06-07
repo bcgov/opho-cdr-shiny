@@ -184,7 +184,7 @@ ui <- fluidPage(
                mainPanel(
                  img(src='model_image2.png',align="center",style="width: 1000px"),
                ))
-  )
+  ))
 )
 
 ################################
@@ -1074,7 +1074,7 @@ server <- function(input, output,session) {
       layout(
         yaxis = append(c(range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.05)),
                        y_axis_spec(input$region_tab_rate_type_selected,"tozero")),
-        xaxis = x_axis_bar_spec(NA),
+        xaxis = x_axis_bar_spec(''),
         title = list(
           text = paste0(
                     "<b>Disease Distribution by ",

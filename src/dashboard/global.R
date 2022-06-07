@@ -98,7 +98,7 @@ RATE_TYPE_CHOICES <- c(
 
 # CHSA_CHOICES <- sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
 
-
+ALL_DISEASES <- sort(unique(inc_rate_df$DISEASE))
 
 
 ################################
