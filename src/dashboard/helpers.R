@@ -43,7 +43,8 @@ wrangle_data_frame <- function(df) {
     mutate(DISEASE = str_replace_all(DISEASE, disease_dict),
            DISEASE = ifelse(endsWith(DISEASE, "_EPI"), str_sub(DISEASE, 1, -5), DISEASE)) |>
     data.table::setcolorder(c("YEAR")) |>
-    filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))
+    filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))|>
+    distinct()
 }
 
 
