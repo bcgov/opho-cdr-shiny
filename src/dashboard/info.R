@@ -8,7 +8,7 @@ about_info<-"<br/><br/>
   Detailed information and definitions of the data can be found in the corresponding information pages.
   
   <br/><br/>
-  The dashboard contains 3 tabs, each of which are described as follows: <br/>
+  The dashboard contains 3 data tabs, each of which are described as follows: <br/>
   <ul>
    <li><b>By Disease</b></li>
    This tab allows for the comparisons of one disease over several HAs or CHSAs.
@@ -16,9 +16,11 @@ about_info<-"<br/><br/>
    The user can specify multiple HAs or CHSAs. After data has been selected, the following
    visualizations will be displayed:
    <ul>
-    <li> A choropleth map showing the distribution of the chosen rate type across the Province of British Columbia in a given year </li>
-    <li> A bar graph showing the chosen rate type for all selected health regions, with upper and lower bounds of the rate </li>
-    <li> A line chart showing trend of chosen rate type for all selected health regions from 2001 to 2020. </li>
+    <li> A choropleth map showing the distribution of the selected rate type across 
+    the selected type of health boundaries Province of BC in the selected year </li>
+    <li> A bar graph showing the selected rate type for all selected health regions, 
+    with upper and lower bounds of the rate </li>
+    <li> A line chart showing trend of selected rate type for all selected health regions from 2001 to 2020. </li>
    </ul>
    All visualizations have interactive elements, where detailed information will appear upon mouse hover. 
    An animation of changes over year is also available. 
@@ -29,9 +31,9 @@ about_info<-"<br/><br/>
    year, and gender. After data has been selected, the following
    visualizations will be displayed:
    <ul>
-    <li> A bar graph showing the chosen rate type for all selected diseases </li>
-    <li> A line chart showing trend of chosen rate type for all selected diseases from 2001 to 2020. </li>
-    <li> A map showing location of selected health region </li>
+    <li> A bar graph showing the selected rate type for all selected diseases,
+    with upper and lower bounds of the rate</li>
+    <li> A line chart showing the trend of the selected rate type for all selected diseases from 2001 to 2020. </li>
    </ul>
    <li><b>Data</b></li>
    This tab retrieves all data specified by the user. In this tab the user should select a rate type, 
@@ -39,9 +41,9 @@ about_info<-"<br/><br/>
    data wil be displayed, and there is an option for the user to download the selected data.<br/><br/>
   </ul>
   <br/>
-  <b>Note:</b> The year selector is based on Ministry of Health fiscal years. For example, the year 2001 represents data 
-  from April 1, 2001 to March 31, 2002. 
   <br/>
+  <br/>
+
 "
 
 
@@ -121,8 +123,8 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                       Acute myocardial infarction*<br/>
                       Heart failure <br/>
                       Ischemic heart disease <br/>
-                      Stroke* <br/>
-                      <p style='margin-left: 40px'> 
+                      Stroke*
+                      <p style='margin-left: 60px'> 
                             Haemorrhagic stroke* <br/>
                             Ischemic stroke* <br/>
                             Transient ischemic attack* <br/>
@@ -158,52 +160,98 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                       High blood pressure (hypertension)<br/>
                 </p>
                 
-                For more information on these diseases, see <a href='file:///./src/dashboard/data/CDR_Case_Definitions.pdf'>here</a>.
+                For more information on these diseases, click 'Show PDF' button below.
 
 "
 
 
 data_dict_info <-"
-  <table border='1'>
+  Data for Health Boundaries containing 25% First Nations population or larger are suppressed, and will be shown as NA.  
+  True zeros (0) remain in the data set.
+  <br/><br/>
+  Modeled data is available for all Age-Standardized rates in CHSAs for Total Sex data. The modelled curves
+  show the changes in disease rates smoothened out over time to capture the overall trends within
+  each health boundary. For rare conditions or smaller regions, the modelled data may appear to be 
+  missing due to low rates. Additional information about the modelling procedure can be found <a href='https://github.com/bcgov/opho-cdr-shiny'>here</a>.
+  <br/>
+
+  <table border='1'; id ='datadict'>
     <tr>
       <th>Variable Name</th>
       <th>Description</th>
       <th>Sample Values</th>
     </tr>
     <tr>
-      <td>DISEASE</td>
-      <td>Name of the chronic condition.</td>
-      <td><q>ASTHMA</q>, <q>DEPRESSION</q>, <q>PARKINSONISM</q></td>
-    </tr>
-    <tr>
-      <td>FISC_YR_LABEL</td>
+      <td><b>Fiscal Year</b></td>
       <td>Label for the fiscal year (April 1 to March 31 of the following year).</td>
-      <td><q>FY 2001.2002</q> up to <q>FY 2020.2021</q></td>
+      <td><q>2001/2002</q> up to <q>2020/2021</q></td>
     </tr>
     <tr>
-      <td>CLNT_GENDER_LABEL</td>
+      <td><b>Disease</b></td>
+      <td>Name of the chronic condition.</td>
+      <td><q>Asthma</q>, <q>Depression</q>, <q>Heart Failure</q></td>
+    </tr>
+    <tr>
+      <td><b>Sex</b></td>
       <td>Gender category.</td>
       <td><q>T</q>, <q>M</q>, or <q>F</q>. T includes Male, Female, and Unknown.</td>
     </tr>
     <tr>
-      <td>GEOGRAPHY</td>
+      <td><b>Geography</b></td>
       <td>The type of health boundary used to separate geographic areas.</td>
       <td><q>HA</q> or <q>CHSA</q></td>
     </tr>
     <tr>
-      <td>HEALTH_BOUNDARIES</td>
-      <td>The CHSA region of interest.</td>
-      <td><q>1440 100 Mile House<q>, </q>2323 Tsawwassen</q>, <q>3351 Squamish</q></td>
+      <td><b>Health Boundary</b></td>
+      <td>The HA or CHSA region of interest.</td>
+      <td><q>Fraser</q>, <q>Vancouver Coastal</q>, <q>Fernie</q>, <q>Campbell River</q></td>
     </tr>
     <tr>
-      <td>STDPOP</td>
-      <td>Standard population used for calculating age-standardized rates.</td>
-      <td>All entries are <q>2011 Canadian Census</q></td>
+      <td><b>Numerator</b></td>
+      <td>Incidence: Number of newly identified cases in a reporting year.
+      <br/> Life prevalence: Number of residents ever identified with a disease in a reporting year. 
+      <br/> Active healthcare contact prevalence: Number of patients receiving healthcare services for a disease in a reporting year.</td>
+      <td>0, 1, 2, 23, 103, 457, 685</q></td>
     </tr>
     <tr>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
+      <td><b>Denominator</b></td>
+      <td>Incidence: Mid-year population at risk in the reporting year.
+      <br/>Life prevalence and active healthcare contact prevalence: Mid-year population in the reporting year.</td>
+      <td>11, 269, 3972, 10185, 52974, 80356</q></td>
+    </tr>
+    <tr>
+      <td><b>Crude Rate Per 1000</b></td>
+      <td>Crude rate per 1000 people. Equivalent to Numerator/Denominator * 1000.</td>
+      <td> 0 (if Numerator = 0), 0.95, 5.87, 19.46</q></td>
+    </tr>
+    <tr>
+      <td><b>Crude 95% CI</b></td>
+      <td>95% lower and upper confidence level on the crude rate per 1000 people. 
+      <br/>Assumes Numerator is normally-distributed and Denominator is known exactly.</td>
+      <td> (NA,NA) (if Numerator = 0), (0.12,3.4), (2.15,12.77), (9.33,35.78)</q></td>
+    </tr>
+    <tr>
+      <td><b>Crude Variance</b></td>
+      <td>Variance on the crude rate per 1000 people. 
+      <br/>Calculated assuming Numerator is Poisson-distributed and Denominator is known exactly.</td>
+      <td>0 (if Numerator = 0), 4.54E-07, 1.35E-06, 3.79E-05</q></td>
+    </tr>
+    <tr>
+      <td><b>Std Rate Per 1000</b></td>
+      <td>Age-standardized rate per 1000 people. Calculated using a weighted average of the number
+      <br/>of occurrences in the local population according to the age distribution of the standard population.</td>
+      <td> 0 (if Numerator = 0), 0.76, 6.11, 15.36</q></td>
+    </tr>
+    <tr>
+      <td><b>Standardized 95% CI</b></td>
+      <td>95% lower and upper confidence level on the age-standardized rate per 1000 people. 
+      <br/>Assumes Numerator is normally-distributed and Denominator is known exactly.</td>
+      <td> (NA,NA) (if Numerator = 0), (0.09,2.78), (4.74,7.75), (14.57,16.54)</q></td>
+    </tr>
+    <tr>
+      <td><b>Std Variance</b></td>
+      <td>Calculated assuming age-weighted Numerator is Poisson-distributed and Denominator is known exactly.</td>
+      <td>  0 (if Numerator = 0), 2.96E-07, 5.52E-07, 3.53E-07</q></td>
     </tr>
   </table>
 "
