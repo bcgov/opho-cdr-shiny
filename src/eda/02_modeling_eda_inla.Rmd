@@ -1,0 +1,216 @@
+---
+title: 'BC Chronic Disease: Temporal Modeling with INLA'
+date: "May 24, 2022"
+author: 'Jennifer Hoang'
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+---
+
+```{r message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(INLA)
+library(here)
+```
+
+```{r Load Data, message=FALSE}
+path <- here("data", "processed")
+
+inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+hsc_prev_df <- read_csv(here(path, "hsc_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+
+x_year <- unique(inc_rate_df$YEAR)
+```
+
+## Comparing Random Walk Models
+
+We will try a Gamma likelihood for the response variable, which is a continuous rate. The time trends will be modeled with a Random Walk 1 and Random Walk 2 prior model.
+
+One challenge is that Gamma does not support 0 values, so the rare diseases can't be effectively modeled yet.
+
+```{r Functions to Fit and Plot Models}
+#' Fit a random walk 1 model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable with INLA. Assumes Gamma likelihood.
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
+fit_inla_rw1 <- function(data) {
+  model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw1"),
+    data = data,
+    family = "gamma",
+    control.compute = list(dic = TRUE, waic = TRUE)
+  )
+
+  model_results <- tibble(
+    DISEASE = data$DISEASE,
+    HEALTH_BOUNDARIES = data$HEALTH_BOUNDARIES, 
+    x = x_year,
+    y_fitted = model$summary.fitted$mean,
+    ci_95_ll = model$summary.fitted$`0.025quant`,
+    ci_95_ul = model$summary.fitted$`0.975quant`,
+    dic = model$dic$dic,
+    waic = model$waic$waic,
+    model = "rw1"
+  )
+  
+  model_results
+}
+
+#' Fit a random walk 2 model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable with INLA. Assumes Gamma likelihood.
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
+fit_inla_rw2 <- function(data) {
+  model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw2"),
+    data = data,
+    family = "gamma",
+    control.compute = list(dic = TRUE, waic = TRUE)
+  )
+
+  model_results <- tibble(
+    DISEASE = data$DISEASE,
+    HEALTH_BOUNDARIES = data$HEALTH_BOUNDARIES, 
+    x = x_year,
+    y_fitted = model$summary.fitted$mean,
+    ci_95_ll = model$summary.fitted$`0.025quant`,
+    ci_95_ul = model$summary.fitted$`0.975quant`,
+    dic = model$dic$dic,
+    waic = model$waic$waic,
+    model = "rw2"
+  )
+  
+  model_results
+}
+
+#' Fit a loess model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable. Confidence intervals generated
+#' using t-distribution approximation
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
+fit_loess <- function(data) {
+  model <- loess(STD_RATE_PER_1000 ~ YEAR, data = data)
+  model_predict <- predict(model, data, se = TRUE)
+
+  t <- qt(p = 0.975, df = model_predict$df)
+
+  model_results <- tibble(
+    DISEASE = data$DISEASE[1],
+    HEALTH_BOUNDARIES = data$HEALTH_BOUNDARIES[1],
+    x = x_year,
+    y_fitted = model_predict$fit,
+    ci_95_ll = model_predict$fit - t * model_predict$se.fit,
+    ci_95_ul = model_predict$fit + t * model_predict$se.fit,    
+    dic = NA,
+    waic = NA,
+    model = "loess",
+  )
+  
+  model_results
+}
+
+#' Generate line plot to compare models and confidence intervals
+#'
+#' @param data data frame containing original data
+#' @param model_df data frame containing model results
+#' @param disease character corresponding to entry in DISEASE column
+#' @param chsa character corresponding to entry in HEALTH_BOUNDARIES column
+#' @param rate_label character (label for Y axis)
+#' @return ggplot object
+plot_models <- function(data, model_df, disease, chsa, rate_label) {
+  cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  
+  ggplot(aes(x = YEAR, y = STD_RATE_PER_1000), data = data) +
+    geom_point() +
+    geom_ribbon(
+      aes(x = x, y = y_fitted, ymin = ci_95_ll, ymax = ci_95_ul, fill = model), 
+      alpha = 0.2, data = model_df
+    ) +
+    geom_line(aes(x = x, y = y_fitted, color = model), data = model_df, linetype = 2) +
+    labs(
+      x = "Year", y = rate_label,
+      title = paste(disease, "in", chsa)
+    ) +
+    scale_fill_manual(values=cbPalette) +
+    scale_colour_manual(values=cbPalette)
+}
+```
+
+```{r Compare 3 Models for 1 Outcome, fig.show="hold", out.width="25%"}
+#' Generate line plot to compare loess, random walk 1, and random walk 2 models
+#' Only fits data without 0 values due to limitations with Gamma likelihood.
+#'
+#' @param data data frame
+#' @param chsa character corresponding to entry in HEALTH_BOUNDARIES column
+#' @param rate_label character (label for Y axis)
+#' @return ggplot object
+compare_models <- function(data, chsa, rate_label) {
+  diseases <- unique(data$DISEASE)
+  all_model_df <- tibble()
+
+  for (d in diseases) {
+    disease_data <- data |>
+      filter(DISEASE == d & HEALTH_BOUNDARIES == chsa)
+
+    if (all(disease_data$STD_RATE_PER_1000 > 0)) {
+      plot_df <- rbind(fit_inla_rw1(disease_data), fit_inla_rw2(disease_data), fit_loess(disease_data))
+
+      p <- plot_models(disease_data, plot_df, d, chsa, rate_label)
+      print(p)
+    }
+    all_model_df <- rbind(all_model_df, plot_df)
+  }
+  all_model_df
+}
+```
+
+### Standardized HSC Prevalence in Fernie
+
+Note: not all plots are generated for all diseases because some rare diseases have 0 entries.
+
+```{r fig.show="hold", out.width="25%"}
+hsc_fernie <- compare_models(hsc_prev_df, "1110 Fernie", "Age-Std HSC Prevalence Rate")
+```
+
+We'll compare RW1 and RW2 models using the DIC and WAIC criteria, where a lower value indicates a better model fit.
+
+```{r Wrangle Model Criteria}
+wrangle_model_results <- function(data) {
+  data |>
+  select(DISEASE, HEALTH_BOUNDARIES, model, dic, waic) |>
+  filter(model != "loess") |>
+  unique() |>
+  pivot_wider(names_from = model,
+              values_from = c(dic, waic)) |>
+  mutate(best_model_dic = ifelse(dic_rw1 < dic_rw2, "rw1", "rw2"),
+         best_model_waic = ifelse(waic_rw1 < waic_rw2, "rw1", "rw2")) |>
+  mutate_if(is.numeric, round, 2)
+}
+
+wrangle_model_results(hsc_fernie)
+```
+
+It seems that the DIC and WAIC typically provides consistent results.
+
+We'll proceed with using the WAIC to select the final model, since it has been suggested to be
+a theoretical improvement over the DIC ([Evans 2019](https://link.springer.com/article/10.3758/s13423-018-01563-9)).
+
+### Age-Standardized Incidence Rate in Fernie
+
+```{r fig.show="hold", out.width="25%"}
+inc_fernie <- compare_models(inc_rate_df, "1110 Fernie", "Age-Std Incidence Rate")
+
+wrangle_model_results(inc_fernie)
+```
+
+### Age-Standardized Life Prevalence in Fernie
+
+```{r fig.show="hold", out.width="25%"}
+life_prev_fernie <- compare_models(life_prev_df, "1110 Fernie", "Age-Std Life Prevalence Rate")
+
+wrangle_model_results(life_prev_fernie)
+```
