@@ -549,7 +549,6 @@ server <- function(input, output,session) {
   observeEvent(input$yax_switch_d,{
     p <- plotlyProxy("disease_graph_line", session)
     if(input$yax_switch_d==TRUE){
-      print("YAX TRUE")
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
@@ -621,6 +620,7 @@ server <- function(input, output,session) {
       }
     }
     })
+  
 
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
@@ -818,7 +818,6 @@ server <- function(input, output,session) {
                                     list(line = list(width=2,
                                                      color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
                                     as.integer(match(reg,my_traces())-1))
-          
         } 
         ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
         lp %>% clearGroup('selected')
@@ -840,6 +839,7 @@ server <- function(input, output,session) {
                  color = CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]),
             as.integer(match(event[["x"]],my_traces())-1)
           )
+        
         ppb %>%
           plotlyProxyInvoke(
             method = "restyle",
@@ -848,8 +848,9 @@ server <- function(input, output,session) {
           plotlyProxyInvoke(
             method = "restyle",
             list(opacity = 1),
-            as.integer(match(event[["x"]], my_traces())-1)
+            as.integer(match(event[["x"]], input$region_d)-1)
           )
+        
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
