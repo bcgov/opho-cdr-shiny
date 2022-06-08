@@ -32,11 +32,10 @@ Rscript -e "rmarkdown::render('docs/proposal/capstone-proposal.Rmd')"
 
 ### Usage
 
-Our data product is currently available for internal use only. Please contact the CDR Working Group to request access to the data.
+Our data product is currently available for internal use only. Please contact the CDR Working Group to request access to the data. 
+To re-run the analysis and run the dashboard, please ensure that R (version 4.2.0) and RStudio are installed, then follow the respective instructions below.
 
 #### Temporal Modelling
-
-To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are installed, then follow these instructions:
 
 1. Clone this Github repository.
 2. Create a folder named "data" in the root directory of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
@@ -53,6 +52,53 @@ To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are ins
     ```
     rmarkdown::run('src/model/02_visualize.Rmd')
     ```
+
+#### Dashboard
+
+1. Clone this Github repository
+2. Create a `data/` directory within the `src/dashboard/` director, and save the original and modeled data inside in folders named "raw" and "model" respectively. The data inside the `raw` folder should be saved from the "Data_MFT_HA_CHSA" dataset, and the data inside the `model` folder should be saved from running the Temporal Modelling above. The folder structure should look as follows:
+
+```
+.
+├── ...
+├── src                                  
+│   ├── dashboard                         
+|   │   ├── data                              
+|   │   |   ├── model                         # Modeled Data from Temporal Modelling
+|   │   |   |   ├── HSCPrevalence 
+|   │   |   |   |   ├── AMI_EPI.csv 
+|   │   |   |   |   ├── ASTHMA_EPI.csv 
+|   │   |   |   |   └── ...
+|   │   |   |   ├── IncidenceRate 
+|   │   |   |   |   ├── ALZHEIMER_DEMENTIA.csv 
+|   │   |   |   |   ├── AMI.csv 
+|   │   |   |   |   └── ...
+|   │   |   |   └── LifePrevalence 
+|   │   |   |       ├── ALZHEIMER_DEMENTIA.csv 
+|   │   |   |       ├── AMI.csv 
+|   │   |   |       └── ...
+|   │   |   └── raw                            # Original Data from "Data_MFT_HA_CHSA'
+|   │   |       ├── HSCPrevalence 
+|   │   |       |   ├── AMI_EPI.csv 
+|   │   |       |   ├── ASTHMA_EPI.csv 
+|   │   |       |   └── ...
+|   │   |       ├── IncidenceRate 
+|   │   |       |   ├── ALZHEIMER_DEMENTIA.csv 
+|   │   |       |   ├── AMI.csv 
+|   │   |       |   └── ...
+|   │   |       └── LifePrevalence 
+|   │   |           ├── ALZHEIMER_DEMENTIA.csv 
+|   │   |           ├── AMI.csv 
+|   │   |           └── ... 
+│   |   └── ...  
+│   └──  ...                                 
+└── ...
+```
+
+3. Run the following command using the command line/terminal from the root directory of the project:
+```
+shiny::runApp('src/dashboard')
+```
 
 ### Dependencies
 
@@ -74,6 +120,9 @@ To re-run the analysis, please ensure that R (version 4.2.0) and RStudio are ins
     -   scales=1.2.0
     -   shinycssloaders=1.0.0
     -   rgeos=0.5-9
+    -   shinyWidgets=0.7.0
+    -   DT=0.23
+    -   shinyBS=0.61.1
 
 -   GNU make 3.81
 
