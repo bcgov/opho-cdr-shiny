@@ -426,7 +426,7 @@ server <- function(input, output,session) {
    p %>%
       layout(yaxis = append(list(range=list(0,max(dummyData[[error$upper]],na.rm=TRUE)*1.05)),
                              y_axis_spec(input$dataset_d,"nonnegative")),
-             xaxis = x_axis_bar_spec('Health Region'),
+             xaxis = x_axis_bar_spec('Health Region',5),
              title = list(text = paste0('<b>',input$dataset_d," of \n", "Asthma in 2001 </b>"),
                           y=0.92,
                           font = list(size = 16)),
@@ -484,7 +484,7 @@ server <- function(input, output,session) {
                           yaxis = append(list(range=list(0,na.omit(max(filter_df_reg_d()[[error$upper]]))*1.05)),
                                         y_axis_spec(input$dataset_d,"nonnegative")),
                           xaxis = append(list(fixedrange = TRUE),
-                                         x_axis_bar_spec('Health Region')),
+                                         x_axis_bar_spec('Health Region',5)),
                           title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
                                        y=0.92,
                                        font = list(size = 16)
