@@ -184,34 +184,43 @@ health_bounds <- function(input){
  }
  
  # Year slider input template
- year_slider <- function(id, year_info_id, anim=TRUE){
-   if (anim==TRUE){
-     return(sliderInput(id, 
-                 label = tags$span(
-                   "Select Year  ", 
-                   tags$i(
-                     id = year_info_id,
-                     class = "glyphicon glyphicon-info-sign", 
-                     style = "color:#0072B2;"
-                   )),
-                 min = 2001,
-                 max=2020,
-                 value = 2001,
-                 sep = "",
-                 ticks = TRUE,
-               animate = animationOptions(interval = 1000)
-   ))
-     }else{
-     sliderInput(id, 
-                 label = tags$span(
-                   "Select Year Range  ",
-                   tags$i(
-                     id = year_info_id,
-                     class = "glyphicon glyphicon-info-sign",
-                     style = "color:#0072B2;"
-                   )),
-                 min = 2001, max = 2020, value = c(2001, 2020),
-                 sep = "")
+ year_slider <- function(id, year_info_id, anim = TRUE) {
+   if (anim == TRUE) {
+     return(
+       sliderInput(
+         id,
+         label = tags$span(
+           "Select Year  ",
+           tags$i(
+             id = year_info_id,
+             class = "glyphicon glyphicon-info-sign",
+             style = "color:#0072B2;"
+           )
+         ),
+         min = 2001,
+         max = 2020,
+         value = 2001,
+         sep = "",
+         ticks = TRUE,
+         animate = animationOptions(interval = 1000)
+       )
+     )
+   } else{
+     sliderInput(
+       id,
+       label = tags$span(
+         "Select Year Range  ",
+         tags$i(
+           id = year_info_id,
+           class = "glyphicon glyphicon-info-sign",
+           style = "color:#0072B2;"
+         )
+       ),
+       min = 2001,
+       max = 2020,
+       value = c(2001, 2020),
+       sep = ""
+     )
    }
  }
  
