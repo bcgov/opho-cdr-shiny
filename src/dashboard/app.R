@@ -128,10 +128,14 @@ ui <- fluidPage(
                    hr(),
                    geography_radio_buttons("region_tab_geography_selected"),
                    uiOutput("region_tab_region_selected"),
+                   selectInput("region_tab_diseases_selected",
+                               label= "Select Disease(s)",
+                               choices = ALL_DISEASES,
+                               multiple = TRUE,
+                               selected = ALL_DISEASES[1:3]),
                    rate_type_input("region_tab_rate_type_selected"),
-                   uiOutput("region_tab_diseases_selected"),
                    sex_radio_buttons("region_tab_sex_selected"),
-                   year_slider("region_tab_year_range_selected"),
+                   year_slider("region_tab_year_selected"),
                    fisc_year_tt("region_tab_year_slider_info"),
                    br(),
                    actionButton("region_tab_reset_button", "Reset")
@@ -932,15 +936,61 @@ server <- function(input, output,session) {
     reset("filters_r")
   })
   
+  # # Conditionally show modeled data toggle switch
+  # observe({
+  #   if(input$gender_d =="Total"&& 
+  #      input$health_bound_d=="Community Health Service Areas" &&
+  #      startsWith(input$dataset_d,"Age")){
+  #     output$modeldata_d <- renderUI({
+  #       material_switch("modeldata_d_switch","Smoothed Time Trends ")
+  #     })
+  #   }else{
+  #     output$modeldata_d <- renderUI({ })
+  #   }
+  # })
+  # 
   
+  # Show possible rate types based on the diseases selected.
+  # If any non relapsing-remitting disease is selected, then HSC rate will not 
+  #   show to avoid error.
+  observeEvent(input$region_tab_diseases_selected,
+               {
+                 updateSelectInput(
+                   session,
+                   "region_tab_rate_type_selected",
+                   label = "Select Rate Type",
+                   choices = if (setequal(
+                     intersect(input$region_tab_diseases_selected, HSC_disease),
+                     input$region_tab_diseases_selected
+                   ))
+                     RATE_TYPE_CHOICES
+                   else
+                     c(
+                       "Crude Incidence Rate",
+                       "Age Standardized Incidence Rate",
+                       "Crude Life Prevalence",
+                       "Age Standardized Life Prevalence"
+                     )
+                 )
+               })
+  
+  # Get dataset based on the rate type selected
   region_tab_dataset_used <- reactive({
-    dataset_switch(input$region_tab_rate_type_selected)
+    shiny::validate(need(input$region_tab_rate_type_selected, message = F))
+    if (!is.null(input$region_tab_rate_type_selected)) {
+      dataset_switch(input$region_tab_rate_type_selected)
+    }
   })
   
+  # Get the corresponding column name for the rate type selected
   region_tab_rate_as_variable <- reactive({
-    rate_switch(input$region_tab_rate_type_selected)
+    shiny::validate(need(input$region_tab_rate_type_selected, message = F))
+    if (!is.null(input$region_tab_rate_type_selected)) {
+      rate_switch(input$region_tab_rate_type_selected)
+    }
   })
   
+  # Show health boundary choices based on geography selected
   output$region_tab_region_selected <- renderUI({
     selectInput(
       "region_tab_region_selected",
@@ -951,20 +1001,13 @@ server <- function(input, output,session) {
     )
   })
   
-  output$region_tab_diseases_selected <- renderUI({
-    selectizeInput("region_tab_diseases_selected", 
-                   label = "Select Disease(s)",
-                   choices = unique(region_tab_dataset_used()$DISEASE),
-                   multiple = TRUE,
-                   selected = unique(region_tab_dataset_used()$DISEASE)[1:3])
-
-  }) 
-  
+  # Get the filtered dataset based on user selection
   region_tab_filtered_data <- reactive({
     region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
              (DISEASE %in% input$region_tab_diseases_selected) &
              (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
+    
   })
   
   #####################
@@ -1013,7 +1056,7 @@ server <- function(input, output,session) {
     p |>
       plotlyProxyInvoke("relayout",
                         list(
-                          shapes = list(vline(input$region_tab_year_range_selected))
+                          shapes = list(vline(input$region_tab_year_selected))
                         ))
   })
    
@@ -1048,7 +1091,7 @@ server <- function(input, output,session) {
   output$region_tab_bar_chart <- renderPlotly({
 
     dummyData <- region_tab_filtered_data() |>
-      filter(YEAR == 2001)
+      filter(YEAR == input$region_tab_year_selected)
     
     error$lower <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
@@ -1057,7 +1100,7 @@ server <- function(input, output,session) {
 
     p <- plot_ly(source = "region_tab_bar_chart")
     
-    for(disease in input$region_tab_diseases_selected){
+    for (disease in input$region_tab_diseases_selected){
       dummy_df <- dummyData[which(dummyData$DISEASE == disease),]
       p <- p |>
         add_trace(x = dummy_df$DISEASE,
@@ -1074,7 +1117,7 @@ server <- function(input, output,session) {
                   marker = list(
                     color = DISEASE_colors$Colors[match(dummy_df$DISEASE,DISEASE_colors$DISEASE)]),
                   hovertemplate = paste('<br><b>Disease</b>: %{x}',
-                                        '<br><b>Year</b>: ', input$region_tab_year_range_selected,
+                                        '<br><b>Year</b>: ', input$region_tab_year_selected,
                                         '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
                                         '<br><b>95% Confidence Interval</b>: (',
                                         format_round(dummy_df[[error$lower]]), ',',
@@ -1103,7 +1146,7 @@ server <- function(input, output,session) {
             "<b>Disease Distribution by ",
             input$region_tab_rate_type_selected,
             " in ",
-            input$region_tab_year_range_selected,
+            input$region_tab_year_selected,
             "</b>"),
           y = 0.92,
           font = list(size = 16)
@@ -1111,22 +1154,100 @@ server <- function(input, output,session) {
         barmode = "overlay",
         margin = list(t = 80, b = 50),
         showlegend = FALSE
-      ) %>%
-      event_register('plotly_hover')
-
+      )
   })
    
   
   # Then use proxy to update bar graph when filter changes
+  # observe({
+  #   invalidateLater(500)
+  #   bar_chart_data <- region_tab_filtered_data() |>
+  #     filter(
+  #       YEAR == input$region_tab_year_selected &
+  #         DISEASE %in% input$region_tab_diseases_selected
+  #     )
+  # 
+  #   print(paste(unique(bar_chart_data$YEAR), unique(bar_chart_data$DISEASE), unique(bar_chart_data$CLNT_GENDER_LABEL), 
+  #               unique(bar_chart_data$HEALTH_BOUND_NAME), sep = "\n"))
+  #   
+  #   error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
+  #   error$upper <-
+  #     paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
+  # 
+  #   p <- plotlyProxy("region_tab_bar_chart", session)
+  # 
+  #   for (disease in seq_along(input$region_tab_diseases_selected)) {
+  #     filtered_df <-
+  #       bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]), ]
+  #     p |>
+  #       plotlyProxyInvoke("restyle",
+  #                         "y",
+  #                         list(list(filtered_df[[region_tab_rate_as_variable()]])),
+  #                         as.integer(disease) - 1) |>
+  #       plotlyProxyInvoke("restyle",
+  #                         list(
+  #                           error_y = list(
+  #                             type = "data",
+  #                             symmetric = FALSE,
+  #                             arrayminus = filtered_df[[region_tab_rate_as_variable()]] - filtered_df[[error$lower]],
+  #                             array = filtered_df[[error$upper]] - filtered_df[[region_tab_rate_as_variable()]],
+  #                             color = '#000000',
+  #                             width = 10
+  #                           ),
+  #                           hovertemplate = paste(
+  #                             '<br><b>Disease</b>: %{x}',
+  #                             '<br><b>Year</b>: ',
+  #                             input$region_tab_year_selected,
+  #                             '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+  #                             '<br><b>95% Confidence Interval</b>: (',
+  #                             format_round(filtered_df[[error$lower]]),
+  #                             ',',
+  #                             format_round(filtered_df[[error$upper]]),
+  #                             ')',
+  #                             '<extra></extra>'
+  #                           )
+  #                         ),
+  #                         as.integer(disease) - 1)
+  #   }
+  # 
+  #   p |> plotlyProxyInvoke("relayout",
+  #                          list(
+  #                            autosize = F,
+  #                            yaxis = append(
+  #                              list(range = list(
+  #                                0,
+  #                                max(region_tab_filtered_data()[[error$upper]],
+  #                                    na.rm = TRUE) * 1.05
+  #                              )),
+  #                              y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
+  #                            ),
+  #                            xaxis = append(list(fixedrange = TRUE)),
+  #                            title = list(
+  #                              text = HTML(
+  #                                paste0(
+  #                                  "<b>Disease Distribution by ",
+  #                                  input$region_tab_rate_type_selected,
+  #                                  " in ",
+  #                                  input$region_tab_year_selected,
+  #                                  "</b>"
+  #                                )
+  #                              ),
+  #                              y = 0.92,
+  #                              font = list(size = 16)
+  #                            )
+  #                          ))
+  # 
+  # })
   observe({
     bar_chart_data <- region_tab_filtered_data() |>
-      filter(YEAR == input$region_tab_year_range_selected &
+      filter(YEAR == input$region_tab_year_selected &
                DISEASE %in% input$region_tab_diseases_selected)
-    
+
+    print
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95") 
-    
-    plotlyProxy("region_tab_bar_chart", session) |> 
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+
+    plotlyProxy("region_tab_bar_chart", session) |>
       plotlyProxyInvoke("restyle",
                         list(
                           x = bar_chart_data$DISEASE,
@@ -1137,12 +1258,12 @@ server <- function(input, output,session) {
                             arrayminus = bar_chart_data[[region_tab_rate_as_variable()]] - bar_chart_data[[error$lower]],
                             array = bar_chart_data[[error$upper]] - bar_chart_data[[region_tab_rate_as_variable()]],
                             color = '#000000',
-                            width = 10))) |> 
+                            width = 10))) |>
       plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
                           yaxis=list(range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.1),
-                                     title = list(text = 
+                                     title = list(text =
                                                     paste0(input$region_tab_rate_type_selected," Per 1000"),
                                                   font = list(
                                                     size = ifelse(startsWith(input$dataset_d,"Age"), 12, 14))),
@@ -1154,18 +1275,18 @@ server <- function(input, output,session) {
                                      tickfont = list(size = 10),
                                      automargin = TRUE,
                                      showline= T, linewidth=1, linecolor='black'),
-                          title = list(text = 
+                          title = list(text =
                                          HTML(paste0(
                                            "<b>Disease Distribution by ",
                                            input$region_tab_rate_type_selected,
                                            " in ",
-                                           input$region_tab_year_range_selected,
+                                           input$region_tab_year_selected,
                                            "</b>")),
                                        y=0.92,
                                        font = list(size = 16)
                           )
                         ))
-    
+
   })
   
   
