@@ -87,6 +87,7 @@ HSC_DISEASES<- c("Acute Myocardial Infarction",
                 "Schizophrenia and Delusional Disorders",
                 "Substance Use Disorders")
 
+
 RATE_TYPE_CHOICES <- c(
   "Crude Incidence Rate",
   "Age Standardized Incidence Rate",
@@ -96,10 +97,14 @@ RATE_TYPE_CHOICES <- c(
   "Age Standardized HSC Prevalence"
 )
 
-# CHSA_CHOICES <- sort(unique(filter(inc_rate_df, GEOGRAPHY == "CHSA")$HEALTH_BOUND_NAME))
-
-
-
+# Get all the disease names as a list
+get_all_diseases <- function() {
+  list <- NULL
+  for (disease in disease_dict) {
+    list <- c(disease, list)
+  }
+  return(list)
+}
 
 ################################
 # Read data from files and prepare data frames for analysis
