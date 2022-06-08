@@ -18,9 +18,11 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ```{r libraries}
 library(dplyr)
 library(readr)
-library(plotly)
-library(lubridate)
 library(segmented)
+library(broom)
+library(tidyr)
+library(modelr)
+library(purrr)
 ```
 # Highlevel tasks:
 
@@ -39,31 +41,60 @@ List of papers:
 ### Loading data
 
 ```{r Load Data}
-df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |> 
-    mutate( RATE = as.factor(RATE)) |> 
-    mutate( DISEASE = as.factor(DISEASE)) |>
-    mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |> 
-    mutate( GEOGRAPHY = as.factor(GEOGRAPHY))
+CHSA_df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") |>
+  mutate( RATE = as.factor(RATE)) |> 
+  mutate( DISEASE = as.factor(DISEASE)) |>
+  mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) |> 
+  drop_na()
+
+CHSA_df[CHSA_df == "" | CHSA_df == 0] <- NA
+row.has.na <- apply(CHSA_df, 1, function(x){any(is.na(x))})
+sum(row.has.na)
+CHSA_df <- CHSA_df[!row.has.na,]
 
 ```
+
+### Susetting data:
+
+```{r subset}
+
+# Split the data frames according to Rates:
+
+CHSA_data_list <- split(CHSA_df, f = CHSA_df$RATE) 
+
+HSC_CHSA_df <- CHSA_data_list[[1]] |> 
+  as.data.frame()|>
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95))
+
+Incidence_CHSA_df <- CHSA_data_list[[2]] |> 
+  as.data.frame() |> 
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95))
+
+
+LifeP_CHSA_df <- CHSA_data_list[[3]] |> 
+  as.data.frame() |> 
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95))
+
+
+```
+
 
 ### Exploratory data analysis
 
 #### Plotting of Rate against Time: 
 
-The following graph plots Age-standardized Incidence Rate of ALZHEIMER_DEMENTIA in from 2001 to 2020  (Will label the graph)
+The following graph plots Age-standardized Incidence Rates of Chronic Diseases in Kimberley CHSA in from 2001 to 2020 (Will label the graph)
 
-```{r eda}
+```{r eda, fig.width=14, fig.height=12}
 # sample data
-sample_df <- df %>%
-  filter(RATE == "INCIDENCE" &
-           DISEASE == "ALZHEIMER_DEMENTIA" & 
-           GEOGRAPHY == "CHSA" &
-           HEALTH_BOUNDARIES == "1110 Fernie")
 
-sample_df %>%
-  ggplot( aes(x=YEAR, y=STD_RATE_PER_1000)) +
-  geom_line()
+Incidence_CHSA_df %>%
+  filter(HEALTH_BOUNDARIES == "1130 Kimberley") %>%
+  ggplot(aes(x=YEAR, y=STD_RATE_PER_1000)) +
+  geom_line() +
+  facet_wrap(~DISEASE) +
+  labs(x = "Years", y = "Age standardized Incidence Rate (per 1000)") +
+  ggtitle("Age-standardized Incidence Rates by Diseases in Kimberley")
 
 ```
 
@@ -76,16 +107,9 @@ Observations: (Will elaborate later)
 
 ```{r rates summary}
 
-hsc_df <- df %>%
-  filter(RATE == "HSC")
-incidence_rate_df <- df %>%
-  filter(RATE == "INCIDENCE")
-lif_prevalence_df <- df %>%
-  filter(RATE == "LIFE_PREV")
-
-summary(hsc_df$STD_RATE_PER_1000)
-summary(incidence_rate_df$STD_RATE_PER_1000)
-summary(lif_prevalence_df$STD_RATE_PER_1000)
+summary(HSC_CHSA_df$STD_RATE_PER_1000)
+summary(Incidence_CHSA_df$STD_RATE_PER_1000)
+summary(LifeP_CHSA_df$STD_RATE_PER_1000)
 
 ```
 Observations: (Will elaborate later)
@@ -96,15 +120,21 @@ Observations: (Will elaborate later)
 
 ### Specifics :
 
- - Model : Linear regression 
- - Response (y): Rates 
- - Predictors : Year
+ - Model : Segmented regression (Joinpoint regression)
+ - Response (y): Age-Standardized Incidence Rate
+ - Predictor : Year
  - `segmented.lm` is used
+ - Filtering ALZHEIMER_DEMENTIA and 3213 Fairview CHSA
  
 ```{r linear regression}
-attach(sample_df)
-lm <- lm(STD_RATE_PER_1000~YEAR)
-seg_model<-segmented(lm,seg.Z=~YEAR)
+
+sample_df <- Incidence_CHSA_df %>%
+  filter(HEALTH_BOUNDARIES == "3213 Fairview" &
+           DISEASE == "ALZHEIMER_DEMENTIA")
+
+lm_model <- lm(STD_RATE_PER_1000~YEAR, data = sample_df)
+seg_obj<-segmented(lm_model,seg.Z=~YEAR)
+
 ```
 
 
@@ -113,7 +143,7 @@ seg_model<-segmented(lm,seg.Z=~YEAR)
 #### Regression coefficients:
 
 ```{r}
-print(summary(seg_model))
+print(summary(seg_obj))
 ```
 Observations: (Will elaborate later)
 
@@ -124,7 +154,7 @@ Observations: (Will elaborate later)
 To summarize piecewise linear relationships in segmented
 regression models.
 ```{r aapc}
-print(aapc(seg_model, wrong.se = FALSE))
+print(aapc(seg_obj, wrong.se = FALSE))
 ```
 Observations: (Will elaborate later)
 
@@ -133,17 +163,53 @@ Observations: (Will elaborate later)
 #### Plotting:
 
 ```{r}
-plot(seg_model, conf.level=.95, is=TRUE, isV=FALSE, col=1, shade = TRUE, res=TRUE, res.col=1, pch=19)
+plot(seg_obj, conf.level=.95, is=TRUE, isV=FALSE, col=1, shade = TRUE, res=TRUE, res.col=1, pch=19)
 ```
 
 Observations: (Will elaborate later)
 
- - Epidemiological emphasis: Causes can be explored looking at the "Breakpoint" of Year 2004
+ - Epidemiological emphasis: Possible causes can be explored looking at the "Breakpoint" of Year 2009. 
 
 
+## Fitting the Model: 
+
+```{r}
+
+posslm = possibly(.f = lm, otherwise = NULL)
+
+segment_fit <- function(data){
+  model <-  lm(log(STD_RATE_PER_1000)~ YEAR, 
+               na.action=na.exclude,
+               data=data)
+  segmented(model, seg.Z = ~YEAR)
+}
+
+# Incidence_CHSA_df %>%
+#   ungroup() %>%
+#   mutate(segment_fit())
+# 
+# myData$pred_dist = fitted(model0)
 
 
+nested_incidence <- Incidence_CHSA_df %>%
+  group_by(HEALTH_BOUNDARIES, DISEASE) %>%
+  nest()
+
+fitted <- nested_incidence %>% 
+  mutate(mod = map(data, segment_fit)) %>% 
+  mutate(pred  = map2(data, mod, add_predictions))
+
+```
  
+
+
+
+
+
+
+
+
+
 # References
  
  

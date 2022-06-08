@@ -23,10 +23,11 @@ wrangling <- function(data) {
     mutate(across(c(STD_RATE_PER_1000, 
                     STD_UCL_95, 
                     STD_LCL_95), round, 2)) %>%
-    select(YEAR, DISEASE,
-           GEOGRAPHY, HEALTH_BOUNDARIES,
-           STD_RATE_PER_1000, 
-           STD_UCL_95, STD_LCL_95)
+    dplyr::select(YEAR, DISEASE,
+                  HEALTH_BOUNDARIES,
+                  STD_RATE_PER_1000, 
+                  STD_UCL_95, 
+                  STD_LCL_95)
 }
 
 df_temp <- dfList %>%
@@ -38,7 +39,7 @@ df_merged <- bind_rows(df_temp, .id = "keys") %>%
                               '1' = "HSC", 
                               '2' = "INCIDENCE", 
                               '3' = "LIFE_PREV")) %>%
-  select(-c(keys)) %>%
-  select(RATE, everything())
+  dplyr::select(-c(keys)) %>%
+  dplyr::select(RATE, everything())
 
 write.csv(df_merged,"/Users/mahmood/UBCMDS/591_capstone/master_df.csv", row.names = FALSE)
