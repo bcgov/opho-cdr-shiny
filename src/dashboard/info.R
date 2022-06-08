@@ -1,10 +1,10 @@
 
 about_info<-"<br/><br/>
   This dashboard facilitates the exploration and visualization of spatial and temporal
-  trends of 25 different chronic diseases across the Province of British Columbia. The data 
-  is sourced from the BC Chronic Disease Registry (BCCDR). Data is available for three different rate types, 
-  each as a crude rate or age-standardized rate, and is available at the Health Authority (HA) level or the
-  Community Health Services Area (CHSA) level. The data is aggregated per geography, year, and gender. 
+  trends of 25 different chronic diseases across the province of British Columbia. The data 
+  is sourced from the BC Chronic Disease Registry (BCCDR). Data is available for three different epidemiological rates 
+  (crude or age-standardized), and is available at the Health Authority (HA) level and the
+  Community Health Services Area (CHSA) level. The data is aggregated per geography, year, and sex. 
   Detailed information and definitions of the data can be found in the corresponding information pages.
   
   <br/><br/>
@@ -12,23 +12,23 @@ about_info<-"<br/><br/>
   <ul>
    <li><b>By Disease</b></li>
    This tab allows for the comparisons of one disease over several HAs or CHSAs.
-   In this tab the user should select a disease, a rate type, geography type, gender, and year. 
+   In this tab the user can select a disease, rate type, geography type, sex, and year. 
    The user can specify multiple HAs or CHSAs. After data has been selected, the following
    visualizations will be displayed:
    <ul>
-    <li> A choropleth map showing the distribution of the selected rate type across 
-    the selected type of health boundaries Province of BC in the selected year </li>
+    <li> A choropleth map of BC showing the distribution of the selected rate type across 
+    the selected category of health boundaries for the selected year </li>
     <li> A bar graph showing the selected rate type for all selected health regions, 
     with upper and lower bounds of the rate </li>
-    <li> A line chart showing trend of selected rate type for all selected health regions from 2001 to 2020. </li>
+    <li> A line chart showing the trend of the selected rate type for all selected health regions from 2001 to 2020. </li>
    </ul>
    All visualizations have interactive elements, where detailed information will appear upon mouse hover. 
-   An animation of changes over year is also available. 
+   An animation of changes over all years is also available. 
    <br/><br/>
    <li><b>By Region</b></li>
    This tab allows for the comparisons of several diseases in one particular HA or CHSA.
-   In this tab the user should select a rate type, disease(s) of interest, geography type, health region,
-   year, and gender. After data has been selected, the following
+   In this tab the user can select a rate type, disease(s) of interest, geography type, health region,
+   year, and sex. After data has been selected, the following
    visualizations will be displayed:
    <ul>
     <li> A bar graph showing the selected rate type for all selected diseases,
@@ -36,8 +36,8 @@ about_info<-"<br/><br/>
     <li> A line chart showing the trend of the selected rate type for all selected diseases from 2001 to 2020. </li>
    </ul>
    <li><b>Data</b></li>
-   This tab retrieves all data specified by the user. In this tab the user should select a rate type, 
-   disease(s), geography type, health region(s), year range, and gender. A data table showing the selected
+   This tab retrieves all data specified by the user. In this tab the user can select a rate type, 
+   disease(s), geography type, health region(s), year range, and sex. A data table showing the selected
    data wil be displayed, and there is an option for the user to download the selected data.<br/><br/>
   </ul>
   <br/>
@@ -47,8 +47,8 @@ about_info<-"<br/><br/>
 "
 
 
-rate_info<-"Three different rate types are available. The definitions of each are as follows. Note for each definition,
-        the value of n depends on whether the disease is rare or not and is typically set to 2 or 3 in the BCCDR.
+rate_info<-"Three different epidemiological rate types are available. The definitions of each are as follows. Note that for each definition,
+        the value of n depends on whether the disease is rare or not, and is typically set to 2 or 3 in the BCCDR.
        <ul>
          <li><b>Incidence Rate</b> : The rate at which new cases of disease occur in a 
          specified population during a specified time period. 
@@ -89,13 +89,13 @@ rate_info<-"Three different rate types are available. The definitions of each ar
       Each of the above rates is available as either a crude rate or age-standardized rate. 
       The defintions of these two types are as follows:<br/><br/>
        <ul>
-        <li><b>Age-Standardized</b>:
+        <li><b>Age-Standardized Rate</b>:
         To account for differences in the age structure of different geographical regions, rates are calculated 
         as if all regions shared the same age structure, that of the 2011 Canadian Census. Age-standardized rates 
         are appropriate for comparing regions or trends over time. They are not a good representation of the 
         burden of disease in the population.</li>
         <br/><br/>
-        <li><b>Crude</b>:
+        <li><b>Crude Rate</b>:
         These rates are not adjusted to the standard population, and represent the number of cases in a
         specific geographic region divided by the population/population-at-risk in that region. 
         Crude rates are representative of the burden of disease in the population.
@@ -105,12 +105,12 @@ rate_info<-"Three different rate types are available. The definitions of each ar
 
 
 disease_info <- "The BCCDR includes 25 chronic disease registries built and maintained by the Office 
-                of the Provincial Health Officer (OPHO) with new registries being brought on over time. 
-                The Chronic Disease Registries draws on data from several administrative data sources, 
+                of the Provincial Health Officer (OPHO), with new registries being refreshed each year. 
+                The Chronic Disease Registry draws on data from several administrative data sources, 
                 including Medical Services Plan (MSP), Discharge Abstract Databases (DAD), 
                 PharmaNet (PNET), and  Client Roster (CR). Using the BCCDR data, it is possible 
                 to estimate the incidence and lifetime prevalence 
-                of 25 chronic conditions in BC, as well as active healthcare contact 
+                for 25 chronic conditions in BC, as well as active healthcare contact 
                 prevalence for 11 relapsing-remitting diseases (marked with a star in the list below):<br/><br/>
                 
                 <b>Chronic Respiratory Diseases</b><br/>
@@ -171,7 +171,7 @@ data_dict_info <-"
   <br/><br/>
   Modeled data is available for all Age-Standardized rates in CHSAs for Total Sex data. The modelled curves
   show the changes in disease rates smoothened out over time to capture the overall trends within
-  each health boundary. For rare conditions or smaller regions, the modelled data may appear to be 
+  each health boundary. For rare conditions or smaller regions, the modelled data may be 
   missing due to low rates. Additional information about the modelling procedure can be found <a href='https://github.com/bcgov/opho-cdr-shiny'>here</a>.
   <br/>
 
@@ -193,7 +193,7 @@ data_dict_info <-"
     </tr>
     <tr>
       <td><b>Sex</b></td>
-      <td>Gender category.</td>
+      <td>Sex category.</td>
       <td><q>T</q>, <q>M</q>, or <q>F</q>. T includes Male, Female, and Unknown.</td>
     </tr>
     <tr>
