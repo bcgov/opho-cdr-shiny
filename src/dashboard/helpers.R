@@ -234,6 +234,7 @@ health_bounds <- function(input){
    )
  }
  
+ 
  # Dataset switch function
  dataset_switch <- function (input){
    switch(input,

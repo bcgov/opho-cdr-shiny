@@ -89,9 +89,12 @@ ui <- fluidPage(
                    selectInput("disease_d",
                                label= "Select Disease",
                                choices = ALL_DISEASES),
-                   uiOutput("dataset_d"),
+                   rate_type_input("dataset_d"),
                    geography_radio_buttons("health_bound_d"),
-                   uiOutput("region_d"),
+                   selectInput("region_d",
+                               label = "Select Health Boundaries",
+                               choices = HA_CHOICES,
+                               multiple = TRUE),
                    sex_radio_buttons("gender_d"),
                    year_slider("year_d", "year_info_d"),
                    fisc_year_tt("year_info_d"),
@@ -230,7 +233,7 @@ server <- function(input, output,session) {
   
   # Conditionally show modeled data toggle switch
   observe({
-    if(input$gender_d =="Total"&& 
+    if(input$gender_d =="Total" && 
        input$health_bound_d=="Community Health Service Areas" &&
        startsWith(input$dataset_d,"Age")){
       output$modeldata_d <- renderUI({
@@ -240,35 +243,66 @@ server <- function(input, output,session) {
       output$modeldata_d <- renderUI({ })
     }
   })
+  
+  # Dynamic UI for rate selection
+  observeEvent(input$disease_d,{
+         updateSelectInput(
+           session,
+           "dataset_d",
+           label = "Select Rate Type",
+           choices = (
+             if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
+             else
+               c("Crude Incidence Rate",
+                 "Age Standardized Incidence Rate",
+                 "Crude Life Prevalence",
+                 "Age Standardized Life Prevalence")
+                  ),
+           selected = "Crude Incidence Rate"
+          )
+})
 
   # Dynamic UI for rate selection
-  output$dataset_d <- renderUI({
-    selectInput("dataset_d", 
-                label = "Select Rate Type",
-                choices = (
-                  if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
-                  else
-                    c("Crude Incidence Rate",
-                      "Age Standardized Incidence Rate",
-                      "Crude Life Prevalence",
-                      "Age Standardized Life Prevalence")
-                ),
-                selected = "Crude Incidence Rate",
-                multiple = FALSE,
-    )
+  # output$dataset_d <- renderUI({
+  #   selectInput("dataset_d", 
+  #               label = "Select Rate Type",
+  #               choices = (
+  #                 if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
+  #                 else
+  #                   c("Crude Incidence Rate",
+  #                     "Age Standardized Incidence Rate",
+  #                     "Crude Life Prevalence",
+  #                     "Age Standardized Life Prevalence")
+  #               ),
+  #               selected = "Crude Incidence Rate",
+  #               multiple = FALSE,
+  #   )
+  # })
+  
+  # Dynamic UI for region selection
+  observeEvent(input$health_bound_d,{
+    updateSelectInput(
+      session,
+      "region_d",
+      label = "Select Health Boundaries",
+      choices = health_bounds(input$health_bound_d),
+      selected = (
+        if(input$health_bound_d == "Health Authorities") HA_CHOICES
+        else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
+      ))
   })
   
   # Dynamic UI for region selection
-  output$region_d <- renderUI({
-    selectInput("region_d",
-                label = "Select Health Boundaries",
-                choices = health_bounds(input$health_bound_d),
-                multiple = TRUE,
-                selected = (
-                  if(input$health_bound_d == "Health Authorities") HA_CHOICES
-                  else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
-                ))
-  })
+  # output$region_d <- renderUI({
+  #   selectInput("region_d",
+  #               label = "Select Health Boundaries",
+  #               choices = health_bounds(input$health_bound_d),
+  #               multiple = TRUE,
+  #               selected = (
+  #                 if(input$health_bound_d == "Health Authorities") HA_CHOICES
+  #                 else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
+  #               ))
+  # })
   
   # Dataset selection based on user input
   datasetInput_d <- reactive({
@@ -660,7 +694,7 @@ server <- function(input, output,session) {
   
 #Update map with filter changes
   observe({
-  
+    invalidateLater(500)
     year_filtered_map_df <- filter_df_yr_d()
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
@@ -1019,6 +1053,7 @@ server <- function(input, output,session) {
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
   output$region_tab_line_chart <- renderPlotly({
+    req(region_tab_filtered_data())
     data <- region_tab_filtered_data()
     
     data |>
@@ -1068,7 +1103,7 @@ server <- function(input, output,session) {
    
   # Modify line chart's yaxis to start from 0 when the switch is on
   observeEvent(input$region_tab_line_y0switch,{
-
+    req(region_tab_filtered_data())
     p <- plotlyProxy("region_tab_line_chart", session)
     
     if(input$yax_switch_d==TRUE){
@@ -1225,6 +1260,7 @@ server <- function(input, output,session) {
   
   # Then use proxy to update bar graph when filter changes
   observe({
+    req(region_tab_filtered_data())
     invalidateLater(500)
     bar_chart_data <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_selected,
@@ -1311,6 +1347,24 @@ server <- function(input, output,session) {
            "Health Authorities" = "HA",
            "Community Health Service Areas" = "CHSA")
   })
+  
+  # observeEvent(input$health_bound_data,{
+  #   updateSelectInput(
+  #     session,
+  #     "dataset_d",
+  #     label = "Select Rate Type",
+  #     choices = (
+  #       if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
+  #       else
+  #         c("Crude Incidence Rate",
+  #           "Age Standardized Incidence Rate",
+  #           "Crude Life Prevalence",
+  #           "Age Standardized Life Prevalence")
+  #     ),
+  #     selected = "Crude Incidence Rate",
+  #     # multiple = FALSE
+  #   )
+  # })
   
   # Dynamic UI for region selection
   output$region_data <- renderUI({
