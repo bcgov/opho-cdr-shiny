@@ -954,7 +954,6 @@ server <- function(input, output,session) {
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not 
   #   show to avoid error.
-  # Only update the choices if the newly selected disease is 
   observeEvent(input$region_tab_diseases_selected,
                {
                  updateSelectInput(
@@ -973,6 +972,7 @@ server <- function(input, output,session) {
                        "Crude Life Prevalence",
                        "Age Standardized Life Prevalence"
                      ),
+                   # Ensure the current selection not be overrided
                    selected = input$region_tab_rate_type_selected
                  )
                })
@@ -1035,9 +1035,11 @@ server <- function(input, output,session) {
         hovertemplate = region_tab_hovertemplate_line
       ) |>
       layout(
-        yaxis = c(y_axis_spec(input$region_tab_rate_type_selected,"nonnegative"),
-                  fixedrange = TRUE),
-        xaxis = x_axis_line_spec('Year'),
+        yaxis = c(
+          list(range = list(0, max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], 
+                                   na.rm = TRUE) * 1.05)),
+          y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")),
+        xaxis = x_axis_line_spec('Year'), 
         title = list(
           text = paste0('<b>',
                         input$region_tab_rate_type_selected,
