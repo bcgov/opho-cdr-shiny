@@ -184,13 +184,13 @@ health_bounds <- function(input){
  }
  
  # Year slider input template
- year_slider <- function(id, anim=TRUE){
+ year_slider <- function(id, year_info_id, anim=TRUE){
    if (anim==TRUE){
      return(sliderInput(id, 
                  label = tags$span(
                    "Select Year  ", 
                    tags$i(
-                     id = "year_info_d",
+                     id = year_info_id,
                      class = "glyphicon glyphicon-info-sign", 
                      style = "color:#0072B2;"
                    )),
@@ -206,7 +206,7 @@ health_bounds <- function(input){
                  label = tags$span(
                    "Select Year Range  ",
                    tags$i(
-                     id = "year_info_data",
+                     id = year_info_id,
                      class = "glyphicon glyphicon-info-sign",
                      style = "color:#0072B2;"
                    )),

@@ -93,7 +93,7 @@ ui <- fluidPage(
                    geography_radio_buttons("health_bound_d"),
                    uiOutput("region_d"),
                    sex_radio_buttons("gender_d"),
-                   year_slider("year_d"),
+                   year_slider("year_d", "year_info_d"),
                    fisc_year_tt("year_info_d"),
                    br(),
                    actionButton("reset_d", "Reset")
@@ -135,7 +135,7 @@ ui <- fluidPage(
                                selected = ALL_DISEASES[1:3]),
                    rate_type_input("region_tab_rate_type_selected"),
                    sex_radio_buttons("region_tab_sex_selected"),
-                   year_slider("region_tab_year_selected"),
+                   year_slider("region_tab_year_selected", "region_tab_year_slider_info"),
                    fisc_year_tt("region_tab_year_slider_info"),
                    br(),
                    actionButton("region_tab_reset_button", "Reset")
@@ -163,7 +163,7 @@ ui <- fluidPage(
                    uiOutput("disease_data"),
                    geography_radio_buttons("health_bound_data"),
                    uiOutput("region_data"),
-                   year_slider("year_range_data",anim = FALSE),
+                   year_slider("year_range_data", "year_info_data", anim = FALSE),
                    fisc_year_tt("year_info_data"),
                    sex_radio_buttons("gender_data"),
                    br(),br(),
