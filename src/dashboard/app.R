@@ -1033,7 +1033,8 @@ server <- function(input, output,session) {
         hovertemplate = region_tab_hovertemplate_line
       ) |>
       layout(
-        yaxis = y_axis_spec(input$region_tab_rate_type_selected,"nonnegative"),
+        yaxis = c(y_axis_spec(input$region_tab_rate_type_selected,"nonnegative"),
+                  fixedrange = TRUE),
         xaxis = x_axis_line_spec('Year'),
         title = list(
           text = paste0('<b>',
