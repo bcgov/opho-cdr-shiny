@@ -245,7 +245,7 @@ server <- function(input, output,session) {
        input$health_bound_d=="Community Health Service Areas" &&
        startsWith(input$dataset_d,"Age")){
       output$modeldata_d <- renderUI({
-        material_switch("modeldata_d_switch","Smoothed Time Trends ")
+        material_switch("modeldata_d_switch","Smoothed Time Trends")
       })
     }else{
       output$modeldata_d <- renderUI({ })
@@ -269,7 +269,7 @@ server <- function(input, output,session) {
            selected = "Crude Incidence Rate"
           )
 })
-
+  
   # Dynamic UI for region selection
   observeEvent(input$health_bound_d,{
     updateSelectInput(
