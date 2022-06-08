@@ -1035,8 +1035,8 @@ server <- function(input, output,session) {
       ) |>
       layout(
         yaxis = c(
-          list(range = list(0, max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], 
-                                   na.rm = TRUE) * 1.05)),
+          list(range = list(min(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 0.95,
+                            max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 1.05)),
           y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")),
         xaxis = x_axis_line_spec('Year'), 
         title = list(
@@ -1067,9 +1067,30 @@ server <- function(input, output,session) {
   })
    
   # Modify line chart's yaxis to start from 0 when the switch is on
-  observe({
-    invalidateLater(500)
+  observeEvent(input$region_tab_line_y0switch,{
+
     p <- plotlyProxy("region_tab_line_chart", session)
+    
+    if(input$yax_switch_d==TRUE){
+      p%>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis = append(list(range=list(0,max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 1.05)),
+                                           y_axis_spec(input$region_tab_rate_type_selected,"tozero"))
+                          ))
+    }else{
+      p%>%
+        plotlyProxyInvoke("relayout",
+                          list(
+                            yaxis = list(title = list(text = paste0(input$region_tab_rate_type_selected," Per 1000"),
+                                                      font = list(size = ifelse(startsWith(region_tab_rate_as_variable(),"STD"),12,14))),
+                                         range=list(min(region_tab_filtered_data()[[region_tab_rate_as_variable()]],na.rm=TRUE)*0.95,
+                                                    max(region_tab_filtered_data()[[region_tab_rate_as_variable()]],na.rm=TRUE)*1.05),
+                                         gridcolor = "#d9dadb",
+                                         showline= T, linewidth=1, linecolor='black',
+                                         rangemode = "nonnegative")
+                          ))
+    }
     
     p |>
       plotlyProxyInvoke("relayout",
@@ -1103,7 +1124,6 @@ server <- function(input, output,session) {
               type = "scatter",
               mode = "lines",
               name = disease,
-              # customdata = df$HEALTH_BOUND_NAME,
               line = list(width = 2,
                           color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
               hovertemplate = region_tab_hovertemplate_line
@@ -1129,7 +1149,6 @@ server <- function(input, output,session) {
               type = "scatter",
               mode = "lines",
               name = disease,
-              # customdata = df$HEALTH_BOUND_NAME,
               line = list(width = 2,
                           color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
               hovertemplate = region_tab_hovertemplate_line
