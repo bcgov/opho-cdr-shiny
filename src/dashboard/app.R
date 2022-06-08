@@ -142,10 +142,10 @@ ui <- fluidPage(
                  ),
                  mainPanel(
                    width = 9,
-                   fluidRow(plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
+                   fluidRow(plotlyOutput("region_tab_bar_chart", height = 350) %>% withSpinner()),
                    fluidRow(column(4, material_switch("region_tab_line_y0switch","Y-axis from 0")),
                             column(8, uiOutput("region_tab_smoothing"))),
-                   fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()))
+                   fluidRow(plotlyOutput("region_tab_line_chart",height = 350) %>% withSpinner()))
                  
               )), 
       
