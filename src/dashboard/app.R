@@ -1225,8 +1225,7 @@ server <- function(input, output,session) {
       )
 
     error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
-    error$upper <-
-      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
+    error$upper <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
 
     p <- plotlyProxy("region_tab_bar_chart", session)
 
@@ -1267,15 +1266,10 @@ server <- function(input, output,session) {
     p |> plotlyProxyInvoke("relayout",
                            list(
                              autosize = F,
-                             yaxis = append(
-                               list(range = list(
-                                 0,
-                                 max(region_tab_filtered_data()[[error$upper]],
-                                     na.rm = TRUE) * 1.05
-                               )),
-                               y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
-                             ),
-                             xaxis = append(list(fixedrange = TRUE)),
+                             yaxis = append(list(range=list(0,max(region_tab_filtered_data()[[error$upper]],na.rm=TRUE)*1.05)),
+                                            y_axis_spec(input$region_tab_rate_type_selected,"nonnegative")),
+                             xaxis = append(list(fixedrange = TRUE),
+                                            x_axis_bar_spec("Disease")),
                              title = list(
                                text = HTML(
                                  paste0(
