@@ -97,15 +97,34 @@ RATE_TYPE_CHOICES <- c(
   "Age Standardized HSC Prevalence"
 )
 
-# Get all the disease names as a list
-get_all_diseases <- function() {
-  list <- NULL
-  for (disease in disease_dict) {
-    list <- c(disease, list)
-  }
-  return(list)
-}
-
+ALL_DISEASES <-
+  c(
+    "Acute Myocardial Infarction",
+    "Alzheimer's and Other Types of Dementia",
+    "Asthma",
+    "Chronic Kidney Disease",
+    "Chronic Obstructive Pulmonary Disease",
+    "Depression",
+    "Diabetes Mellitus",
+    "Epilepsy",
+    "Gout and Crystal Arthropathies",
+    "Heart Failure",
+    "Hypertension",
+    "Ischemic Heart Disease",
+    "Juvenile Idiopathic Arthritis",
+    "Mood and Anxiety Disorders",
+    "Multiple Sclerosis",
+    "Osteoarthritis",
+    "Osteoporosis",
+    "Parkinson's Disease and Parkinsonism",
+    "Rheumatoid Arthritis",
+    "Schizophrenia and Delusional Disorders",
+    "Stroke (Hospitalized Haemorrhagic)",
+    "Stroke (Hospitalized Ischemic)",
+    "Stroke (Hospitalized Transient Ischemic Attack)",
+    "Stroke (Hospitalized)",
+    "Substance Use Disorders"
+  )                    
 ################################
 # Read data from files and prepare data frames for analysis
 ################################
