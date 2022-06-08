@@ -386,11 +386,6 @@ server <- function(input, output,session) {
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
     
-    # dummyData <- filter_df_d()|>
-    #   filter(HEALTH_BOUND_NAME %in% input$region_d,
-    #          YEAR == 2001
-    #          )
-    
     dummyData <- datasetInput_d() |>
       filter(CLNT_GENDER_LABEL=='T',
              HEALTH_BOUND_NAME %in% input$region_d,
@@ -447,8 +442,8 @@ server <- function(input, output,session) {
   observe({
     invalidateLater(500)
     newdata <- filter_df_d()|>
-      filter((YEAR == input$year_d)&
-               ((HEALTH_BOUND_NAME %in% input$region_d)))
+      filter(YEAR == input$year_d,
+             HEALTH_BOUND_NAME %in% input$region_d)
     
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95") 
@@ -486,7 +481,7 @@ server <- function(input, output,session) {
     p %>%  plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
+                          yaxis = append(list(range=list(0,na.omit(max(filter_df_reg_d()[[error$upper]]))*1.05)),
                                         y_axis_spec(input$dataset_d,"nonnegative")),
                           xaxis = append(list(fixedrange = TRUE),
                                          x_axis_bar_spec('Health Region')),
@@ -521,8 +516,10 @@ server <- function(input, output,session) {
       hovertemplate = hovertemplate_line
       
     )%>%
-      layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
-                                    y_axis_spec(input$dataset_d,"nonnegative")),
+    
+      layout(yaxis = append(list(range = list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
+                                              max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                            y_axis_spec(input$dataset_d,"nonnegative")),
              xaxis = x_axis_line_spec('Year'),
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
                           y=0.92,
@@ -555,7 +552,7 @@ server <- function(input, output,session) {
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
-                          append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
                                  y_axis_spec(input$dataset_d,"tozero"))
                         ))
     }else{
@@ -564,7 +561,8 @@ server <- function(input, output,session) {
                           list(
                             yaxis = list(title = list(text = paste0(input$dataset_d," Per 1000"),
                                                       font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
-                                         range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05),
+                                         range=list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
+                                                    max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05),
                                          gridcolor = "#d9dadb",
                                          showline= T, linewidth=1, linecolor='black',
                                          rangemode = "nonnegative")
@@ -622,6 +620,7 @@ server <- function(input, output,session) {
       }
     }
     })
+  
 
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
@@ -819,7 +818,6 @@ server <- function(input, output,session) {
                                     list(line = list(width=2,
                                                      color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
                                     as.integer(match(reg,my_traces())-1))
-          
         } 
         ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
         lp %>% clearGroup('selected')
@@ -841,6 +839,7 @@ server <- function(input, output,session) {
                  color = CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]),
             as.integer(match(event[["x"]],my_traces())-1)
           )
+        
         ppb %>%
           plotlyProxyInvoke(
             method = "restyle",
@@ -849,8 +848,9 @@ server <- function(input, output,session) {
           plotlyProxyInvoke(
             method = "restyle",
             list(opacity = 1),
-            as.integer(match(event[["x"]], my_traces())-1)
+            as.integer(match(event[["x"]], input$region_d)-1)
           )
+        
       lp %>%
         addPolygons(
           data=subset(spdf_d(),
@@ -960,7 +960,7 @@ server <- function(input, output,session) {
                    "region_tab_rate_type_selected",
                    label = "Select Rate Type",
                    choices = if (setequal(
-                     intersect(input$region_tab_diseases_selected, HSC_disease),
+                     intersect(input$region_tab_diseases_selected, HSC_DISEASES),
                      input$region_tab_diseases_selected
                    ))
                      RATE_TYPE_CHOICES

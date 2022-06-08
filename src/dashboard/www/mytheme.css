@@ -108,8 +108,9 @@
   color:var(--navy);
   font-size: 28px;
   font-weight: bold;
-  padding-top: 3px;
+  padding-top: 5px;
   text-align: center;
+  line-height: 1;
 }
 
 .col-sm-3{
