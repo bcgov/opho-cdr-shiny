@@ -164,9 +164,17 @@ ui <- fluidPage(
                    h2("Data Selection"),
                    hr(),
                    rate_type_input("dataset_data"),
-                   uiOutput("disease_data"),
+                   selectInput("disease_data", 
+                               label = "Select Disease(s)",
+                               choices = ALL_DISEASES,
+                               multiple = TRUE,
+                               selected = "All"),
                    geography_radio_buttons("health_bound_data"),
-                   uiOutput("region_data"),
+                   selectInput("region_data",
+                               label = "Select Health Boundaries",
+                               choices = append("All",HA_CHOICES),
+                               multiple = TRUE,
+                               selected = "All"),
                    year_slider("year_range_data", "year_info_data", anim = FALSE),
                    fisc_year_tt("year_info_data"),
                    sex_radio_buttons("gender_data"),
@@ -262,23 +270,6 @@ server <- function(input, output,session) {
           )
 })
 
-  # Dynamic UI for rate selection
-  # output$dataset_d <- renderUI({
-  #   selectInput("dataset_d", 
-  #               label = "Select Rate Type",
-  #               choices = (
-  #                 if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
-  #                 else
-  #                   c("Crude Incidence Rate",
-  #                     "Age Standardized Incidence Rate",
-  #                     "Crude Life Prevalence",
-  #                     "Age Standardized Life Prevalence")
-  #               ),
-  #               selected = "Crude Incidence Rate",
-  #               multiple = FALSE,
-  #   )
-  # })
-  
   # Dynamic UI for region selection
   observeEvent(input$health_bound_d,{
     updateSelectInput(
@@ -292,17 +283,6 @@ server <- function(input, output,session) {
       ))
   })
   
-  # Dynamic UI for region selection
-  # output$region_d <- renderUI({
-  #   selectInput("region_d",
-  #               label = "Select Health Boundaries",
-  #               choices = health_bounds(input$health_bound_d),
-  #               multiple = TRUE,
-  #               selected = (
-  #                 if(input$health_bound_d == "Health Authorities") HA_CHOICES
-  #                 else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
-  #               ))
-  # })
   
   # Dataset selection based on user input
   datasetInput_d <- reactive({
@@ -1348,42 +1328,46 @@ server <- function(input, output,session) {
            "Community Health Service Areas" = "CHSA")
   })
   
-  # observeEvent(input$health_bound_data,{
-  #   updateSelectInput(
-  #     session,
-  #     "dataset_d",
-  #     label = "Select Rate Type",
-  #     choices = (
-  #       if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
-  #       else
-  #         c("Crude Incidence Rate",
-  #           "Age Standardized Incidence Rate",
-  #           "Crude Life Prevalence",
-  #           "Age Standardized Life Prevalence")
-  #     ),
-  #     selected = "Crude Incidence Rate",
-  #     # multiple = FALSE
-  #   )
+  # Dynamic UI for region selection
+  observeEvent(input$health_bound_data,{
+    updateSelectInput(
+      session,
+      "region_data",
+      label = "Select Health Boundaries",
+      choices = append("All",health_bounds(input$health_bound_data)),
+      selected = "All"
+    )
+  })
+  
+  # # Dynamic UI for region selection
+  # output$region_data <- renderUI({
+  #   selectInput("region_data",
+  #               label = "Select Health Boundaries",
+  #               choices = append("All",health_bounds(input$health_bound_data)),
+  #               multiple = TRUE,
+  #               selected = "All")
   # })
   
-  # Dynamic UI for region selection
-  output$region_data <- renderUI({
-    selectInput("region_data",
-                label = "Select Health Boundaries",
-                choices = append("All",health_bounds(input$health_bound_data)),
-                multiple = TRUE,
-                selected = "All")
-  })
-  
   # Dynamic UI for disease selection
-  output$disease_data <- renderUI({
-    selectInput("disease_data", 
-                label = "Select Disease(s)",
-                choices = append("All", unique(datasetInput_data()$DISEASE)),
-                multiple = TRUE,
-                selected = "All")
+  observeEvent(input$health_bound_data,{
+    updateSelectInput(
+      session,
+      "disease_data",
+      label = "Select Disease(s)",
+      choices = append("All", unique(datasetInput_data()$DISEASE)),
+      selected = "All"
+    )
   })
   
+  # # Dynamic UI for disease selection
+  # output$disease_data <- renderUI({
+  #   selectInput("disease_data", 
+  #               label = "Select Disease(s)",
+  #               choices = append("All", unique(datasetInput_data()$DISEASE)),
+  #               multiple = TRUE,
+  #               selected = "All")
+  # })
+  # 
   # Filter data and reformat dataframe
   filter_df_data <- reactive({
     data <- datasetInput_data() |> 
