@@ -949,7 +949,6 @@ server <- function(input, output,session) {
       output$region_tab_smoothing <- renderUI({})
     }
   })
-
   
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not 
@@ -1183,11 +1182,8 @@ server <- function(input, output,session) {
                                         '<br><b>95% Confidence Interval</b>: (',
                                         format_round(dummy_df[[error$lower]]), ',',
                                         format_round(dummy_df[[error$upper]]),')',
-                                        '<extra></extra>')
-        )
-    }
-
-    p %>%
+                                        '<extra></extra>'))}
+    p |> 
       layout(
         yaxis = append(
           list(range = list(
@@ -1220,133 +1216,80 @@ server <- function(input, output,session) {
    
   
   # Then use proxy to update bar graph when filter changes
-  # observe({
-  #   invalidateLater(500)
-  #   bar_chart_data <- region_tab_filtered_data() |>
-  #     filter(
-  #       YEAR == input$region_tab_year_selected &
-  #         DISEASE %in% input$region_tab_diseases_selected
-  #     )
-  # 
-  #   print(paste(unique(bar_chart_data$YEAR), unique(bar_chart_data$DISEASE), unique(bar_chart_data$CLNT_GENDER_LABEL), 
-  #               unique(bar_chart_data$HEALTH_BOUND_NAME), sep = "\n"))
-  #   
-  #   error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
-  #   error$upper <-
-  #     paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
-  # 
-  #   p <- plotlyProxy("region_tab_bar_chart", session)
-  # 
-  #   for (disease in seq_along(input$region_tab_diseases_selected)) {
-  #     filtered_df <-
-  #       bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]), ]
-  #     p |>
-  #       plotlyProxyInvoke("restyle",
-  #                         "y",
-  #                         list(list(filtered_df[[region_tab_rate_as_variable()]])),
-  #                         as.integer(disease) - 1) |>
-  #       plotlyProxyInvoke("restyle",
-  #                         list(
-  #                           error_y = list(
-  #                             type = "data",
-  #                             symmetric = FALSE,
-  #                             arrayminus = filtered_df[[region_tab_rate_as_variable()]] - filtered_df[[error$lower]],
-  #                             array = filtered_df[[error$upper]] - filtered_df[[region_tab_rate_as_variable()]],
-  #                             color = '#000000',
-  #                             width = 10
-  #                           ),
-  #                           hovertemplate = paste(
-  #                             '<br><b>Disease</b>: %{x}',
-  #                             '<br><b>Year</b>: ',
-  #                             input$region_tab_year_selected,
-  #                             '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-  #                             '<br><b>95% Confidence Interval</b>: (',
-  #                             format_round(filtered_df[[error$lower]]),
-  #                             ',',
-  #                             format_round(filtered_df[[error$upper]]),
-  #                             ')',
-  #                             '<extra></extra>'
-  #                           )
-  #                         ),
-  #                         as.integer(disease) - 1)
-  #   }
-  # 
-  #   p |> plotlyProxyInvoke("relayout",
-  #                          list(
-  #                            autosize = F,
-  #                            yaxis = append(
-  #                              list(range = list(
-  #                                0,
-  #                                max(region_tab_filtered_data()[[error$upper]],
-  #                                    na.rm = TRUE) * 1.05
-  #                              )),
-  #                              y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
-  #                            ),
-  #                            xaxis = append(list(fixedrange = TRUE)),
-  #                            title = list(
-  #                              text = HTML(
-  #                                paste0(
-  #                                  "<b>Disease Distribution by ",
-  #                                  input$region_tab_rate_type_selected,
-  #                                  " in ",
-  #                                  input$region_tab_year_selected,
-  #                                  "</b>"
-  #                                )
-  #                              ),
-  #                              y = 0.92,
-  #                              font = list(size = 16)
-  #                            )
-  #                          ))
-  # 
-  # })
   observe({
+    invalidateLater(500)
     bar_chart_data <- region_tab_filtered_data() |>
-      filter(YEAR == input$region_tab_year_selected &
-               DISEASE %in% input$region_tab_diseases_selected)
+      filter(
+        YEAR == input$region_tab_year_selected &
+          DISEASE %in% input$region_tab_diseases_selected
+      )
 
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+    error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
 
     p <- plotlyProxy("region_tab_bar_chart", session)
-    p |>
-      plotlyProxyInvoke("restyle",
-                        list(
-                          x = bar_chart_data$DISEASE,
-                          y = bar_chart_data[[region_tab_rate_as_variable()]],
-                          error_y=list(
-                            type = "data",
-                            symmetric = FALSE,
-                            arrayminus = bar_chart_data[[region_tab_rate_as_variable()]] - bar_chart_data[[error$lower]],
-                            array = bar_chart_data[[error$upper]] - bar_chart_data[[region_tab_rate_as_variable()]],
-                            color = '#000000',
-                            width = 10))) |>
-      plotlyProxyInvoke("relayout",
-                        list(
-                          autosize = F,
-                          yaxis=list(range=list(0, max(region_tab_filtered_data()[[error$upper]]) * 1.1),
-                                     title = list(text =
-                                                    paste0(input$region_tab_rate_type_selected," Per 1000"),
-                                                  font = list(
-                                                    size = ifelse(startsWith(input$dataset_d,"Age"), 12, 14))),
-                                     gridcolor = "#d9dadb",
-                                     showline= T, linewidth=1, linecolor='black',
-                                     rangemode="nonnegative"),
-                          xaxis=list(fixedrange = TRUE,
-                                     categoryorder = "category ascending",
-                                     tickfont = list(size = 10),
-                                     automargin = TRUE,
-                                     showline= T, linewidth=1, linecolor='black'),
-                          title = list(text =
-                                         HTML(paste0(
-                                           "<b>Disease Distribution by ",
-                                           input$region_tab_rate_type_selected,
-                                           " in ",
-                                           input$region_tab_year_selected,
-                                           "</b>")),
-                                       y=0.92,
-                                       font = list(size = 16)
-                          )
-                        ))
+
+    for (disease in seq_along(input$region_tab_diseases_selected)) {
+      filtered_df <-
+        bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]), ]
+      p |>
+        plotlyProxyInvoke("restyle",
+                          "y",
+                          list(list(filtered_df[[region_tab_rate_as_variable()]])),
+                          as.integer(disease) - 1) |>
+        plotlyProxyInvoke("restyle",
+                          list(
+                            error_y = list(
+                              type = "data",
+                              symmetric = FALSE,
+                              arrayminus = filtered_df[[region_tab_rate_as_variable()]] - filtered_df[[error$lower]],
+                              array = filtered_df[[error$upper]] - filtered_df[[region_tab_rate_as_variable()]],
+                              color = '#000000',
+                              width = 10
+                            ),
+                            hovertemplate = paste(
+                              '<br><b>Disease</b>: %{x}',
+                              '<br><b>Year</b>: ',
+                              input$region_tab_year_selected,
+                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                              '<br><b>95% Confidence Interval</b>: (',
+                              format_round(filtered_df[[error$lower]]),
+                              ',',
+                              format_round(filtered_df[[error$upper]]),
+                              ')',
+                              '<extra></extra>'
+                            )
+                          ),
+                          as.integer(disease) - 1)
+    }
+
+    p |> plotlyProxyInvoke("relayout",
+                           list(
+                             autosize = F,
+                             yaxis = append(
+                               list(range = list(
+                                 0,
+                                 max(region_tab_filtered_data()[[error$upper]],
+                                     na.rm = TRUE) * 1.05
+                               )),
+                               y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
+                             ),
+                             xaxis = append(list(fixedrange = TRUE)),
+                             title = list(
+                               text = HTML(
+                                 paste0(
+                                   "<b>Disease Distribution by ",
+                                   input$region_tab_rate_type_selected,
+                                   " in ",
+                                   input$region_tab_year_selected,
+                                   "</b>"
+                                 )
+                               ),
+                               y = 0.92,
+                               font = list(size = 16)
+                             )
+                           ))
 
   })
   
