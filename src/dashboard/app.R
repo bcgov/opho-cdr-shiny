@@ -442,8 +442,8 @@ server <- function(input, output,session) {
   observe({
     invalidateLater(500)
     newdata <- filter_df_d()|>
-      filter((YEAR == input$year_d)&
-               ((HEALTH_BOUND_NAME %in% input$region_d)))
+      filter(YEAR == input$year_d,
+             HEALTH_BOUND_NAME %in% input$region_d)
     
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95") 
@@ -516,7 +516,6 @@ server <- function(input, output,session) {
       hovertemplate = hovertemplate_line
       
     )%>%
-      
     
       layout(yaxis = append(list(range = list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
                                               max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
@@ -550,10 +549,11 @@ server <- function(input, output,session) {
   observeEvent(input$yax_switch_d,{
     p <- plotlyProxy("disease_graph_line", session)
     if(input$yax_switch_d==TRUE){
+      print("YAX TRUE")
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
-                          append(list(range=list(0,na.omit(max(filter_df_reg_d()[[rateInput_d()]]))*1.05)),
+                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
                                  y_axis_spec(input$dataset_d,"tozero"))
                         ))
     }else{
@@ -562,7 +562,8 @@ server <- function(input, output,session) {
                           list(
                             yaxis = list(title = list(text = paste0(input$dataset_d," Per 1000"),
                                                       font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
-                                         range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05),
+                                         range=list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
+                                                    max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05),
                                          gridcolor = "#d9dadb",
                                          showline= T, linewidth=1, linecolor='black',
                                          rangemode = "nonnegative")
@@ -598,7 +599,6 @@ server <- function(input, output,session) {
                             ))
 
       }
-
 
     }else{
       p %>%
