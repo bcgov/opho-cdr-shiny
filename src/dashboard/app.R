@@ -1339,17 +1339,8 @@ server <- function(input, output,session) {
     )
   })
   
-  # # Dynamic UI for region selection
-  # output$region_data <- renderUI({
-  #   selectInput("region_data",
-  #               label = "Select Health Boundaries",
-  #               choices = append("All",health_bounds(input$health_bound_data)),
-  #               multiple = TRUE,
-  #               selected = "All")
-  # })
-  
   # Dynamic UI for disease selection
-  observeEvent(input$disease_data,{
+  observeEvent(input$dataset_data,{
     updateSelectInput(
       session,
       "disease_data",
@@ -1359,15 +1350,6 @@ server <- function(input, output,session) {
     )
   })
   
-  # # Dynamic UI for disease selection
-  # output$disease_data <- renderUI({
-  #   selectInput("disease_data", 
-  #               label = "Select Disease(s)",
-  #               choices = append("All", unique(datasetInput_data()$DISEASE)),
-  #               multiple = TRUE,
-  #               selected = "All")
-  # })
-  # 
   # Filter data and reformat dataframe
   filter_df_data <- reactive({
     data <- datasetInput_data() |> 
