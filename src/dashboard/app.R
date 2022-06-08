@@ -166,7 +166,7 @@ ui <- fluidPage(
                    rate_type_input("dataset_data"),
                    selectInput("disease_data", 
                                label = "Select Disease(s)",
-                               choices = ALL_DISEASES,
+                               choices = append("All",ALL_DISEASES),
                                multiple = TRUE,
                                selected = "All"),
                    geography_radio_buttons("health_bound_data"),
@@ -1349,7 +1349,7 @@ server <- function(input, output,session) {
   # })
   
   # Dynamic UI for disease selection
-  observeEvent(input$health_bound_data,{
+  observeEvent(input$disease_data,{
     updateSelectInput(
       session,
       "disease_data",
