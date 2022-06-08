@@ -1006,9 +1006,9 @@ server <- function(input, output,session) {
   # Get the filtered dataset based on user selection
   region_tab_filtered_data <- reactive({
     region_tab_dataset_used() |>
-      filter((HEALTH_BOUND_NAME == input$region_tab_region_selected) &
-             (DISEASE %in% input$region_tab_diseases_selected) &
-             (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
+      filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
+               (DISEASE %in% input$region_tab_diseases_selected) &
+               (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
     
   })
   
@@ -1109,7 +1109,6 @@ server <- function(input, output,session) {
               hovertemplate = region_tab_hovertemplate_line
             )
           )
-        
       }
       
     } else {
@@ -1154,12 +1153,12 @@ server <- function(input, output,session) {
       filter(HEALTH_BOUND_NAME == "Fraser",
              DISEASE %in% input$region_tab_diseases_selected,
              CLNT_GENDER_LABEL == 'T',
-             YEAR ==2001)
+             YEAR == 2001)
     
     error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
 
-    p <- plot_ly(source = "region_tab_bar_chart")
+    p <- plot_ly()
     
     for (disease in input$region_tab_diseases_selected){
       dummy_df <- dummyData[which(dummyData$DISEASE == disease),]
@@ -1187,18 +1186,14 @@ server <- function(input, output,session) {
       layout(
         yaxis = append(
           list(range = list(
-            0, max(dummyData()[[error$upper]], na.rm = TRUE) * 1.05
+            0, max(dummyData[[error$upper]], na.rm = TRUE) * 1.05
           )),
           y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
         ),
         xaxis = x_axis_bar_spec("Disease"),
         title = list(
-          text = paste0(
-            "<b>Disease Distribution by ",
-            input$region_tab_rate_type_selected,
-            " in ",
-            input$region_tab_year_selected,
-            "</b>"),
+          text = paste0( "<b>Disease Distribution by ", input$region_tab_rate_type_selected,
+                         " in 2001", "</b>"),
           y = 0.92,
           font = list(size = 16)
         ),
@@ -1215,7 +1210,6 @@ server <- function(input, output,session) {
     bar_chart_data <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_selected,
              DISEASE %in% input$region_tab_diseases_selected)
-
     error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
 
