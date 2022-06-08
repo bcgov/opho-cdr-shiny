@@ -143,7 +143,8 @@ ui <- fluidPage(
                  mainPanel(
                    width = 9,
                    fluidRow(plotlyOutput("region_tab_bar_chart") %>% withSpinner()),
-                   fluidRow(column(4,material_switch("region_tab_line_y0switch","Y-axis from 0"))),
+                   fluidRow(column(4, material_switch("region_tab_line_y0switch","Y-axis from 0")),
+                            column(8, uiOutput("region_tab_smoothing"))),
                    fluidRow(plotlyOutput("region_tab_line_chart") %>% withSpinner()))
                  
               )), 
@@ -936,19 +937,19 @@ server <- function(input, output,session) {
     reset("filters_r")
   })
   
-  # # Conditionally show modeled data toggle switch
-  # observe({
-  #   if(input$gender_d =="Total"&& 
-  #      input$health_bound_d=="Community Health Service Areas" &&
-  #      startsWith(input$dataset_d,"Age")){
-  #     output$modeldata_d <- renderUI({
-  #       material_switch("modeldata_d_switch","Smoothed Time Trends ")
-  #     })
-  #   }else{
-  #     output$modeldata_d <- renderUI({ })
-  #   }
-  # })
-  # 
+  # Show the modeled data toggle switch when conditions are reached
+  observe({
+    if (input$region_tab_sex_selected == "Total" &&
+        input$region_tab_geography_selected == "Community Health Service Areas" &&
+        startsWith(input$region_tab_rate_type_selected, "Age")) {
+      output$region_tab_smoothing <- renderUI({
+        material_switch("region_tab_smoothing_switch", "Smoothed Time Trends ")
+      })
+    } else{
+      output$region_tab_smoothing <- renderUI({})
+    }
+  })
+
   
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not 
@@ -1051,6 +1052,7 @@ server <- function(input, output,session) {
   
   # Update the vertical line in the line graph with year input
   observe({
+    invalidateLater(500)
     p <- plotlyProxy("region_tab_line_chart", session)
     
     p |>
@@ -1060,23 +1062,77 @@ server <- function(input, output,session) {
                         ))
   })
    
-  # Modify line chart's yaxis to start from 0 when user toggles the switch
-  observeEvent(input$region_tab_line_y0switch, {
+  # Modify line chart's yaxis to start from 0 when the switch is on
+  observe({
+    invalidateLater(500)
     p <- plotlyProxy("region_tab_line_chart", session)
     
-    if (input$region_tab_line_y0switch == TRUE) {
+    p |>
+      plotlyProxyInvoke("relayout",
+                        list(yaxis = y_axis_spec(
+                          input$region_tab_rate_type_selected,
+                          ifelse(input$region_tab_line_y0switch,
+                                 "tozero", "nonnegative")
+                        )))
+  })
+  
+  # Change line chart to show smoothed time trends data
+  observeEvent(input$region_tab_smoothing_switch, {
+    data <- region_tab_filtered_data()
+    p <- plotlyProxy("region_tab_line_chart", session)
+    
+    if (input$region_tab_smoothing_switch == TRUE) {
       p |>
-        plotlyProxyInvoke("relayout",
-                          list(
-                            yaxis = y_axis_spec(input$region_tab_rate_type_selected,"tozero")
-                          ))
-    } else {
-      p %>%
-        plotlyProxyInvoke("relayout",
-                          list(
-                            yaxis = y_axis_spec(input$region_tab_rate_type_selected,"nonnegative")
-                          ))
+        plotlyProxyInvoke("deleteTraces", as.list(seq(
+          0, length(input$region_tab_diseases_selected) -
+            1
+        )))
       
+      for (disease in input$region_tab_diseases_selected) {
+        df <- data[which(data$DISEASE == disease), ]
+        p |>
+          plotlyProxyInvoke(
+            "addTraces",
+            list(
+              x = df$YEAR,
+              y = df$y_fitted,
+              type = "scatter",
+              mode = "lines",
+              name = disease,
+              # customdata = df$HEALTH_BOUND_NAME,
+              line = list(width = 2,
+                          color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
+              hovertemplate = region_tab_hovertemplate_line
+            )
+          )
+        
+      }
+      
+    } else {
+      p |> 
+        plotlyProxyInvoke("deleteTraces", as.list(seq(
+          0, length(input$region_tab_diseases_selected) -
+            1
+        )))
+      
+      for (disease in input$region_tab_diseases_selected) {
+        df <- data[which(data$DISEASE == disease), ]
+        p |>
+          plotlyProxyInvoke(
+            "addTraces",
+            list(
+              x = df$YEAR,
+              y = df[[region_tab_rate_as_variable()]],
+              type = "scatter",
+              mode = "lines",
+              name = disease,
+              # customdata = df$HEALTH_BOUND_NAME,
+              line = list(width = 2,
+                          color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
+              hovertemplate = region_tab_hovertemplate_line
+            )
+          )
+      }
     }
   })
   
@@ -1243,11 +1299,11 @@ server <- function(input, output,session) {
       filter(YEAR == input$region_tab_year_selected &
                DISEASE %in% input$region_tab_diseases_selected)
 
-    print
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
 
-    plotlyProxy("region_tab_bar_chart", session) |>
+    p <- plotlyProxy("region_tab_bar_chart", session)
+    p |>
       plotlyProxyInvoke("restyle",
                         list(
                           x = bar_chart_data$DISEASE,
