@@ -386,11 +386,6 @@ server <- function(input, output,session) {
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
     
-    # dummyData <- filter_df_d()|>
-    #   filter(HEALTH_BOUND_NAME %in% input$region_d,
-    #          YEAR == 2001
-    #          )
-    
     dummyData <- datasetInput_d() |>
       filter(CLNT_GENDER_LABEL=='T',
              HEALTH_BOUND_NAME %in% input$region_d,
@@ -486,7 +481,7 @@ server <- function(input, output,session) {
     p %>%  plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
-                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[error$upper]],na.rm=TRUE)*1.05)),
+                          yaxis = append(list(range=list(0,na.omit(max(filter_df_reg_d()[[error$upper]]))*1.05)),
                                         y_axis_spec(input$dataset_d,"nonnegative")),
                           xaxis = append(list(fixedrange = TRUE),
                                          x_axis_bar_spec('Health Region')),
@@ -521,8 +516,11 @@ server <- function(input, output,session) {
       hovertemplate = hovertemplate_line
       
     )%>%
-      layout(yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
-                                    y_axis_spec(input$dataset_d,"nonnegative")),
+      
+    
+      layout(yaxis = append(list(range = list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
+                                              max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                            y_axis_spec(input$dataset_d,"nonnegative")),
              xaxis = x_axis_line_spec('Year'),
              title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
                           y=0.92,
@@ -555,7 +553,7 @@ server <- function(input, output,session) {
     p%>%
       plotlyProxyInvoke("relayout",
                         list(
-                          append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
+                          append(list(range=list(0,na.omit(max(filter_df_reg_d()[[rateInput_d()]]))*1.05)),
                                  y_axis_spec(input$dataset_d,"tozero"))
                         ))
     }else{
@@ -600,6 +598,7 @@ server <- function(input, output,session) {
                             ))
 
       }
+
 
     }else{
       p %>%
@@ -961,7 +960,7 @@ server <- function(input, output,session) {
                    "region_tab_rate_type_selected",
                    label = "Select Rate Type",
                    choices = if (setequal(
-                     intersect(input$region_tab_diseases_selected, HSC_disease),
+                     intersect(input$region_tab_diseases_selected, HSC_DISEASES),
                      input$region_tab_diseases_selected
                    ))
                      RATE_TYPE_CHOICES
