@@ -2,7 +2,7 @@
 about_info<-"<br/><br/>
   This dashboard facilitates the exploration and visualization of spatial and temporal
   trends of 25 different chronic diseases across the province of British Columbia. The data 
-  is sourced from the BC Chronic Disease Registry (BCCDR). Data is available for three different epidemiological rates, 
+  is sourced from the BC Chronic Disease Registry (BCCDR). Data is available for three different epidemiological rates 
   (crude or age-standardized), and is available at the Health Authority (HA) level and the
   Community Health Services Area (CHSA) level. The data is aggregated per geography, year, and sex. 
   Detailed information and definitions of the data can be found in the corresponding information pages.
