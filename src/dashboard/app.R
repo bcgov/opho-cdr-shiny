@@ -954,6 +954,7 @@ server <- function(input, output,session) {
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not 
   #   show to avoid error.
+  # Only update the choices if the newly selected disease is 
   observeEvent(input$region_tab_diseases_selected,
                {
                  updateSelectInput(
@@ -971,7 +972,8 @@ server <- function(input, output,session) {
                        "Age Standardized Incidence Rate",
                        "Crude Life Prevalence",
                        "Age Standardized Life Prevalence"
-                     )
+                     ),
+                   selected = input$region_tab_rate_type_selected
                  )
                })
   
