@@ -89,12 +89,9 @@ ui <- fluidPage(
                    selectInput("disease_d",
                                label= "Select Disease",
                                choices = ALL_DISEASES),
-                   rate_type_input("dataset_d"),
+                   uiOutput("dataset_d"),
                    geography_radio_buttons("health_bound_d"),
-                   selectInput("region_d",
-                               label = "Select Health Boundaries",
-                               choices = HA_CHOICES,
-                               multiple = TRUE),
+                   uiOutput("region_d"),
                    sex_radio_buttons("gender_d"),
                    year_slider("year_d", "year_info_d"),
                    fisc_year_tt("year_info_d"),
@@ -164,17 +161,9 @@ ui <- fluidPage(
                    h2("Data Selection"),
                    hr(),
                    rate_type_input("dataset_data"),
-                   selectInput("disease_data", 
-                               label = "Select Disease(s)",
-                               choices = append("All",ALL_DISEASES),
-                               multiple = TRUE,
-                               selected = "All"),
+                   uiOutput("disease_data"),
                    geography_radio_buttons("health_bound_data"),
-                   selectInput("region_data",
-                               label = "Select Health Boundaries",
-                               choices = append("All",HA_CHOICES),
-                               multiple = TRUE,
-                               selected = "All"),
+                   uiOutput("region_data"),
                    year_slider("year_range_data", "year_info_data", anim = FALSE),
                    fisc_year_tt("year_info_data"),
                    sex_radio_buttons("gender_data"),
@@ -241,48 +230,45 @@ server <- function(input, output,session) {
   
   # Conditionally show modeled data toggle switch
   observe({
-    if(input$gender_d =="Total" && 
+    if(input$gender_d =="Total"&& 
        input$health_bound_d=="Community Health Service Areas" &&
        startsWith(input$dataset_d,"Age")){
       output$modeldata_d <- renderUI({
-        material_switch("modeldata_d_switch","Smoothed Time Trends")
+        material_switch("modeldata_d_switch","Smoothed Time Trends ")
       })
     }else{
       output$modeldata_d <- renderUI({ })
     }
   })
-  
+
   # Dynamic UI for rate selection
-  observeEvent(input$disease_d,{
-         updateSelectInput(
-           session,
-           "dataset_d",
-           label = "Select Rate Type",
-           choices = (
-             if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
-             else
-               c("Crude Incidence Rate",
-                 "Age Standardized Incidence Rate",
-                 "Crude Life Prevalence",
-                 "Age Standardized Life Prevalence")
-                  ),
-           selected = "Crude Incidence Rate"
-          )
-})
-  
-  # Dynamic UI for region selection
-  observeEvent(input$health_bound_d,{
-    updateSelectInput(
-      session,
-      "region_d",
-      label = "Select Health Boundaries",
-      choices = health_bounds(input$health_bound_d),
-      selected = (
-        if(input$health_bound_d == "Health Authorities") HA_CHOICES
-        else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
-      ))
+  output$dataset_d <- renderUI({
+    selectInput("dataset_d", 
+                label = "Select Rate Type",
+                choices = (
+                  if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
+                  else
+                    c("Crude Incidence Rate",
+                      "Age Standardized Incidence Rate",
+                      "Crude Life Prevalence",
+                      "Age Standardized Life Prevalence")
+                ),
+                selected = "Crude Incidence Rate",
+                multiple = FALSE,
+    )
   })
   
+  # Dynamic UI for region selection
+  output$region_d <- renderUI({
+    selectInput("region_d",
+                label = "Select Health Boundaries",
+                choices = health_bounds(input$health_bound_d),
+                multiple = TRUE,
+                selected = (
+                  if(input$health_bound_d == "Health Authorities") HA_CHOICES
+                  else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
+                ))
+  })
   
   # Dataset selection based on user input
   datasetInput_d <- reactive({
@@ -640,75 +626,41 @@ server <- function(input, output,session) {
   output$map <- renderLeaflet({
     
     #select dummy data
-    dummyData_inc <- datasetInput_d() |>
+    dummyData <- datasetInput_d() |>
       filter(CLNT_GENDER_LABEL=='T',
              GEOGRAPHY=="HA",
-             DISEASE=="Acute Myocardial Infarction") 
-    dummyData <- dummyData_inc|>
-      filter(YEAR==2001) 
+             DISEASE=="Asthma",
+             YEAR==2001) 
     
     dummy_spdf <- data.table::copy(spdf_d())
     
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-    
     if(input$health_bound_d == "Health Authorities"){
       dummy_spdf@data <- spdf_d()@data|>
-        left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
+          left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
     }else{
       dummy_spdf@data <- spdf_d()@data|>
         left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
     }
     
-    legend_inc <- round_any(unname(quantile(dummyData_inc[[rateInput_d()]],0.85))/5,
-                            ifelse(max(dummyData_inc[[rateInput_d()]])<10,0.005,0.1))
-    mybins <- append(seq(round_any(min(dummyData_inc[[rateInput_d()]]),0.05, f=floor),
-                         by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], 
-                           bins=mybins, na.color="#cccccc")
-    labels<-c(paste0("< ",mybins[2]),
-              paste0(mybins[2]," - ",mybins[3]),
-              paste0(mybins[3]," - ",mybins[4]),
-              paste0(mybins[4]," - ",mybins[5]),
-              paste0(mybins[5]," + ")
-    )
-
-    mytext <- paste("<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
-                     "<b>",input$dataset_d,": ","</b>",
-                     format_round(dummy_spdf@data[[rateInput_d()]]),"<br/>",
-                     "<b>95% Confidence Interval</b>: (",
-                     format_round(dummy_spdf@data[[error$lower]]),",",
-                     format_round(dummy_spdf@data[[error$upper]]),")",
-      sep="") |>
-      lapply(htmltools::HTML)
-    
-    leaflet(dummy_spdf) %>% 
+    leaflet(dummy_spdf)%>%
       setView( lat=53.5, lng=-127 , zoom=4.5) %>%
       addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
-      addPolygons( 
+      addPolygons(
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
-        fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
-        stroke=TRUE, 
-        fillOpacity = 0.9, 
-        color="gray", 
+        stroke=TRUE,
+        fillOpacity = 0.9,
+        color="gray",
         weight=1,
-        label = mytext,
         highlight = highlightOptions(
           weight = 2,
           color = "black",
           opacity = 1.0)
-      ) |>
-      addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
-                 labFormat = function(type, cuts, p) {  
-                   paste0(labels)
-                 })
-    
+    )
   })
   
 #Update map with filter changes
   observe({
-   
+  
     year_filtered_map_df <- filter_df_yr_d()
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
@@ -1067,7 +1019,6 @@ server <- function(input, output,session) {
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
   output$region_tab_line_chart <- renderPlotly({
-    req(region_tab_filtered_data())
     data <- region_tab_filtered_data()
     
     data |>
@@ -1117,7 +1068,7 @@ server <- function(input, output,session) {
    
   # Modify line chart's yaxis to start from 0 when the switch is on
   observeEvent(input$region_tab_line_y0switch,{
-    req(region_tab_filtered_data())
+
     p <- plotlyProxy("region_tab_line_chart", session)
     
     if(input$yax_switch_d==TRUE){
@@ -1274,7 +1225,6 @@ server <- function(input, output,session) {
   
   # Then use proxy to update bar graph when filter changes
   observe({
-    req(region_tab_filtered_data())
     invalidateLater(500)
     bar_chart_data <- region_tab_filtered_data() |>
       filter(YEAR == input$region_tab_year_selected,
@@ -1363,25 +1313,21 @@ server <- function(input, output,session) {
   })
   
   # Dynamic UI for region selection
-  observeEvent(input$health_bound_data,{
-    updateSelectInput(
-      session,
-      "region_data",
-      label = "Select Health Boundaries",
-      choices = append("All",health_bounds(input$health_bound_data)),
-      selected = "All"
-    )
+  output$region_data <- renderUI({
+    selectInput("region_data",
+                label = "Select Health Boundaries",
+                choices = append("All",health_bounds(input$health_bound_data)),
+                multiple = TRUE,
+                selected = "All")
   })
   
   # Dynamic UI for disease selection
-  observeEvent(input$dataset_data,{
-    updateSelectInput(
-      session,
-      "disease_data",
-      label = "Select Disease(s)",
-      choices = append("All", unique(datasetInput_data()$DISEASE)),
-      selected = "All"
-    )
+  output$disease_data <- renderUI({
+    selectInput("disease_data", 
+                label = "Select Disease(s)",
+                choices = append("All", unique(datasetInput_data()$DISEASE)),
+                multiple = TRUE,
+                selected = "All")
   })
   
   # Filter data and reformat dataframe
