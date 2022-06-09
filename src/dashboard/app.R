@@ -207,22 +207,31 @@ server <- function(input, output,session) {
   ################################
   # Info Tab Server Side Logic
   ################################
-  
-  # Show disease pdf on button click
-  observeEvent(input$show_pdf, {
-    output$pdfviewer<-renderUI({
-      tags$iframe(
-        src="CDR_Case_Definitions.pdf",
-        width="100%",
-        height="800px")
+  observeEvent(input$navbarID, {
+    if(input$navbarID %in% c("Diseases")){
       
-    })
-  })
+        
+      # Show disease pdf on button click
+      observeEvent(input$show_pdf, {
+        output$pdfviewer<-renderUI({
+          tags$iframe(
+            src="CDR_Case_Definitions.pdf",
+            width="100%",
+            height="800px")
+          
+        })
+      })
+      
+    } # end observe navbarid
+  }) # end observe navbarid
   
   ################################
   # By Disease Tab Server Side Logic
   ################################
-  
+  observeEvent(input$navbarID, {
+    if(input$navbarID %in% c("By Disease")){
+      
+      
   # Reset filters
   observeEvent(input$reset_d, {
     reset("filters_d")
@@ -926,12 +935,16 @@ server <- function(input, output,session) {
           group = "selected"
         )}
   })
-   
+    } # end observe navbarid
+  }) # end observe navbarid
   
   ################################
   # By Region Tab Server Side Logic
   ################################
   
+  observeEvent(input$navbarID, {
+    if(input$navbarID %in% c("By Region")){
+      
   # Reset filters
   observeEvent(input$region_tab_reset_button, {
     reset("filters_r")
@@ -1338,6 +1351,7 @@ server <- function(input, output,session) {
   })
   
   
+  
   #####################
   # Logic to Link Hover Activity on Charts
   #####################
@@ -1450,10 +1464,17 @@ server <- function(input, output,session) {
     }
   })
   
+    } # end observe navbarid
+  }) # end observe navbarid
+  
   ################################
-  # Download Data Tab Server Side Logic
+  # Data Tab Server Side Logic
   ################################
   
+  observeEvent(input$navbarID, {
+    if(input$navbarID %in% c("Data")){
+      
+      
   # Reset filters
   observeEvent(input$reset_data, {
     reset("filters_data")
@@ -1544,13 +1565,20 @@ server <- function(input, output,session) {
                                                     list(width = '100px', targets = c(7,9))
                                                     )
                                   ))
+    } # end observe navbarid
+  }) # end observe navbarid
   
-}
+
     
     ################################
     # Mahmood Tab Server Side Logic
     ################################
-
+  
+  
+  
+  
+  
+} # end server 
 
 ################################
 # Run App
