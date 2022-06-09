@@ -640,41 +640,75 @@ server <- function(input, output,session) {
   output$map <- renderLeaflet({
     
     #select dummy data
-    dummyData <- datasetInput_d() |>
+    dummyData_inc <- datasetInput_d() |>
       filter(CLNT_GENDER_LABEL=='T',
              GEOGRAPHY=="HA",
-             DISEASE=="Asthma",
-             YEAR==2001) 
+             DISEASE=="Acute Myocardial Infarction") 
+    dummyData <- dummyData_inc|>
+      filter(YEAR==2001) 
     
     dummy_spdf <- data.table::copy(spdf_d())
     
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+    
     if(input$health_bound_d == "Health Authorities"){
       dummy_spdf@data <- spdf_d()@data|>
-          left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
+        left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
     }else{
       dummy_spdf@data <- spdf_d()@data|>
         left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
     }
     
-    leaflet(dummy_spdf)%>%
+    legend_inc <- round_any(unname(quantile(dummyData_inc[[rateInput_d()]],0.85))/5,
+                            ifelse(max(dummyData_inc[[rateInput_d()]])<10,0.005,0.1))
+    mybins <- append(seq(round_any(min(dummyData_inc[[rateInput_d()]]),0.05, f=floor),
+                         by=legend_inc,length.out=5),Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], 
+                           bins=mybins, na.color="#cccccc")
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+    )
+
+    mytext <- paste("<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
+                     "<b>",input$dataset_d,": ","</b>",
+                     format_round(dummy_spdf@data[[rateInput_d()]]),"<br/>",
+                     "<b>95% Confidence Interval</b>: (",
+                     format_round(dummy_spdf@data[[error$lower]]),",",
+                     format_round(dummy_spdf@data[[error$upper]]),")",
+      sep="") |>
+      lapply(htmltools::HTML)
+    
+    leaflet(dummy_spdf) %>% 
       setView( lat=53.5, lng=-127 , zoom=4.5) %>%
       addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
-      addPolygons(
+      addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
-        stroke=TRUE,
-        fillOpacity = 0.9,
-        color="gray",
+        fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
+        stroke=TRUE, 
+        fillOpacity = 0.9, 
+        color="gray", 
         weight=1,
+        label = mytext,
         highlight = highlightOptions(
           weight = 2,
           color = "black",
           opacity = 1.0)
-    )
+      ) |>
+      addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })
+    
   })
   
 #Update map with filter changes
   observe({
-    invalidateLater(500)
+   
     year_filtered_map_df <- filter_df_yr_d()
     error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
