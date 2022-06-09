@@ -1313,8 +1313,7 @@ server <- function(input, output,session) {
     ppb <- plotlyProxy("region_tab_bar_chart", session)
     
     
-    # If a disease line has a hover activity
-    # then highlight that line and make other lines narrower
+    # If no event, keep things the same
     if (is.null(event)) {
       for (disease in region_tab_traces()) {
         ppl %>% plotlyProxyInvoke(method="restyle",
@@ -1325,6 +1324,8 @@ server <- function(input, output,session) {
       }                                  
       ppb %>%  plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
     } else {
+      # If a disease line has a hover activity
+      #  Then highlight that line and make other lines narrower
       for (disease in region_tab_traces()) {
         ppl %>%
           plotlyProxyInvoke(
@@ -1343,30 +1344,21 @@ server <- function(input, output,session) {
           as.integer(match(event[["customdata"]], region_tab_traces()) - 1)
         )
       
-      # ppb %>%
-      #   plotlyProxyInvoke(
-      #     method = "restyle",
-      #     list(opacity=0.2)
-      #   ) %>%
-      #   plotlyProxyInvoke(
-      #     method = "restyle",
-      #     list(opacity = 1),
-      #     as.integer(match(event[["customdata"]], region_tab_traces()) - 1)
-      #   )
+      # And make the bar of the highlighted disease opaque and others transparent 
+      ppb %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(opacity=0.2)
+        ) %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          list(opacity = 1),
+          as.integer(match(event[["customdata"]], region_tab_traces()) - 1)
+        )
     }
   })
-     
-    
-      # 
-      # ppb %>%
-      #   plotlyProxyInvoke(
-      #     method = "restyle",
-      #     list(opacity=0.2)
-      #   ) %>%
-      #   plotlyProxyInvoke(
-      #     method = "restyle",
-      #     list(opacity = 1),
-      #     as.integer(match(event_info$id, my_traces())-1))
+  
+  
       
 
   ################################
