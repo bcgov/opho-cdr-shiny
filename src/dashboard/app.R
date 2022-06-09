@@ -1014,10 +1014,10 @@ server <- function(input, output,session) {
   
   #####################
   # Line Chart Related Logic
-  #####################
   
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
+  #####################
   output$region_tab_line_chart <- renderPlotly({
     data <- region_tab_filtered_data()
     
@@ -1027,18 +1027,23 @@ server <- function(input, output,session) {
         y = data[[region_tab_rate_as_variable()]],
         type = "scatter",
         mode = "lines",
+        source = "region_tab_line_chart",
         line = list(width = 2),
         color = ~DISEASE,
+        customdata = ~DISEASE,
         showlegend = T,
         colors = setNames(DISEASE_colors$Colors, DISEASE_colors$DISEASE),
         hovertemplate = region_tab_hovertemplate_line
       ) |>
       layout(
         yaxis = c(
-          list(range = list(min(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 0.95,
-                            max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 1.05)),
-          y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")),
-        xaxis = x_axis_line_spec('Year'), 
+          list(range = list(
+            min(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 0.95,
+            max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 1.05
+          )),
+          y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
+        ),
+        xaxis = x_axis_line_spec('Year'),
         title = list(
           text = paste0('<b>',
                         input$region_tab_rate_type_selected,
@@ -1051,7 +1056,6 @@ server <- function(input, output,session) {
         shapes = list(vline(2001))
       )  |>
       event_register('plotly_hover')
-      
   })
   
   # Update the vertical line in the line graph with year input
@@ -1121,6 +1125,7 @@ server <- function(input, output,session) {
             list(
               x = df$YEAR,
               y = df$y_fitted,
+              customdata = df$DISEASE,
               type = "scatter",
               mode = "lines",
               name = disease,
@@ -1146,6 +1151,7 @@ server <- function(input, output,session) {
             list(
               x = df$YEAR,
               y = df[[region_tab_rate_as_variable()]],
+              customdata = df$DISEASE,
               type = "scatter",
               mode = "lines",
               name = disease,
@@ -1177,7 +1183,7 @@ server <- function(input, output,session) {
     error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
 
-    p <- plot_ly()
+    p <- plot_ly(source = "region_tab_bar_chart")
     
     for (disease in input$region_tab_diseases_selected){
       dummy_df <- dummyData[which(dummyData$DISEASE == disease),]
@@ -1219,7 +1225,8 @@ server <- function(input, output,session) {
         barmode = "overlay",
         margin = list(t = 80, b = 50),
         showlegend = FALSE
-      )
+      ) |> 
+      event_register("plotly_hover")
   })
    
   
@@ -1286,6 +1293,82 @@ server <- function(input, output,session) {
   })
   
   
+  #####################
+  # Logic to Link Hover Activity on Charts
+  #####################
+  # Define graph traces by diseases selected
+  region_tab_traces <- reactive({
+    sort(input$region_tab_diseases_selected)
+  })
+  
+  # Track hover activity sourced from the line chart
+  observe({
+    req(region_tab_filtered_data())
+    event <- event_data("plotly_hover", source = "region_tab_line_chart")
+    error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()),"_UCL_95")
+    
+    bar_data <- region_tab_filtered_data() |> filter(YEAR == input$region_tab_year_selected)
+    ppl <-  plotlyProxy("region_tab_line_chart", session)
+    ppb <- plotlyProxy("region_tab_bar_chart", session)
+    
+    
+    # If a disease line has a hover activity
+    # then highlight that line and make other lines narrower
+    if (is.null(event)) {
+      for (disease in region_tab_traces()) {
+        ppl %>% plotlyProxyInvoke(method="restyle",
+                                  list(line = list(width=2,
+                                                   color = DISEASE_colors$Colors[match(disease,DISEASE_colors$DISEASE)])),
+                                  as.integer(match(disease, region_tab_traces())-1))
+        
+      }                                  
+      ppb %>%  plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
+    } else {
+      for (disease in region_tab_traces()) {
+        ppl %>%
+          plotlyProxyInvoke(
+            method = "restyle",
+            list(line = list(width = 0.5,
+                             color = DISEASE_colors$Colors[match(disease,DISEASE_colors$DISEASE)])),
+            as.integer(match(disease, region_tab_traces()) - 1)
+          )
+      }
+      ppl %>%
+        plotlyProxyInvoke(
+          method = "restyle",
+          "line",
+          list(width = 3,
+               color = DISEASE_colors$Colors[match(disease,DISEASE_colors$DISEASE)]),
+          as.integer(match(event[["customdata"]], region_tab_traces()) - 1)
+        )
+      
+      # ppb %>%
+      #   plotlyProxyInvoke(
+      #     method = "restyle",
+      #     list(opacity=0.2)
+      #   ) %>%
+      #   plotlyProxyInvoke(
+      #     method = "restyle",
+      #     list(opacity = 1),
+      #     as.integer(match(event[["customdata"]], region_tab_traces()) - 1)
+      #   )
+    }
+  })
+     
+    
+      # 
+      # ppb %>%
+      #   plotlyProxyInvoke(
+      #     method = "restyle",
+      #     list(opacity=0.2)
+      #   ) %>%
+      #   plotlyProxyInvoke(
+      #     method = "restyle",
+      #     list(opacity = 1),
+      #     as.integer(match(event_info$id, my_traces())-1))
+      
+
   ################################
   # Download Data Tab Server Side Logic
   ################################
