@@ -30,7 +30,7 @@ source('helpers.R', local = T)
 source('global.R', local = T) 
 
 options(spinner.color="#003366")
-# shinyOptions(cache = 'app')
+# shinyOptions(cache = "app")
 
 ################################
 # UI Side Logic
@@ -354,18 +354,16 @@ server <- function(input, output,session) {
   filter_df_reg_d <- reactive({
     filter_df_d() |> 
       filter (HEALTH_BOUND_NAME %in% input$region_d)
-  })
-  # %>%
-  #   bindCache(filter_df_d(),input$region_d)%>%
-  #   bindEvent(filter_df_d(),input$region_d)
+  })%>%
+    bindCache(filter_df_d(),input$region_d)%>%
+    bindEvent(filter_df_d(),input$region_d)
   
   filter_df_yr_d <- reactive({
     filter_df_d() |> 
       filter (YEAR == input$year_d)
-  })
-  # %>%
-  #   bindCache(filter_df_d(),input$year_d)%>%
-  #   bindEvent(filter_df_d(),input$year_d)
+  })%>%
+    bindCache(filter_df_d(),input$year_d)%>%
+    bindEvent(filter_df_d(),input$year_d)
   
   # Define reactive error bounds 
   error <- reactiveValues(
@@ -385,10 +383,9 @@ server <- function(input, output,session) {
       healthboundInput_d()," with Highest Maximum ",input$dataset_d,
       " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
-  })
-  # %>%
-  #   bindCache(filter_df_d())%>%
-  #   bindEvent(filter_df_d())
+  })%>%
+    bindCache(filter_df_d())%>%
+    bindEvent(filter_df_d())
   
   output$text_d2 <- renderText({
     data <- filter_df_d()|>
@@ -403,10 +400,9 @@ server <- function(input, output,session) {
       healthboundInput_d()," with Highest Average ",input$dataset_d,
       " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
-  })
-  # %>%
-  #   bindCache(filter_df_d())%>%
-  #   bindEvent(filter_df_d())
+  })%>%
+    bindCache(filter_df_d())%>%
+    bindEvent(filter_df_d())
   
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
@@ -414,10 +410,9 @@ server <- function(input, output,session) {
       "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
       "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
     )
-  })
-  # %>%
-  #   bindCache(filter_df_d())%>%
-  #   bindEvent(filter_df_d())
+  })%>%
+    bindCache(filter_df_d())%>%
+    bindEvent(filter_df_d())
   
   output$text_d4 <- renderText({
     data<-filter_df_d()|>
@@ -432,10 +427,9 @@ server <- function(input, output,session) {
       "Year of Highest Median Recorded ",input$dataset_d,
       "<br>", "<div id=stat>", year_max,"</div>"
     )
-  })
-  # %>%
-  #   bindCache(filter_df_d())%>%
-  #   bindEvent(filter_df_d())  
+  })%>%
+    bindCache(filter_df_d())%>%
+    bindEvent(filter_df_d())
   
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
@@ -779,18 +773,23 @@ server <- function(input, output,session) {
         format_round(current_map_spdf@data[[error$lower]]),",",
         format_round(current_map_spdf@data[[error$upper]]),")")
   }
-
+    
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,
                             ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),
                          by=legend_inc,length.out=5),Inf)
+  
+    mybins_leg <- mybins %>% 
+      sapply(format_round,dec = ifelse(year_filtered_map_df$DISEASE[1] == "Juvenile Idiopathic Arthritis",3,2))
+    
+    
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], 
                            bins=mybins, na.color="#cccccc")
-    labels<-c(paste0("< ",mybins[2]),
-              paste0(mybins[2]," - ",mybins[3]),
-              paste0(mybins[3]," - ",mybins[4]),
-              paste0(mybins[4]," - ",mybins[5]),
-              paste0(mybins[5]," + ")
+    labels<-c(paste0("< ",mybins_leg[2]),
+              paste0(mybins_leg[2]," - ", mybins_leg[3]),
+              paste0(mybins_leg[3]," - ", mybins_leg[4]),
+              paste0(mybins_leg[4]," - ", mybins_leg[5]),
+              paste0(mybins_leg[5]," + ")
     )
     
     leafletProxy("map",data = current_map_spdf) %>%
