@@ -133,7 +133,7 @@ for(dir in list.dirs("data/model")[-1]){
   for (file in list.files(dir)){
     new_df_model<- data.table::fread(paste0(dir, "/", file),
                                      verbose = FALSE,
-                                     drop = c("dic","waic","model","y_obs"))
+                                     select = c("DISEASE","HEALTH_BOUNDARIES","year","y_fitted"))
     
     if (dir == "data/model/IncidenceRate") {
       inc_rate_df <- merge_df(inc_rate_df,new_df_model)
