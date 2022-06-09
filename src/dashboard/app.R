@@ -29,6 +29,7 @@ source('helpers.R', local = T)
 source('global.R', local = T) 
 
 options(spinner.color="#003366")
+# shinyOptions(cache = 'app')
 
 ################################
 # UI Side Logic
@@ -239,8 +240,8 @@ server <- function(input, output,session) {
   ################################
   # By Disease Tab Server Side Logic
   ################################
-  observeEvent(input$navbarID, {
-    if(input$navbarID %in% c("By Disease")){
+  # observeEvent(input$navbarID, {
+  #   if(input$navbarID %in% c("By Disease")){
       
       
   # Reset filters
@@ -259,7 +260,8 @@ server <- function(input, output,session) {
     }else{
       output$modeldata_d <- renderUI({ })
     }
-  })
+  })%>%
+    bindEvent(input$gender_d, input$health_bound_d,input$dataset_d) 
 
   # Dynamic UI for rate selection
   observeEvent(input$disease_d,{
@@ -299,6 +301,9 @@ server <- function(input, output,session) {
       dataset_switch(input$dataset_d)
     }
   })
+  # %>%
+  #   bindCache(input$dataset_d)%>%
+  #   bindEvent(input$dataset_d)
   
   # Rate selection based on user input
   rateInput_d <- reactive({
@@ -307,6 +312,9 @@ server <- function(input, output,session) {
       rate_switch(input$dataset_d)
     }
   })
+  # %>%
+  #   bindCache(input$dataset_d)%>%
+  #   bindEvent(input$dataset_d)
   
   # Geography selection based on user input
   healthboundInput_d <- reactive ({
@@ -317,6 +325,9 @@ server <- function(input, output,session) {
            "Community Health Service Areas" = "CHSA")
     }
   })
+  # %>%
+  #   bindCache(input$health_bound_d)%>%
+  #   bindEvent(input$health_bound_d)
   
   # Map geography selection based on user input
   spdf_d <- reactive ({
@@ -327,6 +338,9 @@ server <- function(input, output,session) {
            "Community Health Service Areas" = chsa_spdf)
     }
   })
+  # %>%
+  #   bindCache(input$health_bound_d)%>%
+  #   bindEvent(input$health_bound_d)
   
   # Filter dataset based on user input
   filter_df_d <- reactive({
@@ -336,16 +350,25 @@ server <- function(input, output,session) {
               (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
       )
   })
+  # %>%
+  #   bindCache(input$dataset_d,input$health_bound_d,input$disease_d,input$gender_d)%>%
+  #   bindEvent(input$dataset_d,input$health_bound_d,input$disease_d,input$gender_d)
   
   filter_df_reg_d <- reactive({
     filter_df_d() |> 
       filter (HEALTH_BOUND_NAME %in% input$region_d)
   })
+  # %>%
+  #   bindCache(filter_df_d(),input$region_d)%>%
+  #   bindEvent(filter_df_d(),input$region_d)
   
   filter_df_yr_d <- reactive({
     filter_df_d() |> 
       filter (YEAR == input$year_d)
   })
+  # %>%
+  #   bindCache(filter_df_d(),input$year_d)%>%
+  #   bindEvent(filter_df_d(),input$year_d)
   
   # Define reactive error bounds 
   error <- reactiveValues(
@@ -366,6 +389,9 @@ server <- function(input, output,session) {
       " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
   })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())
   
   output$text_d2 <- renderText({
     data <- filter_df_d()|>
@@ -381,6 +407,9 @@ server <- function(input, output,session) {
       " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
   })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())
   
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
@@ -389,6 +418,9 @@ server <- function(input, output,session) {
       "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
     )
   })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())
   
   output$text_d4 <- renderText({
     data<-filter_df_d()|>
@@ -403,7 +435,10 @@ server <- function(input, output,session) {
       "Year of Highest Median Recorded ",input$dataset_d,
       "<br>", "<div id=stat>", year_max,"</div>"
     )
-  })  
+  })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())  
   
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
@@ -648,36 +683,70 @@ server <- function(input, output,session) {
   output$map <- renderLeaflet({
     
     #select dummy data
-    dummyData <- datasetInput_d() |>
+    dummyData_inc <- datasetInput_d() |>
       filter(CLNT_GENDER_LABEL=='T',
              GEOGRAPHY=="HA",
-             DISEASE=="Asthma",
-             YEAR==2001) 
+             DISEASE=="Acute Myocardial Infarction") 
+    dummyData <- dummyData_inc|>
+      filter(YEAR==2001) 
     
     dummy_spdf <- data.table::copy(spdf_d())
     
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
+    
     if(input$health_bound_d == "Health Authorities"){
       dummy_spdf@data <- spdf_d()@data|>
-          left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
+        left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
     }else{
       dummy_spdf@data <- spdf_d()@data|>
         left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
     }
     
-    leaflet(dummy_spdf)%>%
+    legend_inc <- round_any(unname(quantile(dummyData_inc[[rateInput_d()]],0.85))/5,
+                            ifelse(max(dummyData_inc[[rateInput_d()]])<10,0.005,0.1))
+    mybins <- append(seq(round_any(min(dummyData_inc[[rateInput_d()]]),0.05, f=floor),
+                         by=legend_inc,length.out=5),Inf)
+    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]], 
+                           bins=mybins, na.color="#cccccc")
+    labels<-c(paste0("< ",mybins[2]),
+              paste0(mybins[2]," - ",mybins[3]),
+              paste0(mybins[3]," - ",mybins[4]),
+              paste0(mybins[4]," - ",mybins[5]),
+              paste0(mybins[5]," + ")
+    )
+    
+    mytext <- paste("<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
+                    "<b>",input$dataset_d,": ","</b>",
+                    format_round(dummy_spdf@data[[rateInput_d()]]),"<br/>",
+                    "<b>95% Confidence Interval</b>: (",
+                    format_round(dummy_spdf@data[[error$lower]]),",",
+                    format_round(dummy_spdf@data[[error$upper]]),")",
+                    sep="") |>
+      lapply(htmltools::HTML)
+    
+    leaflet(dummy_spdf) %>% 
       setView( lat=53.5, lng=-127 , zoom=4.5) %>%
       addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
-      addPolygons(
+      addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
-        stroke=TRUE,
-        fillOpacity = 0.9,
-        color="gray",
+        fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
+        stroke=TRUE, 
+        fillOpacity = 0.9, 
+        color="gray", 
         weight=1,
+        label = mytext,
         highlight = highlightOptions(
           weight = 2,
           color = "black",
           opacity = 1.0)
-    )
+      ) |>
+      addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9, 
+                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
+                 labFormat = function(type, cuts, p) {  
+                   paste0(labels)
+                 })
+    
   })
   
 #Update map with filter changes
@@ -948,21 +1017,21 @@ server <- function(input, output,session) {
           group = "selected"
         )}
   })
-    } # end observe navbarid
-  }) # end observe navbarid
+  #   } # end observe navbarid
+  # }) # end observe navbarid
   
   ################################
   # By Region Tab Server Side Logic
   ################################
-  
+
   observeEvent(input$navbarID, {
     if(input$navbarID %in% c("By Region")){
-      
+
   # Reset filters
   observeEvent(input$region_tab_reset_button, {
     reset("filters_r")
   })
-  
+
   # Show the modeled data toggle switch when conditions are reached
   observe({
     if (input$region_tab_sex_selected == "Total" &&
@@ -976,7 +1045,7 @@ server <- function(input, output,session) {
       })
     }
   })
-  
+
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not
   #   show to avoid error.
@@ -1002,7 +1071,7 @@ server <- function(input, output,session) {
                    selected = input$region_tab_rate_type_selected
                  )
                })
-  
+
   # Get dataset based on the rate type selected
   region_tab_dataset_used <- reactive({
     shiny::validate(need(input$region_tab_rate_type_selected, message = F))
@@ -1010,7 +1079,7 @@ server <- function(input, output,session) {
       dataset_switch(input$region_tab_rate_type_selected)
     }
   })
-  
+
   # Get the corresponding column name for the rate type selected
   region_tab_rate_as_variable <- reactive({
     shiny::validate(need(input$region_tab_rate_type_selected, message = F))
@@ -1018,7 +1087,7 @@ server <- function(input, output,session) {
       rate_switch(input$region_tab_rate_type_selected)
     }
   })
-  
+
   # Show health boundary choices based on geography selected
   output$region_tab_region_selected <- renderUI({
     selectInput(
@@ -1029,7 +1098,7 @@ server <- function(input, output,session) {
       selected = HA_CHOICES[1]
     )
   })
-  
+
   # Get the filtered dataset based on user selection
   region_tab_filtered_data <- reactive({
     region_tab_dataset_used() |>
@@ -1039,18 +1108,18 @@ server <- function(input, output,session) {
                  CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)
                )
       )
-    
+
   })
-  
+
   #####################
   # Line Chart Related Logic
-  
+
   # Plot a line chart showing trends of diseases over time
   # x is YEAR, y is the selected rate type, color is DISEASE
   #####################
   output$region_tab_line_chart <- renderPlotly({
     data <- region_tab_filtered_data()
-    
+
     data |>
       plot_ly(
         x = data$YEAR,
@@ -1087,23 +1156,23 @@ server <- function(input, output,session) {
       )  |>
       event_register('plotly_hover')
   })
-  
+
   # Update the vertical line in the line graph with year input
   observe({
     invalidateLater(500)
     p <- plotlyProxy("region_tab_line_chart", session)
-    
+
     p |>
       plotlyProxyInvoke("relayout",
                         list(shapes = list(
                           vline(input$region_tab_year_selected)
                         )))
   })
-  
+
   # Modify line chart's yaxis to start from 0 when the switch is on
   observeEvent(input$region_tab_line_y0switch, {
     p <- plotlyProxy("region_tab_line_chart", session)
-    
+
     if (input$yax_switch_d == TRUE) {
       p  |>
         plotlyProxyInvoke("relayout",
@@ -1138,7 +1207,7 @@ server <- function(input, output,session) {
                             )
                           ))
     }
-    
+
     p |>
       plotlyProxyInvoke("relayout",
                         list(yaxis = y_axis_spec(
@@ -1147,19 +1216,19 @@ server <- function(input, output,session) {
                                  "tozero", "nonnegative")
                         )))
   })
-  
+
   # Change line chart to show smoothed time trends data
   observeEvent(input$region_tab_smoothing_switch, {
     data <- region_tab_filtered_data()
     p <- plotlyProxy("region_tab_line_chart", session)
-    
+
     if (input$region_tab_smoothing_switch == TRUE) {
       p |>
         plotlyProxyInvoke("deleteTraces", as.list(seq(
           0, length(input$region_tab_diseases_selected) -
             1
         )))
-      
+
       for (disease in input$region_tab_diseases_selected) {
         df <- data[which(data$DISEASE == disease), ]
         p |>
@@ -1178,14 +1247,14 @@ server <- function(input, output,session) {
             )
           )
       }
-      
+
     } else {
       p |>
         plotlyProxyInvoke("deleteTraces", as.list(seq(
           0, length(input$region_tab_diseases_selected) -
             1
         )))
-      
+
       for (disease in input$region_tab_diseases_selected) {
         df <- data[which(data$DISEASE == disease), ]
         p |>
@@ -1206,20 +1275,20 @@ server <- function(input, output,session) {
       }
     }
   })
-  
+
   #####################
   # Bar Chart Related Logic
-  
+
   # Plot a bar chart comparing rates for diseases in a year
   # x is DISEASE, y is the selected rate type, color is DISEASE
   #####################
-  
-  # Define reactive error bounds 
+
+  # Define reactive error bounds
   error <- reactiveValues(
     lower = NULL,
     upper = NULL
   )
-  
+
   # First use dummy data to plot a basic chart
   output$region_tab_bar_chart <- renderPlotly({
     dummyData <- region_tab_dataset_used() |>
@@ -1229,14 +1298,14 @@ server <- function(input, output,session) {
         CLNT_GENDER_LABEL == 'T',
         YEAR == 2001
       )
-    
+
     error$lower <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
-    
+
     p <- plot_ly(source = "region_tab_bar_chart")
-    
+
     for (disease in input$region_tab_diseases_selected) {
       dummy_df <- dummyData[which(dummyData$DISEASE == disease),]
       p <- p |>
@@ -1290,8 +1359,8 @@ server <- function(input, output,session) {
       ) |>
       event_register("plotly_hover")
   })
-  
-  
+
+
   # Then use proxy to update bar graph when filter changes
   observe({
     invalidateLater(500)
@@ -1304,9 +1373,9 @@ server <- function(input, output,session) {
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
     error$upper <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
-    
+
     p <- plotlyProxy("region_tab_bar_chart", session)
-    
+
     for (disease in seq_along(input$region_tab_diseases_selected)) {
       filtered_df <-
         bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]), ]
@@ -1340,7 +1409,7 @@ server <- function(input, output,session) {
                           ),
                           as.integer(disease) - 1)
     }
-    
+
     p |> plotlyProxyInvoke("relayout",
                            list(
                              autosize = F,
@@ -1366,11 +1435,11 @@ server <- function(input, output,session) {
                                font = list(size = 16)
                              )
                            ))
-    
+
   })
-  
-  
-  
+
+
+
   #####################
   # Logic to Link Hover Activity on Charts
   #####################
@@ -1378,7 +1447,7 @@ server <- function(input, output,session) {
   region_tab_traces <- reactive({
     sort(input$region_tab_diseases_selected)
   })
-  
+
   # Track hovering activity sourced from the line chart and link highlighting effect
   observe({
     req(region_tab_filtered_data())
@@ -1386,7 +1455,7 @@ server <- function(input, output,session) {
       event_data("plotly_hover", source = "region_tab_line_chart")
     ppl <-  plotlyProxy("region_tab_line_chart", session)
     ppb <- plotlyProxy("region_tab_bar_chart", session)
-    
+
     # If no event, keep things the same
     if (is.null(event)) {
       for (disease in region_tab_traces()) {
@@ -1397,7 +1466,7 @@ server <- function(input, output,session) {
                                  )),
                                  as.integer(match(disease, region_tab_traces()) -
                                               1))
-        
+
       }
       ppb |>  plotlyProxyInvoke(method = "restyle", list(opacity = 1))
     } else {
@@ -1421,7 +1490,7 @@ server <- function(input, output,session) {
                                  color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)]
                                )),
                           as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
-      
+
       # And make the bar of the highlighted disease opaque and others transparent
       ppb |>
         plotlyProxyInvoke(method = "restyle",
@@ -1431,7 +1500,7 @@ server <- function(input, output,session) {
                           as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
     }
   })
-  
+
   # Track hovering activity sourced from the bar chart and link highlighting effect
   observe({
     req(region_tab_filtered_data())
@@ -1439,7 +1508,7 @@ server <- function(input, output,session) {
       event_data("plotly_hover", source = "region_tab_bar_chart")
     ppl <- plotlyProxy("region_tab_line_chart", session)
     ppb <- plotlyProxy("region_tab_bar_chart", session)
-    
+
     if (is.null(event)) {
       for (disease in region_tab_traces()) {
         ppl |> plotlyProxyInvoke(method = "restyle",
@@ -1482,10 +1551,10 @@ server <- function(input, output,session) {
                           ) - 1))
     }
   })
-  
+
     } # end observe navbarid
   }) # end observe navbarid
-  
+
   ################################
   # Data Tab Server Side Logic
   ################################
@@ -1596,7 +1665,6 @@ server <- function(input, output,session) {
     ################################
     # Mahmood Tab Server Side Logic
     ################################
-  
   
   
   

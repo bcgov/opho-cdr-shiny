@@ -203,7 +203,7 @@ health_bounds <- function(input){
          value = 2001,
          sep = "",
          ticks = TRUE,
-         animate = animationOptions(interval = 1000)
+         animate = animationOptions(interval = 1500)
        )
      )
    } else{
