@@ -17,6 +17,7 @@ library(rgeos)
 library(shinyWidgets)
 library(DT)
 library(shinyBS)
+library(memoise)
 })
 
 ################################
@@ -300,10 +301,9 @@ server <- function(input, output,session) {
     if(!is.null(input$dataset_d)){
       dataset_switch(input$dataset_d)
     }
-  })
-  # %>%
-  #   bindCache(input$dataset_d)%>%
-  #   bindEvent(input$dataset_d)
+  })%>%
+    bindCache(input$dataset_d)%>%
+    bindEvent(input$dataset_d)
   
   # Rate selection based on user input
   rateInput_d <- reactive({
@@ -311,10 +311,9 @@ server <- function(input, output,session) {
     if(!is.null(input$dataset_d)){
       rate_switch(input$dataset_d)
     }
-  })
-  # %>%
-  #   bindCache(input$dataset_d)%>%
-  #   bindEvent(input$dataset_d)
+  })%>%
+    bindCache(input$dataset_d)%>%
+    bindEvent(input$dataset_d)
   
   # Geography selection based on user input
   healthboundInput_d <- reactive ({
@@ -324,10 +323,9 @@ server <- function(input, output,session) {
            "Health Authorities" = "HA",
            "Community Health Service Areas" = "CHSA")
     }
-  })
-  # %>%
-  #   bindCache(input$health_bound_d)%>%
-  #   bindEvent(input$health_bound_d)
+  })%>%
+    bindCache(input$health_bound_d)%>%
+    bindEvent(input$health_bound_d)
   
   # Map geography selection based on user input
   spdf_d <- reactive ({
@@ -337,10 +335,9 @@ server <- function(input, output,session) {
            "Health Authorities" = ha_spdf,
            "Community Health Service Areas" = chsa_spdf)
     }
-  })
-  # %>%
-  #   bindCache(input$health_bound_d)%>%
-  #   bindEvent(input$health_bound_d)
+  })%>%
+    bindCache(input$health_bound_d)%>%
+    bindEvent(input$health_bound_d)
   
   # Filter dataset based on user input
   filter_df_d <- reactive({
