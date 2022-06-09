@@ -149,7 +149,7 @@ vline <- memoise(vline)
 
 # To format and round all values to 2 decimals
 format_round <- function(x, dec = 2){
-  format(round(x,dec),dec)
+  format(round(x,digits = dec),nsmall = dec)
 }
 
 format_round <- memoise(format_round)

@@ -782,7 +782,6 @@ server <- function(input, output,session) {
     mybins_leg <- mybins %>% 
       sapply(format_round,dec = ifelse(year_filtered_map_df$DISEASE[1] == "Juvenile Idiopathic Arthritis",3,2))
     
-    
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], 
                            bins=mybins, na.color="#cccccc")
     labels<-c(paste0("< ",mybins_leg[2]),
