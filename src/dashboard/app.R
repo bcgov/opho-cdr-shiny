@@ -1301,17 +1301,13 @@ server <- function(input, output,session) {
     sort(input$region_tab_diseases_selected)
   })
   
-  # Track hover activity sourced from the line chart
+  # Track hovering activity sourced from the line chart and link highlighting effect
   observe({
     req(region_tab_filtered_data())
     event <- event_data("plotly_hover", source = "region_tab_line_chart")
-    error$lower <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", region_tab_rate_as_variable()),"_UCL_95")
     
-    bar_data <- region_tab_filtered_data() |> filter(YEAR == input$region_tab_year_selected)
     ppl <-  plotlyProxy("region_tab_line_chart", session)
     ppb <- plotlyProxy("region_tab_bar_chart", session)
-    
     
     # If no event, keep things the same
     if (is.null(event)) {
@@ -1340,7 +1336,8 @@ server <- function(input, output,session) {
           method = "restyle",
           "line",
           list(width = 3,
-               color = DISEASE_colors$Colors[match(disease,DISEASE_colors$DISEASE)]),
+               list(width = 3,
+               color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)])),
           as.integer(match(event[["customdata"]], region_tab_traces()) - 1)
         )
       
@@ -1359,7 +1356,51 @@ server <- function(input, output,session) {
   })
   
   
-      
+  # Track hovering activity sourced from the bar chart and link highlighting effect
+  # observe({
+  #   req(region_tab_filtered_data())
+  #   event <- event_data("plotly_hover", source = "region_tab_bar_chart")
+  #   ppl <- plotlyProxy("region_tab_line_chart", session)
+  #   ppb <- plotlyProxy("region_tab_bar_chart", session)
+  #   
+  #   if (is.null(event)){
+  #     for (disease in region_tab_traces()) {
+  #       ppl %>% plotlyProxyInvoke(method="restyle",
+  #                                 list(line = list(width=2,
+  #                                                  color = DISEASE_colors$Colors[match(disease,DISEASE_colors$DISEASE)])),
+  #                                 as.integer(match(disease, region_tab_traces()) - 1))
+  #     } 
+  #     ppb %>% plotlyProxyInvoke(method = "restyle", list(opacity = 1))   
+  #   }else{
+  #     for (disease in region_tab_traces()){
+  #       ppl %>%
+  #         plotlyProxyInvoke(
+  #           method = "restyle",
+  #           list(line = list(width = 0.5,
+  #                            color = DISEASE_colors$Colors[match(disease,DISEASE_colors$DISEASE)])),
+  #           as.integer(match(disease, region_tab_traces()) - 1)
+  #         )
+  #     }
+  #     ppl %>%
+  #       plotlyProxyInvoke(
+  #         method = "restyle",
+  #         "line",
+  #         list(width = 3,
+  #              color = DISEASE_colors$Colors[match(disease,DISEASE_colors$DISEASE)]),
+  #         as.integer(match(event[["x"]], region_tab_traces()) - 1)
+  #       )
+  #     
+  #     ppb %>%
+  #       plotlyProxyInvoke(
+  #         method = "restyle",
+  #         list(opacity=0.2)
+  #       ) %>%
+  #       plotlyProxyInvoke(
+  #         method = "restyle",
+  #         list(opacity = 1),
+  #         as.integer(match(event[["x"]], input$region_tab_diseases_selected) - 1)
+  #       )}
+  # })
 
   ################################
   # Download Data Tab Server Side Logic
