@@ -445,7 +445,9 @@ server <- function(input, output,session) {
 
     p <- plot_ly(source = "disease_graph_bar")
     for(reg in input$region_d){
-      dummy_df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
+      # dummy_df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
+      dummy_df <- dummyData |>
+        filter(HEALTH_BOUND_NAME == reg)
       p <- p |>
         add_trace(x=dummy_df$HEALTH_BOUND_NAME,
                   y=dummy_df[[rateInput_d()]],
@@ -499,7 +501,9 @@ server <- function(input, output,session) {
     p <- plotlyProxy("disease_graph_bar", session)
     
     for(reg in seq_along(input$region_d)){
-      df <- newdata[which(newdata$HEALTH_BOUND_NAME==input$region_d[reg]),]
+      # df <- newdata[which(newdata$HEALTH_BOUND_NAME==input$region_d[reg]),]
+      df <- newdata|>
+        filter(HEALTH_BOUND_NAME == input$region_d[reg])
       p |>
         plotlyProxyInvoke("restyle",
                           "y",
@@ -630,7 +634,9 @@ server <- function(input, output,session) {
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       
       for(reg in input$region_d){
-        df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        # df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        df <- data |>
+          filter(HEALTH_BOUND_NAME == reg)
         p |>
           plotlyProxyInvoke("addTraces",
                             list(
@@ -651,7 +657,9 @@ server <- function(input, output,session) {
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       for(reg in input$region_d){
-        df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        # df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        df <- data |>
+          filter(HEALTH_BOUND_NAME == reg)
         p |>
           plotlyProxyInvoke("addTraces",
                             list(
