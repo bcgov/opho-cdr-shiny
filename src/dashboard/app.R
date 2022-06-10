@@ -148,17 +148,33 @@ ui <- fluidPage(
                    br(),
                    actionButton("region_tab_reset_button", "Reset")
                  ),
-                 mainPanel(
-                   width = 9,
-                   fluidRow(plotlyOutput("region_tab_bar_chart", height = 350) %>% withSpinner()),
-                   fluidRow(column(4, material_switch("region_tab_line_y0switch","Y-axis from 0")),
-                            column(8,  conditionalPanel(
-                              condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
-                              material_switch("region_tab_smoothing","Smoothed Time Trends ")
-                            ))),
-                   fluidRow(plotlyOutput("region_tab_line_chart",height = 350) %>% withSpinner()))
-                 
-              )), 
+                 mainPanel(width = 9,
+                           fluidRow(
+                             column(
+                               9,
+                               fluidRow(
+                                 plotlyOutput("region_tab_bar_chart", height = 350) %>% withSpinner()
+                               ),
+                               fluidRow(column(
+                                 4,
+                                 material_switch("region_tab_line_y0switch", "Y-axis from 0")
+                               ),
+                               column(8, uiOutput(
+                                 "region_tab_smoothing"
+                               ))),
+                               fluidRow(
+                                 plotlyOutput("region_tab_line_chart", height = 350) %>% withSpinner()
+                               )
+                             ),
+                             column(
+                               3,
+                               fluidRow(htmlOutput("region_tab_text1")),
+                               fluidRow(htmlOutput("region_tab_text2")),
+                               fluidRow(htmlOutput("region_tab_text3")),
+                               fluidRow(htmlOutput("region_tab_text4"))
+                             )
+                           ))
+               )), 
       
       ################################
       # Download Data Tab UI Side Logic
