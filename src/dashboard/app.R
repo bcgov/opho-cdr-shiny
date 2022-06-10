@@ -30,7 +30,7 @@ source('helpers.R', local = T)
 source('global.R', local = T) 
 
 options(spinner.color="#003366")
-# shinyOptions(cache = 'app')
+# shinyOptions(cache = "app")
 
 ################################
 # UI Side Logic
@@ -116,7 +116,10 @@ ui <- fluidPage(
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
-                                   column(8,uiOutput("modeldata_d"))),
+                                   column(8, conditionalPanel(
+                                               condition = "input.gender_d == 'Total' && input.health_bound_d == 'Community Health Service Areas' && input.dataset_d.startsWith('Age')",
+                                               material_switch("modeldata_d_switch","Smoothed Time Trends ")
+                                                 ))),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
                           )))
                )),
@@ -269,19 +272,6 @@ server <- function(input, output,session) {
     reset("filters_d")
   })
   
-  # Conditionally show modeled data toggle switch
-  observe({
-    if(input$gender_d =="Total"&& 
-       input$health_bound_d=="Community Health Service Areas" &&
-       startsWith(input$dataset_d,"Age")){
-      output$modeldata_d <- renderUI({
-        material_switch("modeldata_d_switch","Smoothed Time Trends ")
-      })
-    }else{
-      output$modeldata_d <- renderUI({ })
-    }
-  })%>%
-    bindEvent(input$gender_d, input$health_bound_d,input$dataset_d) 
 
   # Dynamic UI for rate selection
   observeEvent(input$disease_d,{
@@ -320,9 +310,10 @@ server <- function(input, output,session) {
     if(!is.null(input$dataset_d)){
       dataset_switch(input$dataset_d)
     }
-  })%>%
-    bindCache(input$dataset_d)%>%
-    bindEvent(input$dataset_d)
+  })
+  # %>%
+  #   bindCache(input$dataset_d)%>%
+  #   bindEvent(input$dataset_d)
   
   # Rate selection based on user input
   rateInput_d <- reactive({
@@ -330,9 +321,10 @@ server <- function(input, output,session) {
     if(!is.null(input$dataset_d)){
       rate_switch(input$dataset_d)
     }
-  })%>%
-    bindCache(input$dataset_d)%>%
-    bindEvent(input$dataset_d)
+  })
+  # %>%
+  #   bindCache(input$dataset_d)%>%
+  #   bindEvent(input$dataset_d)
   
   # Geography selection based on user input
   healthboundInput_d <- reactive ({
@@ -342,9 +334,10 @@ server <- function(input, output,session) {
            "Health Authorities" = "HA",
            "Community Health Service Areas" = "CHSA")
     }
-  })%>%
-    bindCache(input$health_bound_d)%>%
-    bindEvent(input$health_bound_d)
+  })
+  # %>%
+  #   bindCache(input$health_bound_d)%>%
+  #   bindEvent(input$health_bound_d)
   
   # Map geography selection based on user input
   spdf_d <- reactive ({
@@ -354,9 +347,10 @@ server <- function(input, output,session) {
            "Health Authorities" = ha_spdf,
            "Community Health Service Areas" = chsa_spdf)
     }
-  })%>%
-    bindCache(input$health_bound_d)%>%
-    bindEvent(input$health_bound_d)
+  })
+  # %>%
+  #   bindCache(input$health_bound_d)%>%
+  #   bindEvent(input$health_bound_d)
   
   # Filter dataset based on user input
   filter_df_d <- reactive({
@@ -454,7 +448,7 @@ server <- function(input, output,session) {
   })
   # %>%
   #   bindCache(filter_df_d())%>%
-  #   bindEvent(filter_df_d())  
+  #   bindEvent(filter_df_d())
   
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
@@ -470,7 +464,9 @@ server <- function(input, output,session) {
 
     p <- plot_ly(source = "disease_graph_bar")
     for(reg in input$region_d){
-      dummy_df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
+      # dummy_df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
+      dummy_df <- dummyData |>
+        filter(HEALTH_BOUND_NAME == reg)
       p <- p |>
         add_trace(x=dummy_df$HEALTH_BOUND_NAME,
                   y=dummy_df[[rateInput_d()]],
@@ -524,7 +520,9 @@ server <- function(input, output,session) {
     p <- plotlyProxy("disease_graph_bar", session)
     
     for(reg in seq_along(input$region_d)){
-      df <- newdata[which(newdata$HEALTH_BOUND_NAME==input$region_d[reg]),]
+      # df <- newdata[which(newdata$HEALTH_BOUND_NAME==input$region_d[reg]),]
+      df <- newdata|>
+        filter(HEALTH_BOUND_NAME == input$region_d[reg])
       p |>
         plotlyProxyInvoke("restyle",
                           "y",
@@ -655,7 +653,9 @@ server <- function(input, output,session) {
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       
       for(reg in input$region_d){
-        df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        # df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        df <- data |>
+          filter(HEALTH_BOUND_NAME == reg)
         p |>
           plotlyProxyInvoke("addTraces",
                             list(
@@ -676,7 +676,9 @@ server <- function(input, output,session) {
       p %>%
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       for(reg in input$region_d){
-        df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        # df <- data[which(data$HEALTH_BOUND_NAME==reg),]
+        df <- data |>
+          filter(HEALTH_BOUND_NAME == reg)
         p |>
           plotlyProxyInvoke("addTraces",
                             list(
@@ -798,18 +800,22 @@ server <- function(input, output,session) {
         format_round(current_map_spdf@data[[error$lower]]),",",
         format_round(current_map_spdf@data[[error$upper]]),")")
   }
-
+    
     legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,
                             ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),
                          by=legend_inc,length.out=5),Inf)
+  
+    mybins_leg <- mybins %>% 
+      sapply(format_round,dec = ifelse(year_filtered_map_df$DISEASE[1] == "Juvenile Idiopathic Arthritis",3,2))
+    
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], 
                            bins=mybins, na.color="#cccccc")
-    labels<-c(paste0("< ",mybins[2]),
-              paste0(mybins[2]," - ",mybins[3]),
-              paste0(mybins[3]," - ",mybins[4]),
-              paste0(mybins[4]," - ",mybins[5]),
-              paste0(mybins[5]," + ")
+    labels<-c(paste0("< ",mybins_leg[2]),
+              paste0(mybins_leg[2]," - ", mybins_leg[3]),
+              paste0(mybins_leg[3]," - ", mybins_leg[4]),
+              paste0(mybins_leg[4]," - ", mybins_leg[5]),
+              paste0(mybins_leg[5]," + ")
     )
     
     leafletProxy("map",data = current_map_spdf) %>%
@@ -1048,19 +1054,6 @@ server <- function(input, output,session) {
     reset("filters_r")
   })
 
-  # Show the modeled data toggle switch when conditions are reached
-  observe({
-    if (input$region_tab_sex_selected == "Total" &&
-        input$region_tab_geography_selected == "Community Health Service Areas" &&
-        startsWith(input$region_tab_rate_type_selected, "Age")) {
-      output$region_tab_smoothing <- renderUI({
-        material_switch("region_tab_smoothing_switch", "Smoothed Time Trends ")
-      })
-    } else{
-      output$region_tab_smoothing <- renderUI({
-      })
-    }
-  })
 
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not

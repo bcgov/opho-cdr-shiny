@@ -3,9 +3,7 @@
 wrangle_df_for_merge <- function(df){
   df|>
     mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-           y_fitted = NA,
-           ci_95_ll = NA,
-           ci_95_ul = NA,
+           y_fitted = NA
     )|>
     select(-FISC_YR_LABEL) 
 }
@@ -15,12 +13,8 @@ wrangle_df_for_merge <- memoise(wrangle_df_for_merge)
 merge_df <- function(df,new_df_model){
   df|>
     left_join(new_df_model, by =c("DISEASE","HEALTH_BOUNDARIES","YEAR"="year"))|>
-    mutate(y_fitted = coalesce(y_fitted.x, y_fitted.y),
-           ci_95_ll = coalesce(ci_95_ll.x, ci_95_ll.y),
-           ci_95_ul = coalesce(ci_95_ul.x, ci_95_ul.y)) |>
-    select(-y_fitted.x, -y_fitted.y,
-           -ci_95_ll.x, -ci_95_ll.y,
-           -ci_95_ul.x, -ci_95_ul.y)
+    mutate(y_fitted = coalesce(y_fitted.x, y_fitted.y)) |>
+    select(-y_fitted.x, -y_fitted.y)
   
 }
 merge_df <- memoise(merge_df)
@@ -149,7 +143,7 @@ vline <- memoise(vline)
 
 # To format and round all values to 2 decimals
 format_round <- function(x, dec = 2){
-  format(round(x,2),2)
+  format(round(x,digits = dec),nsmall = dec)
 }
 
 format_round <- memoise(format_round)
