@@ -161,7 +161,7 @@ ui <- fluidPage(
                                ),
                                column(8, conditionalPanel(
                                  condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
-                                 material_switch("region_tab_smoothing","Smoothed Time Trends ")
+                                 material_switch("region_tab_smoothing_switch","Smoothed Time Trends ")
                                ))),
                                fluidRow(
                                  plotlyOutput("region_tab_line_chart", height = 350) %>% withSpinner()
