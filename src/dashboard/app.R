@@ -112,15 +112,15 @@ ui <- fluidPage(
                    column(3,htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height=645)%>% withSpinner()),
+                   column(6, leafletOutput("map",height=645)|> withSpinner()),
                    column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)|> withSpinner())),
                           fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
                                    column(8, conditionalPanel(
                                                condition = "input.gender_d == 'Total' && input.health_bound_d == 'Community Health Service Areas' && input.dataset_d.startsWith('Age')",
                                                material_switch("modeldata_d_switch","Smoothed Time Trends ")
                                                  ))),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
+                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)|> withSpinner())),
                           )))
                )),
       
@@ -153,7 +153,7 @@ ui <- fluidPage(
                              column(
                                9,
                                fluidRow(
-                                 plotlyOutput("region_tab_bar_chart", height = 350) %>% withSpinner()
+                                 plotlyOutput("region_tab_bar_chart", height = 350) |> withSpinner()
                                ),
                                fluidRow(column(
                                  4,
@@ -164,7 +164,7 @@ ui <- fluidPage(
                                  material_switch("region_tab_smoothing_switch","Smoothed Time Trends ")
                                ))),
                                fluidRow(
-                                 plotlyOutput("region_tab_line_chart", height = 350) %>% withSpinner()
+                                 plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner()
                                )
                              ),
                              column(
@@ -312,8 +312,8 @@ server <- function(input, output,session) {
       dataset_switch(input$dataset_d)
     }
   })
-  # %>%
-  #   bindCache(input$dataset_d)%>%
+  # |>
+  #   bindCache(input$dataset_d)|>
   #   bindEvent(input$dataset_d)
   
   # Rate selection based on user input
@@ -323,8 +323,8 @@ server <- function(input, output,session) {
       rate_switch(input$dataset_d)
     }
   })
-  # %>%
-  #   bindCache(input$dataset_d)%>%
+  # |>
+  #   bindCache(input$dataset_d)|>
   #   bindEvent(input$dataset_d)
   
   # Geography selection based on user input
@@ -336,8 +336,8 @@ server <- function(input, output,session) {
            "Community Health Service Areas" = "CHSA")
     }
   })
-  # %>%
-  #   bindCache(input$health_bound_d)%>%
+  # |>
+  #   bindCache(input$health_bound_d)|>
   #   bindEvent(input$health_bound_d)
   
   # Map geography selection based on user input
@@ -349,8 +349,8 @@ server <- function(input, output,session) {
            "Community Health Service Areas" = chsa_spdf)
     }
   })
-  # %>%
-  #   bindCache(input$health_bound_d)%>%
+  # |>
+  #   bindCache(input$health_bound_d)|>
   #   bindEvent(input$health_bound_d)
   
   # Filter dataset based on user input
@@ -361,24 +361,24 @@ server <- function(input, output,session) {
               (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
       )
   })
-  # %>%
-  #   bindCache(input$dataset_d,input$health_bound_d,input$disease_d,input$gender_d)%>%
+  # |>
+  #   bindCache(input$dataset_d,input$health_bound_d,input$disease_d,input$gender_d)|>
   #   bindEvent(input$dataset_d,input$health_bound_d,input$disease_d,input$gender_d)
   
   filter_df_reg_d <- reactive({
     filter_df_d() |> 
       filter (HEALTH_BOUND_NAME %in% input$region_d)
   })
-  # %>%
-  #   bindCache(filter_df_d(),input$region_d)%>%
+  # |>
+  #   bindCache(filter_df_d(),input$region_d)|>
   #   bindEvent(filter_df_d(),input$region_d)
   
   filter_df_yr_d <- reactive({
     filter_df_d() |> 
       filter (YEAR == input$year_d)
   })
-  # %>%
-  #   bindCache(filter_df_d(),input$year_d)%>%
+  # |>
+  #   bindCache(filter_df_d(),input$year_d)|>
   #   bindEvent(filter_df_d(),input$year_d)
   
   # Define reactive error bounds 
@@ -400,8 +400,8 @@ server <- function(input, output,session) {
       " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
   })
-  # %>%
-  #   bindCache(filter_df_d())%>%
+  # |>
+  #   bindCache(filter_df_d())|>
   #   bindEvent(filter_df_d())
   
   output$text_d2 <- renderText({
@@ -418,8 +418,8 @@ server <- function(input, output,session) {
       " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
   })
-  # %>%
-  #   bindCache(filter_df_d())%>%
+  # |>
+  #   bindCache(filter_df_d())|>
   #   bindEvent(filter_df_d())
   
   output$text_d3 <- renderText({
@@ -429,8 +429,8 @@ server <- function(input, output,session) {
       "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
     )
   })
-  # %>%
-  #   bindCache(filter_df_d())%>%
+  # |>
+  #   bindCache(filter_df_d())|>
   #   bindEvent(filter_df_d())
   
   output$text_d4 <- renderText({
@@ -447,8 +447,8 @@ server <- function(input, output,session) {
       "<br>", "<div id=stat>", year_max,"</div>"
     )
   })
-  # %>%
-  #   bindCache(filter_df_d())%>%
+  # |>
+  #   bindCache(filter_df_d())|>
   #   bindEvent(filter_df_d())
   
   # Render disease bar graph for each rate/disease 
@@ -493,7 +493,7 @@ server <- function(input, output,session) {
         )
     }
     
-   p %>%
+   p |>
       layout(yaxis = append(list(range=list(0,max(dummyData[[error$upper]],na.rm=TRUE)*1.05)),
                              y_axis_spec(input$dataset_d,"nonnegative")),
              xaxis = x_axis_bar_spec('Health Region',5),
@@ -503,7 +503,7 @@ server <- function(input, output,session) {
              barmode = "overlay",
              margin = list(t = 80,b=50),
              showlegend = FALSE
-      ) %>%
+      ) |>
       event_register('plotly_hover')
 
   })
@@ -550,7 +550,7 @@ server <- function(input, output,session) {
                           
     }
   
-    p %>%  plotlyProxyInvoke("relayout",
+    p |>  plotlyProxyInvoke("relayout",
                         list(
                           autosize = F,
                           yaxis = append(list(range=list(0,na.omit(max(filter_df_reg_d()[[error$upper]]))*1.05)),
@@ -587,7 +587,7 @@ server <- function(input, output,session) {
                 setNames(CHSA_colours$Colors,CHSA_colours$Regions),
       hovertemplate = hovertemplate_line
       
-    )%>%
+    )|>
     
       layout(yaxis = append(list(range = list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
                                               max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
@@ -599,7 +599,7 @@ server <- function(input, output,session) {
              margin = list(t=80,b=50),
              legend = list(title=list(text='Health Region')),
              shapes = list(vline(2001))
-      ) %>%
+      ) |>
       event_register('plotly_hover')
   })
   
@@ -609,7 +609,7 @@ server <- function(input, output,session) {
     
     p <- plotlyProxy("disease_graph_line", session)
     
-    p %>%
+    p |>
       plotlyProxyInvoke("relayout",
                         list(
                           shapes = list(vline(input$year_d))
@@ -621,14 +621,14 @@ server <- function(input, output,session) {
   observeEvent(input$yax_switch_d,{
     p <- plotlyProxy("disease_graph_line", session)
     if(input$yax_switch_d==TRUE){
-    p%>%
+    p|>
       plotlyProxyInvoke("relayout",
                         list(
                           yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
                                  y_axis_spec(input$dataset_d,"tozero"))
                         ))
     }else{
-      p%>%
+      p|>
         plotlyProxyInvoke("relayout",
                           list(
                             yaxis = list(title = list(text = paste0(input$dataset_d," Per 1000"),
@@ -650,7 +650,7 @@ server <- function(input, output,session) {
 
     p <- plotlyProxy("disease_graph_line", session)
     if(input$modeldata_d_switch==TRUE){
-      p %>%
+      p |>
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       
       for(reg in input$region_d){
@@ -674,7 +674,7 @@ server <- function(input, output,session) {
       }
 
     }else{
-      p %>%
+      p |>
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       for(reg in input$region_d){
         # df <- data[which(data$HEALTH_BOUND_NAME==reg),]
@@ -744,9 +744,9 @@ server <- function(input, output,session) {
                     sep="") |>
       lapply(htmltools::HTML)
     
-    leaflet(dummy_spdf) %>% 
-      setView( lat=53.5, lng=-127 , zoom=4.5) %>%
-      addProviderTiles(providers$CartoDB.PositronNoLabels)%>%
+    leaflet(dummy_spdf) |> 
+      setView( lat=53.5, lng=-127 , zoom=4.5) |>
+      addProviderTiles(providers$CartoDB.PositronNoLabels)|>
       addPolygons( 
         layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
         fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]), 
@@ -807,7 +807,7 @@ server <- function(input, output,session) {
     mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),
                          by=legend_inc,length.out=5),Inf)
   
-    mybins_leg <- mybins %>% 
+    mybins_leg <- mybins |> 
       sapply(format_round,dec = ifelse(year_filtered_map_df$DISEASE[1] == "Juvenile Idiopathic Arthritis",3,2))
     
     mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]], 
@@ -819,9 +819,9 @@ server <- function(input, output,session) {
               paste0(mybins_leg[5]," + ")
     )
     
-    leafletProxy("map",data = current_map_spdf) %>%
-      clearMarkers() %>%
-      clearControls()%>%
+    leafletProxy("map",data = current_map_spdf) |>
+      clearMarkers() |>
+      clearControls()|>
       addLegend( pal=mypalette, 
                  values=current_map_spdf@data[[rateInput_d()]], 
                  opacity=0.9,
@@ -829,7 +829,7 @@ server <- function(input, output,session) {
                  position = "bottomleft",
                  labFormat = function(type, cuts, p) {  
                    paste0(labels)
-                 })%>%
+                 })|>
       setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") 
                                 ~HA_Name
                                else ~CHSA_Name),
@@ -858,7 +858,7 @@ server <- function(input, output,session) {
     rv_location$lng <- event_info$lng
     if ((event_info$id %in% input$region_d)){
       for (reg in my_traces()){
-        ppl %>%
+        ppl |>
           plotlyProxyInvoke(
             method = "restyle",
             list(line = list(width = 0.5,
@@ -866,7 +866,7 @@ server <- function(input, output,session) {
             as.integer(match(reg,my_traces())-1)
           )
       }
-      ppl %>%
+      ppl |>
         plotlyProxyInvoke(
           method = "restyle",
           "line",
@@ -874,11 +874,11 @@ server <- function(input, output,session) {
                color = CHSA_colours$Colors[match(event_info$id,CHSA_colours$Regions)]),
           as.integer(match(event_info$id,my_traces())-1)
         )
-      ppb %>%
+      ppb |>
         plotlyProxyInvoke(
           method = "restyle",
           list(opacity=0.2)
-        ) %>%
+        ) |>
         plotlyProxyInvoke(
           method = "restyle",
           list(opacity = 1),
@@ -897,13 +897,13 @@ server <- function(input, output,session) {
     if (all(unlist(event_info[c('lat','lng')]) == unlist(event_info_old[c('lat','lng')]))){
       rv_shape(FALSE)
       for (reg in my_traces()){
-        ppl %>% plotlyProxyInvoke(method="restyle",
+        ppl |> plotlyProxyInvoke(method="restyle",
                                   list(line = list(width=2,
                                                    color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
                                   as.integer(match(reg,my_traces())-1))
         
       } 
-      ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))
+      ppb |> plotlyProxyInvoke(method = "restyle",list(opacity = 1))
 
     }else{
       rv_location_move_old$lat <- event_info$lat
@@ -928,16 +928,16 @@ server <- function(input, output,session) {
       lp <- leafletProxy("map",session)
       if (is.null(event)){
         for (reg in my_traces()){
-          ppl %>% plotlyProxyInvoke(method="restyle",
+          ppl |> plotlyProxyInvoke(method="restyle",
                                     list(line = list(width=2,
                                                      color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
                                     as.integer(match(reg,my_traces())-1))
         } 
-        ppb %>% plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
-        lp %>% clearGroup('selected')
+        ppb |> plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
+        lp |> clearGroup('selected')
       }else{
         for (reg in my_traces()){
-          ppl %>%
+          ppl |>
             plotlyProxyInvoke(
               method = "restyle",
               list(line = list(width = 0.5,
@@ -945,7 +945,7 @@ server <- function(input, output,session) {
               as.integer(match(reg,my_traces())-1)
             )
         }
-        ppl %>%
+        ppl |>
           plotlyProxyInvoke(
             method = "restyle",
             "line",
@@ -954,18 +954,18 @@ server <- function(input, output,session) {
             as.integer(match(event[["x"]],my_traces())-1)
           )
         
-        ppb %>%
+        ppb |>
           plotlyProxyInvoke(
             method = "restyle",
             list(opacity=0.2)
-          ) %>%
+          ) |>
           plotlyProxyInvoke(
             method = "restyle",
             list(opacity = 1),
             as.integer(match(event[["x"]], input$region_d)-1)
           )
         
-      lp %>%
+      lp |>
         addPolygons(
           data=subset(spdf_d(),
                       (if(input$health_bound_d == "Health Authorities") HA_Name 
@@ -991,16 +991,16 @@ server <- function(input, output,session) {
     lp <- leafletProxy("map",session)
     if (is.null(event)){
       for (reg in my_traces()){
-      ppl %>% plotlyProxyInvoke(method="restyle",list(line = list(width=2,
+      ppl |> plotlyProxyInvoke(method="restyle",list(line = list(width=2,
                                                                   color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
                                 as.integer(match(reg,my_traces())-1))
                                 
       }                                  
-      ppb %>%  plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
-      lp %>% clearGroup('selected')
+      ppb |>  plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
+      lp |> clearGroup('selected')
     }else{
       for (reg in my_traces()){
-        ppl %>%
+        ppl |>
           plotlyProxyInvoke(
             method = "restyle",
             list(line = list(width = 0.5,
@@ -1008,7 +1008,7 @@ server <- function(input, output,session) {
             as.integer(match(reg,my_traces())-1)
           )
       }
-      ppl %>%
+      ppl |>
         plotlyProxyInvoke(
           method = "restyle",
           "line",
@@ -1017,17 +1017,17 @@ server <- function(input, output,session) {
           as.integer(match(event[["customdata"]],my_traces())-1)
         )
       
-      ppb %>%
+      ppb |>
         plotlyProxyInvoke(
           method = "restyle",
           list(opacity=0.2)
-        ) %>%
+        ) |>
         plotlyProxyInvoke(
           method = "restyle",
           list(opacity = 1),
           as.integer(match(event[["customdata"]],my_traces())-1)
           )
-      lp %>%
+      lp |>
         addPolygons(
           data=subset(spdf_d(),
                       (if(input$health_bound_d == "Health Authorities") HA_Name 
