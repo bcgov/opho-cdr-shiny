@@ -116,7 +116,10 @@ ui <- fluidPage(
                    column(6, 
                           fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)%>% withSpinner())),
                           fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
-                                   column(8,uiOutput("modeldata_d"))),
+                                   column(8, conditionalPanel(
+                                               condition = "input.gender_d == 'Total' && input.health_bound_d == 'Community Health Service Areas' && input.dataset_d.startsWith('Age')",
+                                               material_switch("modeldata_d_switch","Smoothed Time Trends ")
+                                                 ))),
                           fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)%>% withSpinner())),
                           )))
                )),
@@ -149,7 +152,10 @@ ui <- fluidPage(
                    width = 9,
                    fluidRow(plotlyOutput("region_tab_bar_chart", height = 350) %>% withSpinner()),
                    fluidRow(column(4, material_switch("region_tab_line_y0switch","Y-axis from 0")),
-                            column(8, uiOutput("region_tab_smoothing"))),
+                            column(8,  conditionalPanel(
+                              condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
+                              material_switch("region_tab_smoothing","Smoothed Time Trends ")
+                            ))),
                    fluidRow(plotlyOutput("region_tab_line_chart",height = 350) %>% withSpinner()))
                  
               )), 
@@ -250,19 +256,6 @@ server <- function(input, output,session) {
     reset("filters_d")
   })
   
-  # Conditionally show modeled data toggle switch
-  observe({
-    if(input$gender_d =="Total"&& 
-       input$health_bound_d=="Community Health Service Areas" &&
-       startsWith(input$dataset_d,"Age")){
-      output$modeldata_d <- renderUI({
-        material_switch("modeldata_d_switch","Smoothed Time Trends ")
-      })
-    }else{
-      output$modeldata_d <- renderUI({ })
-    }
-  })%>%
-    bindEvent(input$gender_d, input$health_bound_d,input$dataset_d) 
 
   # Dynamic UI for rate selection
   observeEvent(input$disease_d,{
@@ -301,9 +294,10 @@ server <- function(input, output,session) {
     if(!is.null(input$dataset_d)){
       dataset_switch(input$dataset_d)
     }
-  })%>%
-    bindCache(input$dataset_d)%>%
-    bindEvent(input$dataset_d)
+  })
+  # %>%
+  #   bindCache(input$dataset_d)%>%
+  #   bindEvent(input$dataset_d)
   
   # Rate selection based on user input
   rateInput_d <- reactive({
@@ -311,9 +305,10 @@ server <- function(input, output,session) {
     if(!is.null(input$dataset_d)){
       rate_switch(input$dataset_d)
     }
-  })%>%
-    bindCache(input$dataset_d)%>%
-    bindEvent(input$dataset_d)
+  })
+  # %>%
+  #   bindCache(input$dataset_d)%>%
+  #   bindEvent(input$dataset_d)
   
   # Geography selection based on user input
   healthboundInput_d <- reactive ({
@@ -323,9 +318,10 @@ server <- function(input, output,session) {
            "Health Authorities" = "HA",
            "Community Health Service Areas" = "CHSA")
     }
-  })%>%
-    bindCache(input$health_bound_d)%>%
-    bindEvent(input$health_bound_d)
+  })
+  # %>%
+  #   bindCache(input$health_bound_d)%>%
+  #   bindEvent(input$health_bound_d)
   
   # Map geography selection based on user input
   spdf_d <- reactive ({
@@ -335,9 +331,10 @@ server <- function(input, output,session) {
            "Health Authorities" = ha_spdf,
            "Community Health Service Areas" = chsa_spdf)
     }
-  })%>%
-    bindCache(input$health_bound_d)%>%
-    bindEvent(input$health_bound_d)
+  })
+  # %>%
+  #   bindCache(input$health_bound_d)%>%
+  #   bindEvent(input$health_bound_d)
   
   # Filter dataset based on user input
   filter_df_d <- reactive({
@@ -354,16 +351,18 @@ server <- function(input, output,session) {
   filter_df_reg_d <- reactive({
     filter_df_d() |> 
       filter (HEALTH_BOUND_NAME %in% input$region_d)
-  })%>%
-    bindCache(filter_df_d(),input$region_d)%>%
-    bindEvent(filter_df_d(),input$region_d)
+  })
+  # %>%
+  #   bindCache(filter_df_d(),input$region_d)%>%
+  #   bindEvent(filter_df_d(),input$region_d)
   
   filter_df_yr_d <- reactive({
     filter_df_d() |> 
       filter (YEAR == input$year_d)
-  })%>%
-    bindCache(filter_df_d(),input$year_d)%>%
-    bindEvent(filter_df_d(),input$year_d)
+  })
+  # %>%
+  #   bindCache(filter_df_d(),input$year_d)%>%
+  #   bindEvent(filter_df_d(),input$year_d)
   
   # Define reactive error bounds 
   error <- reactiveValues(
@@ -383,9 +382,10 @@ server <- function(input, output,session) {
       healthboundInput_d()," with Highest Maximum ",input$dataset_d,
       " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
-  })%>%
-    bindCache(filter_df_d())%>%
-    bindEvent(filter_df_d())
+  })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())
   
   output$text_d2 <- renderText({
     data <- filter_df_d()|>
@@ -400,9 +400,10 @@ server <- function(input, output,session) {
       healthboundInput_d()," with Highest Average ",input$dataset_d,
       " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
-  })%>%
-    bindCache(filter_df_d())%>%
-    bindEvent(filter_df_d())
+  })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())
   
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
@@ -410,9 +411,10 @@ server <- function(input, output,session) {
       "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
       "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
     )
-  })%>%
-    bindCache(filter_df_d())%>%
-    bindEvent(filter_df_d())
+  })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())
   
   output$text_d4 <- renderText({
     data<-filter_df_d()|>
@@ -427,9 +429,10 @@ server <- function(input, output,session) {
       "Year of Highest Median Recorded ",input$dataset_d,
       "<br>", "<div id=stat>", year_max,"</div>"
     )
-  })%>%
-    bindCache(filter_df_d())%>%
-    bindEvent(filter_df_d())
+  })
+  # %>%
+  #   bindCache(filter_df_d())%>%
+  #   bindEvent(filter_df_d())
   
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
@@ -1035,19 +1038,6 @@ server <- function(input, output,session) {
     reset("filters_r")
   })
 
-  # Show the modeled data toggle switch when conditions are reached
-  observe({
-    if (input$region_tab_sex_selected == "Total" &&
-        input$region_tab_geography_selected == "Community Health Service Areas" &&
-        startsWith(input$region_tab_rate_type_selected, "Age")) {
-      output$region_tab_smoothing <- renderUI({
-        material_switch("region_tab_smoothing_switch", "Smoothed Time Trends ")
-      })
-    } else{
-      output$region_tab_smoothing <- renderUI({
-      })
-    }
-  })
 
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not
