@@ -159,8 +159,9 @@ ui <- fluidPage(
                                  4,
                                  material_switch("region_tab_line_y0switch", "Y-axis from 0")
                                ),
-                               column(8, uiOutput(
-                                 "region_tab_smoothing"
+                               column(8, conditionalPanel(
+                                 condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
+                                 material_switch("region_tab_smoothing","Smoothed Time Trends ")
                                ))),
                                fluidRow(
                                  plotlyOutput("region_tab_line_chart", height = 350) %>% withSpinner()
@@ -1053,22 +1054,7 @@ server <- function(input, output,session) {
   observeEvent(input$region_tab_reset_button, {
     reset("filters_r")
   })
-      # Show the modeled data toggle switch when conditions are reached
-      observe({
-        if (input$region_tab_sex_selected == "Total" &&
-            input$region_tab_geography_selected == "Community Health Service Areas" &&
-            startsWith(input$region_tab_rate_type_selected, "Age")) {
-          output$region_tab_smoothing <- renderUI({
-            material_switch("region_tab_smoothing_switch", "Smoothed Time Trends ")
-          })
-        } else{
-          output$region_tab_smoothing <- renderUI({
-            
-          })
-        }
-      })
       
-
   # Show possible rate types based on the diseases selected.
   # If any non relapsing-remitting disease is selected, then HSC rate will not
   #   show to avoid error.
