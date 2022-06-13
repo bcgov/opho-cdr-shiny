@@ -179,7 +179,7 @@ summary(LifeP_CHSA_df$STD_RATE_PER_1000)
 
 ```
 
-### Observations: (Will elaborate later)
+### Observations:
 
  - None of the three rates, namely, HSC Prevalence, Age-Standardized Incidence Rate, and  Age-Standardized Life Prevalence have any negative value
 
@@ -271,7 +271,7 @@ nested_incidence_df <- Incidence_CHSA_df %>%
 
 ### Display of results:
 
-```{r fitted results}
+```{r }
 
 view_incidence_df <- nested_incidence_df %>%
   dplyr::select(c(`DISEASE`,
@@ -286,7 +286,7 @@ head(view_incidence_df)
 
 ### Saving data by diseases: 
 
-```{r saving the plotting data}
+```{r }
 
 incidence_df <- view_incidence_df %>%
   mutate(join_fitted = exp(.fitted)) %>%
@@ -309,7 +309,7 @@ incidence_df_list <- split(final_incidence_df, list(final_incidence_df$DISEASE))
 
 # Write out separate CSV for each DISEASE
 for (DISEASE in names(incidence_df_list)) {
-    write.csv(incidence_df_list[[DISEASE]], paste0(DISEASE, ".csv"))
+    write.csv(incidence_df_list[[DISEASE]], paste0("IncidenceRate/",DISEASE, ".csv"), row.names = FALSE)
 }
 ```
 
@@ -334,7 +334,7 @@ nested_HSC_df <- HSC_CHSA_df %>%
 
 ### Display of results:
 
-```{r fitted results}
+```{r}
 
 view_HSC_df <- nested_HSC_df %>%
   dplyr::select(c(`DISEASE`,
@@ -350,7 +350,7 @@ head(view_HSC_df)
 
 ### Saving data by diseases: 
 
-```{r saving the plotting data}
+```{r }
 
 HSC_df_list <- view_HSC_df %>%
   mutate(join_obs = exp(`log(STD_RATE_PER_1000)`)) %>%
@@ -382,7 +382,7 @@ HSC_df_list <- split(final_HSC_df, list(final_HSC_df$DISEASE))
 
 # Write out separate CSV for each DISEASE
 for (DISEASE in names(HSC_df_list)) {
-    write.csv(HSC_df_list[[DISEASE]], paste0(DISEASE, ".csv"))
+    write.csv(HSC_df_list[[DISEASE]], paste0("HSCPrevalence/", DISEASE, ".csv"), row.names = FALSE)
 }
 
 ```
@@ -409,7 +409,7 @@ nested_LifeP_df <- LifeP_CHSA_df %>%
 
 ### Display of results:
 
-```{r fitted results}
+```{r}
 
 view_LifeP_df <- nested_LifeP_df %>%
   dplyr::select(c(`DISEASE`,
@@ -425,7 +425,7 @@ head(view_LifeP_df)
 
 ### Saving data by diseases: 
 
-```{r saving the plotting data}
+```{r }
 
 LifeP_df_list <- view_LifeP_df %>%
   mutate(join_obs = exp(`log(STD_RATE_PER_1000)`)) %>%
@@ -457,7 +457,7 @@ LifeP_df_list <- split(final_LifeP_df, list(final_LifeP_df$DISEASE))
 
 # Write out separate CSV for each DISEASE
 for (DISEASE in names(LifeP_df_list)) {
-    write.csv(LifeP_df_list[[DISEASE]], paste0(DISEASE, ".csv"))
+    write.csv(LifeP_df_list[[DISEASE]], paste0("LifePrevalence/",DISEASE, ".csv"),row.names=FALSE)
 }
 
 ```
