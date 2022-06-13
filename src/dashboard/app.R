@@ -154,7 +154,12 @@ ui <- fluidPage(
                                9,
                                fluidRow(
                                  plotlyOutput("region_tab_bar_chart", height = 350) |> withSpinner()
-                               ),
+                               )),
+                             column(2, 
+                                    fluidRow(htmlOutput("region_tab_text1")),
+                                    fluidRow(htmlOutput("region_tab_text2")))),
+                             
+                               
                                fluidRow(column(
                                  4,
                                  material_switch("region_tab_line_y0switch", "Y-axis from 0")
@@ -164,18 +169,15 @@ ui <- fluidPage(
                                  material_switch("region_tab_smoothing_switch","Smoothed Time Trends ")
                                ))),
                                fluidRow(
-                                 plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner()
-                               )
-                             ),
-                             column(
-                               3,
-                               fluidRow(htmlOutput("region_tab_text1")),
-                               fluidRow(htmlOutput("region_tab_text2")),
-                               fluidRow(htmlOutput("region_tab_text3")),
-                               fluidRow(htmlOutput("region_tab_text4"))
-                             )
-                           ))
-               )), 
+                                 column(9,
+                                        fluidRow(plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner())),
+                                 column(2, 
+                                        fluidRow(htmlOutput("region_tab_text3")),
+                                        br(),
+                                        fluidRow(htmlOutput("region_tab_text4"))))
+                               
+                           
+               ))), 
       
       ################################
       # Download Data Tab UI Side Logic
@@ -1076,7 +1078,7 @@ server <- function(input, output,session) {
                        "Crude Life Prevalence",
                        "Age Standardized Life Prevalence"
                      ),
-                   # Ensure the current selection not be overrided
+                   # Ensure the current selection not be overrode
                    selected = input$region_tab_rate_type_selected
                  )
                })
@@ -1389,8 +1391,7 @@ server <- function(input, output,session) {
     invalidateLater(500)
     bar_chart_data <- region_tab_filtered_data() |>
       filter(
-        YEAR == input$region_tab_year_selected,
-        DISEASE %in% input$region_tab_diseases_selected
+        YEAR == input$region_tab_year_selected
       )
     error$lower <-
       paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
