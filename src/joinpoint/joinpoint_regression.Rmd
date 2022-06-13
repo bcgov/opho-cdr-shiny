@@ -13,7 +13,7 @@ bibliography: joinpoint_ref.bib
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ```
 
-
+# Calling the libraries:
 
 ```{r libraries}
 library(readr)
@@ -25,11 +25,9 @@ library(broom)
 library(tidyr)
 library(modelr)
 library(purrr)
-library(knitr)
 ```
-# Highlevel tasks:
 
-## Background / Methodology / Literature review / Rationale: (Will write rationale of this approach)
+# Background / Methodology / Literature review / Rationale: (Will write rationale of this approach)
 
 List of papers:
 
@@ -39,95 +37,117 @@ List of papers:
  - Spatial clusters and temporal trends of malignant melanoma mortality in Ecuador. (@nunez2020spatial)
  - Worldwide suicide mortality trends by firearm (1990–2019): A joinpoint regression analysis (@ilic2022worldwide)
  
-## Data Pre-processing:
+# Data Pre-processing:
 
-### Loading data
+## Loading data :
+
+ - Adding a column to represent if the rows have Null, Zero and Missing values
 
 ```{r Load Data}
 CHSA_df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") %>%
   mutate( RATE = as.factor(RATE)) %>% 
   mutate( DISEASE = as.factor(DISEASE)) %>%
-  mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) %>% 
-  drop_na()
-
-CHSA_df[CHSA_df == "" | CHSA_df == 0] <- NA
-row.has.na <- apply(CHSA_df, 1, function(x){any(is.na(x))})
-sum(row.has.na)
-CHSA_df <- CHSA_df[!row.has.na,]
+  mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) %>%
+  mutate(anyTRUE = !if_any(everything(), ~. %in% c(NA,"",0)))
 
 ```
+## Suseting data:
 
-### Susetting data:
+ - Create three dataframe by three rates:
+ 
+    - HSC Prevalence
+    - Age-standardized Incidence Rates
+    - Age-Standardized Life Prevalence
+
 
 ```{r subset}
-
-# Split the data frames according to Rates:
-
 CHSA_data_list <- split(CHSA_df, f = CHSA_df$RATE) 
 
-HSC_CHSA_df <- CHSA_data_list[[1]] %>% 
-  as.data.frame()%>%
-  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95))
-  
+# incidence data  
 Incidence_CHSA_df <- CHSA_data_list[[2]] %>% 
   as.data.frame() %>% 
   dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95)) %>%
-  filter(!(HEALTH_BOUNDARIES=='4111 Downtown Victoria/Vic West' & 
-             DISEASE=='EPILEPSY')) %>% 
-  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
-             DISEASE=='HAEMORR_STROKE')) %>% 
-  filter(!(HEALTH_BOUNDARIES=='4114 Oak Bay' & 
-             DISEASE=='EPILEPSY')) %>% 
-    filter(!(HEALTH_BOUNDARIES=='5232 Vanderhoof Rural' & 
-             DISEASE=='HAEMORR_STROKE')) %>% 
-  filter(!(HEALTH_BOUNDARIES=='2334 Panorama' & 
-             DISEASE=='HOSP_STROKE')) %>% 
-  filter(!(HEALTH_BOUNDARIES=='1260 Grand Forks' & 
-             DISEASE=='HOSP_TIA')) %>%  
-  filter(!(HEALTH_BOUNDARIES=='2150 Agassiz/Harrison' & 
-             DISEASE=='HOSP_TIA')) %>%  
-  filter(!(HEALTH_BOUNDARIES=='5222 Burns Lake South' & 
-             DISEASE=='HOSP_TIA')) %>% 
-  filter(!(HEALTH_BOUNDARIES=='1461 West Cariboo' & 
-             DISEASE=='PARKINSONISM'))%>% 
-  filter(!(HEALTH_BOUNDARIES=='2150 Agassiz/Harrison' & 
-             DISEASE=='RHEUMATOID_ARTHRITIS'))%>% 
-  filter(!(HEALTH_BOUNDARIES=='2223 Burnaby Southwest' & 
-             DISEASE=='RHEUMATOID_ARTHRITIS'))%>% 
-  filter(!(HEALTH_BOUNDARIES=='2334 Panorama' & 
-             DISEASE=='OSTEOARTHRITIS'))%>% 
-  filter(!(DISEASE=='JUVENILE_ARTHRITIS'))%>% 
-  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
-             DISEASE=='MS'))%>% 
-  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
-             DISEASE=='PARKINSONISM'))%>% 
-  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
-             DISEASE=='SCHIZOPHRENIA'))%>% 
-  filter(!(HEALTH_BOUNDARIES=='5222 Burns Lake South' & 
-             DISEASE=='PARKINSONISM'))%>%
-  filter(!(HEALTH_BOUNDARIES=='5232 Vanderhoof Rural' & 
-             DISEASE=='PARKINSONISM'))%>%
-  filter(!(HEALTH_BOUNDARIES== "5322 Hudson's Hope" & 
-             DISEASE=='MS'))%>%
-  filter(!(HEALTH_BOUNDARIES== "5313 Tumbler Ridge" & 
-             DISEASE=='PARKINSONISM'))%>%
-  filter(!(HEALTH_BOUNDARIES== "5331 Fort Nelson Population Centre" & 
-             DISEASE=='MS'))%>%
-  filter(!(HEALTH_BOUNDARIES== "1110 Fernie" & 
-             DISEASE=='ALZHEIMER_DEMENTIA'))
+  mutate(anyTRUE = ifelse((
+    (DISEASE=='JUVENILE_ARTHRITIS')|
+    (HEALTH_BOUNDARIES=='4111 Downtown Victoria/Vic West' & 
+             DISEASE=='EPILEPSY')| 
+    (HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='HAEMORR_STROKE')|
+    (HEALTH_BOUNDARIES=='4114 Oak Bay' & 
+             DISEASE=='EPILEPSY')| 
+    (HEALTH_BOUNDARIES=='5232 Vanderhoof Rural' & 
+             DISEASE=='HAEMORR_STROKE')| 
+    (HEALTH_BOUNDARIES=='2334 Panorama' & 
+             DISEASE=='HOSP_STROKE')| 
+    (HEALTH_BOUNDARIES=='1260 Grand Forks' & 
+             DISEASE=='HOSP_TIA')|  
+    (HEALTH_BOUNDARIES=='2150 Agassiz/Harrison' & 
+             DISEASE=='HOSP_TIA')|  
+    (HEALTH_BOUNDARIES=='5222 Burns Lake South' & 
+             DISEASE=='HOSP_TIA')| 
+    (HEALTH_BOUNDARIES=='1461 West Cariboo' & 
+             DISEASE=='PARKINSONISM')| 
+    (HEALTH_BOUNDARIES=='2150 Agassiz/Harrison' & 
+             DISEASE=='RHEUMATOID_ARTHRITIS')| 
+    (HEALTH_BOUNDARIES=='2223 Burnaby Southwest' & 
+             DISEASE=='RHEUMATOID_ARTHRITIS')| 
+    (HEALTH_BOUNDARIES=='2334 Panorama' & 
+             DISEASE=='OSTEOARTHRITIS')| 
+    (HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='MS')|
+    (HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='PARKINSONISM')|
+    (HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='SCHIZOPHRENIA')| 
+    (HEALTH_BOUNDARIES=='5222 Burns Lake South' & 
+             DISEASE=='PARKINSONISM')|
+    (HEALTH_BOUNDARIES=='5232 Vanderhoof Rural' & 
+             DISEASE=='PARKINSONISM')|
+    (HEALTH_BOUNDARIES== "5322 Hudson's Hope" & 
+             DISEASE=='MS')|
+    (HEALTH_BOUNDARIES== "5313 Tumbler Ridge" & 
+             DISEASE=='PARKINSONISM')|
+    (HEALTH_BOUNDARIES== "5331 Fort Nelson Population Centre" & 
+             DISEASE=='MS')|
+    (HEALTH_BOUNDARIES== "1110 Fernie" & 
+             DISEASE=='ALZHEIMER_DEMENTIA')), FALSE, anyTRUE))
 
+# hsc data
+HSC_CHSA_df <- CHSA_data_list[[1]] %>% 
+  as.data.frame()%>%
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95)) %>%
+  mutate(anyTRUE = ifelse(((HEALTH_BOUNDARIES=='1230 Castlegar' & 
+             DISEASE=='HOSP_TIA_EPI')|
+               (HEALTH_BOUNDARIES=='1390 Enderby' & 
+             DISEASE=='SCHIZOPHRENIA_EPI')|
+               (HEALTH_BOUNDARIES=='1450 North Thompson' & 
+             DISEASE=='HOSP_STROKE_EPI')|
+               (HEALTH_BOUNDARIES=='2314 Brookswood/Murrayville' & 
+             DISEASE=='HAEMORR_STROKE_EPI')|
+               (HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='HAEMORR_STROKE_EPI')|
+               (HEALTH_BOUNDARIES=='5232 Vanderhoof Rural' & 
+             DISEASE=='HAEMORR_STROKE_EPI')), FALSE, anyTRUE))
 
+  
+# Life Prevalence:
 
 LifeP_CHSA_df <- CHSA_data_list[[3]] %>% 
   as.data.frame() %>% 
-  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95)) 
-
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95)) %>%  
+  mutate(anyTRUE = ifelse((
+  (HEALTH_BOUNDARIES=='1461 West Cariboo' & 
+             DISEASE=='JUVENILE_ARTHRITIS')| 
+  (HEALTH_BOUNDARIES=='5331 Fort Nelson Population Centre' & 
+             DISEASE=='JUVENILE_ARTHRITIS')), FALSE, anyTRUE))
+  
 ```
 
 
-### Exploratory data analysis
 
-#### Plotting of Rate against Time: 
+# Exploratory data analysis
+
+## Plotting of Rate against Time on sample dataframe: 
 
 The following graph plots Age-standardized Incidence Rates of Chronic Diseases in Kimberley CHSA in from 2001 to 2020 (Will label the graph)
 
@@ -144,12 +164,12 @@ Incidence_CHSA_df %>%
 
 ```
 
-Observations: (Will elaborate later)
+### Observations: 
 
  - "Breakpoints" can be seen. Not smooth
  - Each "Piece" is considered a linear relation between Rates and Time (Year)
  
-#### Summery sattistics of rates:
+## Summery sattistics of rates:
 
 ```{r rates summary}
 
@@ -158,15 +178,16 @@ summary(Incidence_CHSA_df$STD_RATE_PER_1000)
 summary(LifeP_CHSA_df$STD_RATE_PER_1000)
 
 ```
-Observations: (Will elaborate later)
+
+### Observations: (Will elaborate later)
 
  - None of the three rates, namely, HSC Prevalence, Age-Standardized Incidence Rate, and  Age-Standardized Life Prevalence have any negative value
 
-## Building the Model:
+# Building the Model on sample data:
 
-### Specifics :
+## Specifics :
 
- - Model : Segmented regression (Joinpoint regression)
+ - Model : Segmented regression / Joinpoint regression / Piecewise regression
  - Response (y): Age-Standardized Incidence Rate
  - Predictor : Year
  - `segmented.lm` is used
@@ -184,30 +205,29 @@ seg_obj<-segmented(lm_model,seg.Z=~YEAR)
 ```
 
 
-### Model daignostics:
+## Model daignostics:
 
-#### Regression coefficients:
+### Regression coefficients:
 
 ```{r}
 print(summary(seg_obj))
 ```
-Observations: (Will elaborate later)
+#### Observations: 
 
  - Breakpoint is in Year 2009
 
-#### average annual per cent (AAPC) change:
+### Average Annual Percent (AAPC) change:
 
-To summarize piecewise linear relationships in segmented
-regression models.
+To summarize piecewise linear relationships in segmented regression models.
 ```{r aapc}
 print(aapc(seg_obj, wrong.se = FALSE))
 
 ```
-Observations: (Will elaborate later)
+#### Observations:
 
- - Positive aapc refers to an increasing trend
+ - Positive AAPC refers to an increasing trend
 
-#### Plotting:
+## Plotting:
 
 ```{r}
 plot(seg_obj, 
@@ -223,34 +243,21 @@ plot(seg_obj,
 
 ```
 
-Observations: (Will elaborate later)
+#### Observations:
 
  - Epidemiological emphasis: Possible causes can be explored looking at the "Breakpoint" of Year 2009. 
 
 
-```{r Explore}
+# Fitting the Model on data frame: 
 
-# ed in group 1726: DISEASE =
-#   HAEMORR_STROKE, HEALTH_BOUNDARIES = 5110 Snow Country.
+## Incidence rate:
 
-practice_df <- Incidence_CHSA_df %>%
-  filter(HEALTH_BOUNDARIES == "1210 Kootenay
- " &
-           DISEASE == "JUVENILE_ARTHRITIS")
+### Model fitting:
 
-all(is.na(practice_df$STD_RATE_PER_1000))
-all(is.na(practice_df$YEAR))
-practice_df
+```{r fitting incidence}
 
-```
-
-
-## Fitting the Model: 
-
-```{r}
-
-# Looping over 
 nested_incidence_df <- Incidence_CHSA_df %>%
+  filter(anyTRUE==TRUE)%>%
   group_by(HEALTH_BOUNDARIES, DISEASE) %>%
   arrange(HEALTH_BOUNDARIES, DISEASE, YEAR) %>% 
   nest() %>%
@@ -262,11 +269,10 @@ nested_incidence_df <- Incidence_CHSA_df %>%
 
 ```
 
-## Display of results:
+### Display of results:
 
 ```{r fitted results}
 
-  
 view_incidence_df <- nested_incidence_df %>%
   dplyr::select(c(`DISEASE`,
                   `HEALTH_BOUNDARIES`,
@@ -274,23 +280,185 @@ view_incidence_df <- nested_incidence_df %>%
                   `log(STD_RATE_PER_1000)`,
                   `psi1.YEAR`,
                   `.fitted`))  
-view_incidence_df
+head(view_incidence_df)
 
 ```
 
+### Saving data by diseases: 
+
 ```{r saving the plotting data}
 
-incidence_df_for_plot <- view_incidence_df %>%
-  mutate(STD_RATE_PER_1000 = exp(`log(STD_RATE_PER_1000)`)) %>%
-  mutate(pred = exp(.fitted)) %>%
+incidence_df <- view_incidence_df %>%
+  mutate(join_fitted = exp(.fitted)) %>%
   dplyr::select(c(DISEASE,
            HEALTH_BOUNDARIES,
            YEAR,
-           STD_RATE_PER_1000,
-           pred))
+           join_fitted))
 
-incidence_df_for_plot
-write.csv(incidence_df_for_plot,"/Users/mahmood/UBCMDS/591_capstone/plot_inci_df.csv", row.names = FALSE)
+final_incidence_df <- Incidence_CHSA_df %>%
+  full_join(incidence_df, by = c("DISEASE", "HEALTH_BOUNDARIES", "YEAR"))%>%
+  rename(join_obs = STD_RATE_PER_1000)%>%
+  dplyr::select(c(DISEASE,
+           HEALTH_BOUNDARIES,
+           YEAR,
+           join_obs,
+           join_fitted))
+
+# Split dataframe by DISEASE
+incidence_df_list <- split(final_incidence_df, list(final_incidence_df$DISEASE))
+
+# Write out separate CSV for each DISEASE
+for (DISEASE in names(incidence_df_list)) {
+    write.csv(incidence_df_list[[DISEASE]], paste0(DISEASE, ".csv"))
+}
+```
+
+## HSC prevalence:
+
+### Model Fitting:
+
+```{r}
+
+nested_HSC_df <- HSC_CHSA_df %>%
+  filter(anyTRUE==TRUE)%>%
+  group_by(HEALTH_BOUNDARIES, DISEASE) %>%
+  arrange(HEALTH_BOUNDARIES, DISEASE, YEAR) %>% 
+  nest() %>%
+  mutate(fit = map(data, ~segmented(lm(log(STD_RATE_PER_1000)~ YEAR,
+               na.action= na.exclude,
+               data=.), seg.Z = ~YEAR)),
+         results = map(fit, augment))%>%
+  unnest(results)
+
+```
+
+### Display of results:
+
+```{r fitted results}
+
+view_HSC_df <- nested_HSC_df %>%
+  dplyr::select(c(`DISEASE`,
+                  `HEALTH_BOUNDARIES`,
+                  `YEAR`,
+                  `log(STD_RATE_PER_1000)`,
+                  `psi1.YEAR`,
+                  `.fitted`))  
+head(view_HSC_df)
+
+```
+
+
+### Saving data by diseases: 
+
+```{r saving the plotting data}
+
+HSC_df_list <- view_HSC_df %>%
+  mutate(join_obs = exp(`log(STD_RATE_PER_1000)`)) %>%
+  mutate(join_fitted = exp(.fitted)) %>%
+  dplyr::select(c(DISEASE,
+           HEALTH_BOUNDARIES,
+           YEAR,
+           join_obs,
+           join_fitted))
+
+HSC_df <- view_HSC_df %>%
+  mutate(join_fitted = exp(.fitted)) %>%
+  dplyr::select(c(DISEASE,
+           HEALTH_BOUNDARIES,
+           YEAR,
+           join_fitted))
+
+final_HSC_df <- HSC_CHSA_df %>%
+  full_join(HSC_df, by = c("DISEASE", "HEALTH_BOUNDARIES", "YEAR"))%>%
+  rename(join_obs = STD_RATE_PER_1000)%>%
+  dplyr::select(c(DISEASE,
+           HEALTH_BOUNDARIES,
+           YEAR,
+           join_obs,
+           join_fitted))
+
+# Split dataframe by DISEASE
+HSC_df_list <- split(final_HSC_df, list(final_HSC_df$DISEASE))
+
+# Write out separate CSV for each DISEASE
+for (DISEASE in names(HSC_df_list)) {
+    write.csv(HSC_df_list[[DISEASE]], paste0(DISEASE, ".csv"))
+}
+
+```
+
+
+## Life Prevalence rate:
+
+### Model Fitting:
+
+```{r}
+
+nested_LifeP_df <- LifeP_CHSA_df %>%
+  filter(anyTRUE==TRUE)%>%
+  group_by(HEALTH_BOUNDARIES, DISEASE) %>%
+  arrange(HEALTH_BOUNDARIES, DISEASE, YEAR) %>% 
+  nest() %>%
+  mutate(fit = map(data, ~segmented(lm(log(STD_RATE_PER_1000)~ YEAR,
+               na.action= na.exclude,
+               data=.), seg.Z = ~YEAR)),
+         results = map(fit, augment))%>%
+  unnest(results)
+
+```
+
+### Display of results:
+
+```{r fitted results}
+
+view_LifeP_df <- nested_LifeP_df %>%
+  dplyr::select(c(`DISEASE`,
+                  `HEALTH_BOUNDARIES`,
+                  `YEAR`,
+                  `log(STD_RATE_PER_1000)`,
+                  `psi1.YEAR`,
+                  `.fitted`))  
+head(view_LifeP_df)
+
+```
+
+
+### Saving data by diseases: 
+
+```{r saving the plotting data}
+
+LifeP_df_list <- view_LifeP_df %>%
+  mutate(join_obs = exp(`log(STD_RATE_PER_1000)`)) %>%
+  mutate(join_fitted = exp(.fitted)) %>%
+  dplyr::select(c(DISEASE,
+           HEALTH_BOUNDARIES,
+           YEAR,
+           join_obs,
+           join_fitted))
+
+LifeP_df <- view_LifeP_df %>%
+  mutate(join_fitted = exp(.fitted)) %>%
+  dplyr::select(c(DISEASE,
+           HEALTH_BOUNDARIES,
+           YEAR,
+           join_fitted))
+
+final_LifeP_df <- LifeP_CHSA_df %>%
+  full_join(LifeP_df, by = c("DISEASE", "HEALTH_BOUNDARIES", "YEAR"))%>%
+  rename(join_obs = STD_RATE_PER_1000)%>%
+  dplyr::select(c(DISEASE,
+           HEALTH_BOUNDARIES,
+           YEAR,
+           join_obs,
+           join_fitted))
+
+# Split dataframe by DISEASE
+LifeP_df_list <- split(final_LifeP_df, list(final_LifeP_df$DISEASE))
+
+# Write out separate CSV for each DISEASE
+for (DISEASE in names(LifeP_df_list)) {
+    write.csv(LifeP_df_list[[DISEASE]], paste0(DISEASE, ".csv"))
+}
 
 ```
 
