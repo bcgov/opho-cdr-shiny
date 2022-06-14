@@ -1488,6 +1488,7 @@ server <- function(input, output,session) {
                             )),
                             as.integer(match(disease, region_tab_traces()) - 1))
       }
+      print(event[["customdata"]])
       ppl |>
         plotlyProxyInvoke(method = "restyle",
                           "line",
@@ -1497,6 +1498,7 @@ server <- function(input, output,session) {
                                  color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)]
                                )),
                           as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
+      print(as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
 
       # And make the bar of the highlighted disease opaque and others transparent
       ppb |>
@@ -1573,7 +1575,7 @@ server <- function(input, output,session) {
     life_prev_df |>
       filter((YEAR == most_recent_year) &
                (CLNT_GENDER_LABEL == "T") &
-               (HEALTH_BOUND_NAME == input$region_tab_region_selected)
+               (HEALTH_BOUND_NAME %in% input$region_tab_region_selected)
       ) |>
       arrange(desc(STD_RATE_PER_1000)) |>
       select(DISEASE) |>
@@ -1595,7 +1597,7 @@ server <- function(input, output,session) {
   
   output$region_tab_text3 <- renderText({
     paste0("3rd Disease by Age Standardized Life Prevalence in ", most_recent_year,
-           "<div id=stat>", top_4_diseases()$DISEASE[4],"</div>"
+           "<div id=stat>", top_4_diseases()$DISEASE[3],"</div>"
     )
   })
   
