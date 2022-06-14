@@ -17,6 +17,16 @@ knitr::opts_chunk$set(fig.pos = 'H')
 
 # Executive Summary 
 
+The BC Chronic Disease Registry (BCCDR) is a data product that captures
+information about the rates of new and persistent cases of 25 different chronic
+diseases across the Province of British Columbia. Crude and age-standardized
+rates of disease are recorded for different health boundary types, including HAs 
+(Health Authorities) and CHSAs (Community Health Service Areas), as well as for demographic
+variables such as sex. In this project we aim to develop and analysis pipeline to describe
+the temporal trends in the data, and the build an interactive dashboard that will allow users
+of all technical expertise to explore and visualize spatial and temporal information of the 
+disease rates. This proposal will outline the approach we took to
+tackle this problem and a description of our final product deliverable.
 
 \newpage
 
