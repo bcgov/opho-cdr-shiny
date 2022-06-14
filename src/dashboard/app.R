@@ -220,30 +220,10 @@ ui <- fluidPage(
       #############
       # MAHMOOD TAB
       #############
-      tabPanel("Joinpoint Regression",
-               sidebarLayout(
-                 sidebarPanel(
-                   id="filters_m",
-                   width = 3,
-                   h2("Data Selection"),
-                   hr(),
-                   selectInput("disease_m",
-                               label= "Select Disease",
-                               choices = ALL_DISEASES),
-                   rate_type_input("dataset_m"),
-                   # geography_radio_buttons("health_bound_d"),
-                   selectInput("region_m",
-                               label = "Select CHSA",
-                               choices = sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))),
-                   # sex_radio_buttons("gender_d"),
-                   # year_slider("year_d", "year_info_d"),
-                   # fisc_year_tt("year_info_d"),
-                   br(),
-                   actionButton("reset_m", "Reset")
-                 ),
-               mainPanel(
-                 img(src='model_image2.png',align="center",style="width: 1000px"),
-               ))),
+      # tabPanel("Mahmood",
+      #          mainPanel(
+      #            img(src='model_image2.png',align="center",style="width: 1000px"),
+      #          ))
   )
 )
 
@@ -665,7 +645,7 @@ server <- function(input, output,session) {
   })
 
   # Switch to change line graph to modeled data
-  observeEvent(input$modeldata_d_switch,{
+  observe({
     data <- filter_df_d()|>
       filter(HEALTH_BOUND_NAME %in% input$region_d)
 
@@ -1198,7 +1178,7 @@ server <- function(input, output,session) {
   })
 
   # Modify line chart's yaxis to start from 0 when the switch is on
-  observeEvent(input$region_tab_line_y0switch, {
+  observe( {
     p <- plotlyProxy("region_tab_line_chart", session)
 
     if (input$yax_switch_d == TRUE) {
@@ -1246,7 +1226,7 @@ server <- function(input, output,session) {
   })
 
   # Change line chart to show smoothed time trends data
-  observeEvent(input$region_tab_smoothing_switch, {
+  observe({
     data <- region_tab_filtered_data()
     p <- plotlyProxy("region_tab_line_chart", session)
 
