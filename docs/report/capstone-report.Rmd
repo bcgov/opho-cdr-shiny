@@ -53,7 +53,7 @@ that of the 2011 Canadian Census. Crude rates are not adjusted to the standard p
 and represent the number of cases in a specific geographic region divided by the population
 at risk in that region. For each disease rate metric, the data is stratified by year, 
 sex and by region at various tiers. In this project we
-focus on the least and the most granular spatial health boundaries, which are
+focus on the least and the most granular health boundaries, which are
 the 5 Health Authorities (HA) and the 195 Community Health
 Service Areas (CHSA).
 
@@ -127,7 +127,7 @@ to build the overall app framework, and was a requirement on part of the Capston
 By Disease tab, and was chosen due to its easy integration with Shiny and Plotly. However, the difficulty with using Leaflet is that it does 
 not easily animate within R and Shiny, and thus the custom Javascript functions were needed in this case. Plotly was used to create the interactive plots 
 in both the By Disease and By Region tab. This plotting library was preferred over other options such as ggplot because of its built-in interactive
-components, and its ability to create smooth animations.
+components, and its ability to create smooth animations via proxies.
 
 
 # Data Product and Results
@@ -140,9 +140,24 @@ components, and its ability to create smooth animations.
 ## Dashboard
 
 The dashboard allows the flexibility for the user to explore and visualize spatial and temporal data of 6 disease rate metrics, 
-for unique selections of diseases, health boundaries, sex, and year. With the various tabs, the user can make appropriate 
+for a unique selection of diseases, health boundaries, sex, and year. With the various tabs, the user can make appropriate 
 comparisons as needed to address specific research questions, and can easily visualize temporal trends through animations
-of multiple data visualizations over time. On both the By Disease and By Region tab, a toggle switch appears above the line
+of multiple data visualizations over time.
+
+On the By Disease tab, a user can select a single disease and rate type of interest, multiple health boundaries within a single health boundary type, 
+and a single sex and year. The dashboard subsequently displays the health boundary with the highest maximum and highest average 
+disease rate, the median recorded rate over all health boundaries in the selected health boundary type, and the year of the
+highest median disease rate. A choropleth map showing the disease rate over the selected health boundary type is also displayed,
+along with a bar chart showing the rate and confidence intervals of the disease rate for the user selected health boundaries, 
+and a line chart showing the change in the disease rate of the selected health boundaries over time.  Additional information 
+is displayed upon hover on any of the plots. 
+
+On the By Region tab, a user can select a single health boundary within either of the health boundary types, multiple diseases, a single 
+rate type, sex, and year. The dashboard will then display a bar chart of the disease rate and confidence intervals for the selected diseases,
+and a line chart showing the change in disease rates of the selected diseases over time. The top 4 diseases with the highest rate in the 
+selected health boundary are also displayed.
+
+On both the By Disease and By Region tab, a toggle switch appears above the line
 chart when modelled data is available, which allows the user to quickly switch between raw data and smoothed time trends. 
 A permanent toggle switch is also present above the line chart that controls whether the y-axis starts from 0 or is 
 adjusted to the range of the data. This customization allows the user to better understand how a disease rate changes
