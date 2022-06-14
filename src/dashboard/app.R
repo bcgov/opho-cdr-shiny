@@ -220,10 +220,30 @@ ui <- fluidPage(
       #############
       # MAHMOOD TAB
       #############
-      # tabPanel("Mahmood",
-      #          mainPanel(
-      #            img(src='model_image2.png',align="center",style="width: 1000px"),
-      #          ))
+      tabPanel("Joinpoint Regression",
+               sidebarLayout(
+                 sidebarPanel(
+                   id="filters_m",
+                   width = 3,
+                   h2("Data Selection"),
+                   hr(),
+                   selectInput("disease_m",
+                               label= "Select Disease",
+                               choices = ALL_DISEASES),
+                   rate_type_input("dataset_m"),
+                   # geography_radio_buttons("health_bound_d"),
+                   selectInput("region_m",
+                               label = "Select CHSA",
+                               choices = sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))),
+                   # sex_radio_buttons("gender_d"),
+                   # year_slider("year_d", "year_info_d"),
+                   # fisc_year_tt("year_info_d"),
+                   br(),
+                   actionButton("reset_m", "Reset")
+                 ),
+               mainPanel(
+                 img(src='model_image2.png',align="center",style="width: 1000px"),
+               ))),
   )
 )
 
