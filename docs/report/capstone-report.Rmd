@@ -60,6 +60,9 @@ Service Areas (CHSA).
 ## Temporal Modeling
 
 
+
+
+
 ## Dashboard
 
 The dashboard facilitates the exploration and visualization of spatial and temporal trends of 
@@ -72,8 +75,13 @@ by the user, and contains a button to download the data if the user wishes to do
 
 
 
-
 # Data Science Techniques
+
+Several different data science tools and techniques were used
+throughout the project to accomplish the project deliverable. Some tools
+were familiar to the team, while others tools were newly learned. The
+tools and techniques used in each aspect of the project are described in
+this section.
 
 ## Temporal Modeling
 
@@ -105,6 +113,21 @@ Zero-inflated gamma and hurdle gamma models were also investigated to accommodat
 but were not supported by R-INLA at the time of this project.
 
 ## Dashboard
+
+While the majority of the dashboard was built using R, several other languages were also needed in order to customize and run the
+dashboard, including JavaScript, HTML, and CSS. R was used to build the Shiny App framework, as well as for all of the data wrangling,
+processing, and plotting. Javascript was needed to create customized functions that were otherwise impossible in R, such as for the 
+map animation in the By Disease tab. Some Javascript components were also needed to optimize the processing speed of the app. 
+HTML was used for text formatting and other styling options throughout the dashboard, including on the Information pages, in the plot hover 
+labels, and the plot legends. CSS was needed for reusable customized styling, and streamlined the style modification process in the dashboard. 
+Much of the element layouts, colours, and spacing were achieved through the use of CSS.
+
+Over 15 different packages were used to create the dashboard, with the most important ones being Shiny, Leaflet, and Plotly. Shiny was used 
+to build the overall app framework, and was a requirement on part of the Capstone Project. Leaflet was used to create the interactive map on the
+By Disease tab, and was chosen due to its easy integration with Shiny and Plotly. However, the difficulty with using Leaflet is that it does 
+not easily animate within R and Shiny, and thus the custom Javascript functions were needed in this case. Plotly was used to create the interactive plots 
+in both the By Disease and By Region tab. This plotting library was preferred over other options such as ggplot because of its built-in interactive
+components, and its ability to create smooth animations.
 
 
 # Data Product and Results
