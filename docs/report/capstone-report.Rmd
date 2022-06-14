@@ -136,8 +136,26 @@ components, and its ability to create smooth animations.
 
 ## Temporal Modeling
 
+
 ## Dashboard
 
+The dashboard allows the flexibility for the user to explore and visualize spatial and temporal data of 6 disease rate metrics, 
+for unique selections of diseases, health boundaries, sex, and year. With the various tabs, the user can make appropriate 
+comparisons as needed to address specific research questions, and can easily visualize temporal trends through animations
+of multiple data visualizations over time. On both the By Disease and By Region tab, a toggle switch appears above the line
+chart when modelled data is available, which allows the user to quickly switch between raw data and smoothed time trends. 
+A permanent toggle switch is also present above the line chart that controls whether the y-axis starts from 0 or is 
+adjusted to the range of the data. This customization allows the user to better understand how a disease rate changes
+over time based on their needs.
+
+The creation of this dashboard has the potential to streamline health data extraction and intepretation for
+epidemiologists and other health professionals, and will increase public awareness of chronic diseases when
+it is eventually made public. Future improvements that could be made to the dashboard are to increase the 
+processing speed of the dashboard when new data is selected and visualizations are recalculated and reloaded. 
+The dashboard currently runs at an acceptable speed locally, but if the app were to be publicly deployed in the future, 
+there may be some usage concerns regarding loading time. The current start up time of the app is also considerable, because
+the app needs to read in and wrangle the data in every new session. This issue can be eliminated in the future when the data is made 
+public, since the data can be wrangled once, and the pre-processed data can be safely stored on a server. 
 
 
 
