@@ -172,7 +172,7 @@ for (i in seq(1,5)){
 
 # Define dataframe of Disease colour mappings
 set.seed(94)
-DISEASE_colors <- data.frame(DISEASE = sample(unique(inc_rate_df$DISEASE)))
+DISEASE_colors <- data.frame(DISEASE = unique(inc_rate_df$DISEASE))
 DISEASE_colors$Colors <- colorRampPalette(CHSA_colours$Colors)(length(unique(inc_rate_df$DISEASE))) 
 
 # Define list of all diseases
