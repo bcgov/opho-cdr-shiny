@@ -51,8 +51,8 @@ as Crude or Age Standardized rates. Age Standardized rates are adjusted
 to the standard population, and are calculated as if all regions shared the same age structure,
 that of the 2011 Canadian Census. Crude rates are not adjusted to the standard population, 
 and represent the number of cases in a specific geographic region divided by the population
-at risk in that region. For each disease rate metric, the
-data is stratified by year, sex and by region at multiple tiers. In this project we
+at risk in that region. For each disease rate metric, the data is stratified by year, 
+sex and by region at various tiers. In this project we
 focus on the least and the most granular spatial health boundaries, which are
 the 5 Health Authorities (HA) and the 195 Community Health
 Service Areas (CHSA).
@@ -61,6 +61,14 @@ Service Areas (CHSA).
 
 
 ## Dashboard
+
+The dashboard facilitates the exploration and visualization of spatial and temporal trends of 
+25 different chronic diseases across the Province of British Columbia. The dashboard consists of 4 main tabs,
+which are Information, By Disease, By Region, and Data. The Information tab contains a description of the dashboard
+usage, and definitions of rate types, diseases, and data variables. The By Disease tab allows for 
+the comparisons of one disease over several HAs or CHSAs, while the By Region tab allows for the 
+comparisons of several diseases in one particular HA or CHSA. The Data tab retrieves and displays all data specified
+by the user, and contains a button to download the data if the user wishes to do so.
 
 
 
