@@ -142,7 +142,6 @@ for(dir in list.dirs("data/model")[-1]){
     } else if (dir == "data/model/HSCPrevalence") {
       hsc_prev_df <- merge_df(hsc_prev_df,new_df_model)
     }
-    
   }
 }
 
@@ -174,7 +173,7 @@ for (i in seq(1,5)){
 # Define dataframe of Disease colour mappings
 set.seed(94)
 DISEASE_colors <- data.frame(DISEASE = sample(unique(inc_rate_df$DISEASE)))
-DISEASE_colors$Colors <- colorRampPalette(c(HA_colours[,2]))(length(unique(inc_rate_df$DISEASE))) 
+DISEASE_colors$Colors <- colorRampPalette(CHSA_colours$Colors)(length(unique(inc_rate_df$DISEASE))) 
 
 # Define list of all diseases
 ALL_DISEASES <- sort(unique(inc_rate_df$DISEASE))
