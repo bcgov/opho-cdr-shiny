@@ -145,8 +145,7 @@ ui <- fluidPage(
                    year_slider("region_tab_year_selected", "region_tab_year_slider_info"),
                    fisc_year_tt("region_tab_year_slider_info"),
                    br(),
-                   actionButton("region_tab_reset_button", "Reset"),
-                   # actionButton("region_tab_calc", "Calculate")
+                   actionButton("region_tab_reset_button", "Reset")
                  ),
                  mainPanel(width = 9,
                            fluidRow(
@@ -173,7 +172,7 @@ ui <- fluidPage(
                                         fluidRow(plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner())),
                                  column(2, 
                                         fluidRow(htmlOutput("region_tab_text3")),
-                                        br(),
+                                        fluidRow(),
                                         fluidRow(htmlOutput("region_tab_text4"))))
                                
                            
@@ -1085,22 +1084,15 @@ server <- function(input, output,session) {
 
   # Get dataset based on the rate type selected
   region_tab_dataset_used <- reactive({
-    # input$region_tab_calc
-    
     shiny::validate(need(input$region_tab_rate_type_selected, message = F))
     if (!is.null(input$region_tab_rate_type_selected)) {
       dataset_switch(input$region_tab_rate_type_selected)
     }
   })
   
-  # region_tab_dataset_used <- region_tab_dataset_used_pre |> debounce(1000)
-  
-  
 
   # Get the corresponding column name for the rate type selected
   region_tab_rate_as_variable <- reactive({
-    # input$region_tab_calc
-    
     shiny::validate(need(input$region_tab_rate_type_selected, message = F))
     if (!is.null(input$region_tab_rate_type_selected)) {
       rate_switch(input$region_tab_rate_type_selected)
@@ -1120,16 +1112,13 @@ server <- function(input, output,session) {
 
   # Get the filtered dataset based on user selection
   region_tab_filtered_data <- reactive({
-    # input$region_tab_calc
-    
     region_tab_dataset_used() |>
       filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
                (DISEASE %in% input$region_tab_diseases_selected) &
                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
-  # region_tab_filtered_data <- region_tab_filtered_data_pre |> debounce(1000)
   
-
+  
   #####################
   # Line Chart Related Logic
 
@@ -1137,8 +1126,6 @@ server <- function(input, output,session) {
   # x is YEAR, y is the selected rate type, color is DISEASE
   #####################
   output$region_tab_line_chart <- renderPlotly({
-    # input$region_tab_calc
-    
     data <- region_tab_filtered_data()
 
     data |>
@@ -1312,8 +1299,6 @@ server <- function(input, output,session) {
 
   # First use dummy data to plot a basic chart
   output$region_tab_bar_chart <- renderPlotly({
-    # input$region_tab_calc
-    
     dummyData <- region_tab_dataset_used() |>
       filter(
         HEALTH_BOUND_NAME == "Fraser",
@@ -1386,8 +1371,6 @@ server <- function(input, output,session) {
 
   # Then use proxy to update bar graph when filter changes
   observe({
-    # input$region_tab_calc
-    
     invalidateLater(500)
     bar_chart_data <- region_tab_filtered_data() |>
       filter(
@@ -1579,6 +1562,52 @@ server <- function(input, output,session) {
     } # end observe navbarid
   }) # end observe navbarid
 
+  
+  #####################
+  # Show Top 4 Diseases by Age Standardized Prevalence in Most Recent Year
+  #####################
+  # get the dataset for Age Standardized Prevalence
+  most_recent_year <- max(life_prev_df$YEAR)
+  
+  top_4_diseases <- reactive({
+    life_prev_df |>
+      filter((YEAR == most_recent_year) &
+               (CLNT_GENDER_LABEL == "T") &
+               (HEALTH_BOUND_NAME == input$region_tab_region_selected)
+      ) |>
+      arrange(desc(STD_RATE_PER_1000)) |>
+      select(DISEASE) |>
+      head(4) |> 
+      as.list()
+  })
+  
+  output$region_tab_text1 <- renderText({
+    paste0("1st Disease by Age Standardized Life Prevalence in ", most_recent_year,
+      "<div id=stat>", top_4_diseases()$DISEASE[1],"</div>"
+    )
+  })
+  
+  output$region_tab_text2 <- renderText({
+    paste0("2nd Disease by Age Standardized Life Prevalence in ", most_recent_year,
+           "<div id=stat>", top_4_diseases()$DISEASE[2],"</div>"
+    )
+  })
+  
+  output$region_tab_text3 <- renderText({
+    paste0("3rd Disease by Age Standardized Life Prevalence in ", most_recent_year,
+           "<div id=stat>", top_4_diseases()$DISEASE[4],"</div>"
+    )
+  })
+  
+  output$region_tab_text4 <- renderText({
+    paste0("4th Disease by Age Standardized Life Prevalence in ", most_recent_year,
+           "<div id=stat>", top_4_diseases()$DISEASE[4],"</div>"
+    )
+  })
+    
+    
+  
+  
   ################################
   # Data Tab Server Side Logic
   ################################

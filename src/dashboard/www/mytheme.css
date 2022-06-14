@@ -82,12 +82,12 @@
 
 /* Disease Tab Styles */
 
-#disease_graph_line{
+#disease_graph_line, #region_bar_line_chart{
   padding-bottom: 10px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-#disease_graph_bar{
+#disease_graph_bar, #region_bar_bar_chart{
   margin-bottom:5px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
@@ -111,7 +111,7 @@
   padding-left: 5px;
   padding-top: 5px;
   padding-bottom: 20px;
-  height: 170px;
+  height: 160px;
   font-size: 12px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
