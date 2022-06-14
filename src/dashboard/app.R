@@ -524,7 +524,7 @@ server <- function(input, output,session) {
     for(reg in seq_along(input$region_d)){
       # df <- newdata[which(newdata$HEALTH_BOUND_NAME==input$region_d[reg]),]
       df <- newdata|>
-        filter(HEALTH_BOUND_NAME == input$region_d[reg])
+        filter(HEALTH_BOUND_NAME == sort(input$region_d)[reg])
       p |>
         plotlyProxyInvoke("restyle",
                           "y",
@@ -570,7 +570,7 @@ server <- function(input, output,session) {
   output$disease_graph_line <- renderPlotly({
 
     d <- filter_df_d()|>
-      filter(HEALTH_BOUND_NAME %in% input$region_d)
+      filter(HEALTH_BOUND_NAME %in% sort(input$region_d))
 
     d |>
     plot_ly(
@@ -619,7 +619,7 @@ server <- function(input, output,session) {
 
 
   # Switch to change line graph to start at 0
-  observeEvent(input$yax_switch_d,{
+  observe({
     p <- plotlyProxy("disease_graph_line", session)
     if(input$yax_switch_d==TRUE){
     p|>
