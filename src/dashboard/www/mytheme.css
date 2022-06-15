@@ -104,7 +104,7 @@
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-#region_tab_text1,#region_tab_text2,#region_tab_text3,#region_tab_text4{
+#region_tab_text1{
   background-color:var(--white) ;
   text-align: left;
   padding-right: 5px;
@@ -112,6 +112,18 @@
   padding-top: 5px;
   padding-bottom: 20px;
   height: 160px;
+  font-size: 12px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#region_tab_text2,#region_tab_text3,#region_tab_text4,#region_tab_text5{
+  background-color:var(--white) ;
+  text-align: left;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  height: 150px;
   font-size: 12px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
