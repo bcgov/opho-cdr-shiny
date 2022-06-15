@@ -59,7 +59,7 @@ line_plot <- function(model_data, orig_data, y_title, input_disease, input_regio
       alpha = 0.2,
       fill = "lightblue"
     ) +
-    geom_point(aes(y = y_obs)) +
+    geom_point(data = orig_data, aes(x = YEAR, y = STD_RATE_PER_1000)) +
     geom_line() +
     geom_ribbon(
       aes(ymin = ci_95_ll, ymax = ci_95_ul),
@@ -97,12 +97,12 @@ orig_life_prev_df <- load_files(here("data", "Data_T_CHSA", "LifePrevalence")) |
 inputPanel(
   selectInput("hsc_region",
     label = "CHSA",
-    choices = sort(unique(hsc_prev_df$HEALTH_BOUNDARIES)),
+    choices = sort(unique(orig_hsc_prev_df$HEALTH_BOUNDARIES)),
     selected = "1110 Fernie"
   ),
   selectInput("hsc_disease",
     label = "Disease",
-    choices = unique(hsc_prev_df$DISEASE),
+    choices = unique(orig_hsc_prev_df$DISEASE),
     selected = "AMI_EPI"
   )
 )
@@ -139,7 +139,7 @@ Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
 inputPanel(
   selectInput("inc_region",
     label = "CHSA",
-    choices = sort(unique(inc_rate_df$HEALTH_BOUNDARIES)),
+    choices = sort(unique(orig_inc_rate_df$HEALTH_BOUNDARIES)),
     selected = "1110 Fernie"
   ),
   selectInput("inc_disease",
@@ -181,7 +181,7 @@ Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
 inputPanel(
   selectInput("life_region",
     label = "CHSA",
-    choices = sort(unique(life_prev_df$HEALTH_BOUNDARIES)),
+    choices = sort(unique(orig_life_prev_df$HEALTH_BOUNDARIES)),
     selected = "1110 Fernie"
   ),
   selectInput("life_disease",
