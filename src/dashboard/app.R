@@ -620,28 +620,16 @@ server <- function(input, output,session) {
 
   # Switch to change line graph to start at 0
   observe({
+    invalidateLater(500) #necessary line
     p <- plotlyProxy("disease_graph_line", session)
-    if(input$yax_switch_d==TRUE){
-    p|>
+    
+    p |>
       plotlyProxyInvoke("relayout",
-                        list(
-                          yaxis = append(list(range=list(0,max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
-                                 y_axis_spec(input$dataset_d,"tozero"))
-                        ))
-    }else{
-      p|>
-        plotlyProxyInvoke("relayout",
-                          list(
-                            yaxis = list(title = list(text = paste0(input$dataset_d," Per 1000"),
-                                                      font = list(size = ifelse(startsWith(rateInput_d(),"STD"),12,14))),
-                                         range=list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
-                                                    max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05),
-                                         gridcolor = "#d9dadb",
-                                         showline= T, linewidth=1, linecolor='black',
-                                         rangemode = "nonnegative")
-                          ))
-
-    }
+                        list(yaxis = y_axis_spec(
+                          input$dataset_d,
+                          ifelse(input$yax_switch_d,
+                                 "tozero", "nonnegative")
+                        )))
   })
 
   # Switch to change line graph to modeled data
@@ -1179,43 +1167,8 @@ server <- function(input, output,session) {
 
   # Modify line chart's yaxis to start from 0 when the switch is on
   observe( {
+    invalidateLater(500)
     p <- plotlyProxy("region_tab_line_chart", session)
-
-    if (input$yax_switch_d == TRUE) {
-      p  |>
-        plotlyProxyInvoke("relayout",
-                          list(yaxis = append(
-                            list(range = list(
-                              0, max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 1.05
-                            )),
-                            y_axis_spec(input$region_tab_rate_type_selected, "tozero")
-                          )))
-    } else{
-      p |>
-        plotlyProxyInvoke("relayout",
-                          list(
-                            yaxis = list(
-                              title = list(
-                                text = paste0(input$region_tab_rate_type_selected, " Per 1000"),
-                                font = list(size = ifelse(
-                                  startsWith(region_tab_rate_as_variable(), "STD"), 12, 14
-                                ))
-                              ),
-                              range = list(
-                                min(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm =
-                                      TRUE) * 0.95,
-                                max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm =
-                                      TRUE) * 1.05
-                              ),
-                              gridcolor = "#d9dadb",
-                              showline = T,
-                              linewidth = 1,
-                              linecolor = 'black',
-                              rangemode = "nonnegative"
-                            )
-                          ))
-    }
-
     p |>
       plotlyProxyInvoke("relayout",
                         list(yaxis = y_axis_spec(
