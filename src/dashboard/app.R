@@ -1441,7 +1441,7 @@ server <- function(input, output,session) {
                             )),
                             as.integer(match(disease, region_tab_traces()) - 1))
       }
-      print(event[["customdata"]])
+ 
       ppl |>
         plotlyProxyInvoke(method = "restyle",
                           "line",
@@ -1451,7 +1451,6 @@ server <- function(input, output,session) {
                                  color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)]
                                )),
                           as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
-      print(as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
 
       # And make the bar of the highlighted disease opaque and others transparent
       ppb |>
