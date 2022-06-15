@@ -41,9 +41,9 @@ wrangle_orig_df <- function(data) {
     mutate(YEAR = as.numeric(substr(FISC_YR_LABEL, 4, 7)))
 }
 
-#' Create line plot with smoothing model with original point 
+#' Create line plot with smoothing model with original point
 #' observations and confidence intervals
-#' 
+#'
 #' @param model_data dataframe with fitted model results
 #' @param orig_data dataframe with original data
 #' @param title y_title title for y-axis (character)
@@ -67,12 +67,15 @@ line_plot <- function(model_data, orig_data, y_title, input_disease, input_regio
     ) +
     geom_line(aes(x = year, y = y_fitted), linetype = 2) +
     labs(
-      x = "Year", y = y_title,
+      x = "Fiscal Year", y = y_title,
       title = paste(input_disease, "in", input_region)
     ) +
     theme_grey(base_size = 14) +
-    theme(panel.grid.minor = element_blank()) +
-    scale_x_continuous(n.breaks = 20) +
+    theme(
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
+    scale_x_continuous(breaks = year_labels, labels = fiscal_year_labels) +
     expand_limits(y = 0)
 }
 
@@ -88,6 +91,11 @@ orig_inc_rate_df <- load_files(here("data", "Data_T_CHSA", "IncidenceRate")) |>
   wrangle_orig_df()
 orig_life_prev_df <- load_files(here("data", "Data_T_CHSA", "LifePrevalence")) |>
   wrangle_orig_df()
+
+
+year_labels <- unique(orig_hsc_prev_df$YEAR)
+fiscal_year_labels <- unique(orig_hsc_prev_df$FISC_YR_LABEL) |>
+  substr(4, 12)
 ```
 
 ## Age-Standardized HSC Prevalence Rate
