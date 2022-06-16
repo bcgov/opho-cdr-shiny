@@ -68,7 +68,7 @@ ui <- fluidPage(
         tabPanel("Diseases",
                  p(HTML("<u><h2>Diseases</h2></u></br>")),
                  p(HTML(disease_info)),
-                 actionButton("show_pdf", "Show PDF"),
+                 actionButton("show_pdf", "More Info"),
                  uiOutput("pdfviewer")
                  ),
         tabPanel("Data Dictionary",
