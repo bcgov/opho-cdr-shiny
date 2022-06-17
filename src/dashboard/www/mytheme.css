@@ -163,7 +163,7 @@
   padding-top: 85px;
 }
 
-#filters_d, #filters_r, #filters_data, #filters_model{
+#filters_d, #filters_r, #filters_m, #filters_data, #filters_model{
   background-color: #FFFAEB;
   border-radius: 15px;
   border: 5px solid var(--yellow);
