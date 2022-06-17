@@ -17,6 +17,8 @@ library(shinyWidgets)
 library(DT)
 library(shinyBS)
 library(memoise)
+library(fst)
+library(data.table)
 })
 
 ################################
@@ -218,12 +220,31 @@ ui <- fluidPage(
                )),
 
       #############
-      # MAHMOOD TAB
+      # Joinpoint TAB
       #############
-      # tabPanel("Mahmood",
-      #          mainPanel(
-      #            img(src='model_image2.png',align="center",style="width: 1000px"),
-      #          ))
+      
+      tabPanel("Joinpoint Regression",
+               sidebarLayout(
+                 sidebarPanel(
+                   id="filters_m",
+                   width = 3,
+                   h2("Data Selection"),
+                   hr(),
+                   selectInput("rates_m",
+                               label= "Select Rate",
+                               choices = join_rates),
+                   selectInput("chsa_m",
+                               label= "Select CHSA",
+                               choices = join_chsa),
+                   selectInput("disease_m",
+                               label= "Select Disease",
+                               choices = join_disease),
+                   br(),
+                   actionButton("reset_m", "Reset")
+                 ),
+                 mainPanel(
+                   plotlyOutput('jp_plot')
+                 ))),
   )
 )
 
@@ -1667,15 +1688,37 @@ server <- function(input, output,session) {
     } # end observe navbarid
   }) # end observe navbarid
 
-# 
-#     
-#     ################################
-#     # Mahmood Tab Server Side Logic
-#     ################################
-#   
-#   
+
+
+    ################################
+    # Joinpoint Tab Server Side Logic
+    ################################
+  observeEvent(input$navbarID, {
+    if(input$navbarID %in% c("Joinpoint Regression")){
   
-  
+  # Reset filters
+  observeEvent(input$reset_m, {
+    reset("filters_m")
+  })  
+    
+    
+    # Get the filtered dataset based on user selection
+    trend<- reactive({
+      joinpoint_df %>% 
+        filter(RATE %in% input$rates_m) %>% 
+        filter(HEALTH_BOUNDARIES %in% input$chsa_m) %>% 
+        filter(DISEASE %in% input$disease_m) %>%
+        droplevels()
+    })
+        
+    output$jp_plot <- renderPlotly({
+      t <- trend()
+      p <-plot_ly(data=t, x=~YEAR,  y = ~join_obs, name = "Observed points",
+                  type = 'scatter', mode = 'markers')
+      p = add_lines(p, x=~YEAR, y=~join_fitted, name="Predicted trend")
+      
+    })
+    }})
 } # end server 
 
 ################################
