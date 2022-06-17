@@ -39,7 +39,7 @@ To re-run the analysis and run the dashboard, please ensure that R (version 4.2.
 
 1. Clone this Github repository.
 2. Create a folder named "data" in the root directory of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
-3. Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the following command in the R console to install the package dependencies or as listed below:
+3. Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the following command in the R console to install the package dependencies or manually as listed below:
     ```
     renv::restore()
     ```
@@ -123,6 +123,7 @@ shiny::runApp('src/dashboard')
     -   shinyWidgets=0.7.0
     -   DT=0.23
     -   shinyBS=0.61.1
+    -   fANCOVA=0.6-1
 
 -   GNU make 3.81
 
