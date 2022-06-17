@@ -50,21 +50,5 @@ output$plot <- renderPlotly({
 
 })
 }
-# server <- function(input, output) {
-#   filter1_rows <- reactive({
-#     tmp[RATE %in% input$rates,   which = TRUE]
-#   })
-#   filter2_rows <- reactive({
-#     tmp[HEALTH_BOUNDARIES %in% input$chsa,   which = TRUE]
-#   })
-#   filter3_rows <- reactive({
-#     tmp[DISEASE %in% input$disease,   which = TRUE]
-#   })
-#   output$plot <- renderPlotly({
-#     fig <- plot_ly(data = tmp, x = ~YEAR, y = ~join_fitted, mode = 'lines+markers') 
-#     fig <- fig %>% add_trace(y = ~join_obs, mode = 'markers')
-#     
-#   })
-# }
 
 shinyApp(ui = ui, server = server)
