@@ -1,47 +1,70 @@
 library(shiny)
-library(dplyr)
-library(ggplot2)
+library(fst)
+library(data.table)
+library(plotly)
+library(shinyWidgets)
+set.seed(666)
 
-inc_plot_df <- read.csv("/Users/mahmood/UBCMDS/591_capstone/plot_inci_df.csv")
+data= reactiveVal(NULL)
+tmp_all = reactiveValues(fst = NULL, rows_fst = NULL, cols_fst = NULL)
 
-ui <- 
-  fluidPage(
-  titlePanel(h2("Age standardized Incidence Rate",align = "center")),
-  sidebarLayout(    
-    sidebarPanel(
-      selectInput(inputId = "DISEASE",
-                  label = "Choose DISEASE",
-                  choices = sort(unique(inc_plot_df$DISEASE)),
-                  selected = "ASTHMA"),
-      selectInput(inputId = "HEALTH_BOUNDARIES",
-                  label = "Choose HEALTH_BOUNDARIES",
-                  choices = sort(unique(inc_plot_df$HEALTH_BOUNDARIES)),
-                  selected = "1130 Kimberley")),
-    mainPanel(
-      plotOutput("ts_plot"))))
+tmp_fst = fst("/Users/mahmood/UBCMDS/591_capstone/joinfast.fst")
 
-server <- shinyServer(
+cols_fst = c("RATE", 
+             "DISEASE", 
+             "HEALTH_BOUNDARIES",
+             "YEAR",
+             "join_obs",
+             "join_fitted")
+tmp_all$fst = tmp_fst
+
+tmp = tmp_fst[cols_fst] %>% setDT()
+
+ui <- fluidPage(
+  pickerInput("rates", "Choose Type of Rate", multiple = F, choices = unique(levels(as.factor(tmp$RATE)))                                          
+              ),
+  br(),
+  pickerInput("chsa", "Choose CHSA", multiple = F, choices = unique(levels(as.factor(tmp$HEALTH_BOUNDARIES)))                                          ,
+  ),
+  br(),
+  pickerInput("disease", "Choose Disease", multiple = F, choices = unique(levels(as.factor(tmp$DISEASE)))                                          ,
+  ),
+  plotlyOutput('plot')
   
-  function(input,output){
-    
-    datasetInput <- reactive({
-      inc_plot_df %>% 
-        filter(DISEASE == input$DISEASE) %>%
-        filter(HEALTH_BOUNDARIES == input$HEALTH_BOUNDARIES)
-    })
-    
-    # plot time series
-    output$ts_plot <- renderPlot({
-      dataset <- datasetInput()
-      ggplot(dataset,
-             aes(x = YEAR,
-                 y = pred)) +
-        geom_line(size = 1.5, color = "black") +
-        labs(x = "Time in Years",
-             y = "Rate",
-             title = "Age Standardized Incidence Rate") +
-        theme_minimal(base_size = 14, base_family = "Georgia")
-    })
-  })
+)
 
-shiny::shinyApp(ui = ui, server = server, options = list(height = 1080))
+server <- function(input, output) {
+
+trend<- reactive({
+  tmp %>% 
+    filter(RATE %in% input$rates) %>% 
+    filter(HEALTH_BOUNDARIES %in% input$chsa) %>% 
+    filter(DISEASE %in% input$disease) %>%
+    droplevels()
+})
+output$plot <- renderPlotly({
+  t <- trend()
+  p <-plot_ly(data=t, x=~YEAR,  y = ~join_obs, name = "Observed points",
+              type = 'scatter', mode = 'markers')
+  p = add_lines(p, x=~YEAR, y=~join_fitted, name="Predicted trend")
+
+})
+}
+# server <- function(input, output) {
+#   filter1_rows <- reactive({
+#     tmp[RATE %in% input$rates,   which = TRUE]
+#   })
+#   filter2_rows <- reactive({
+#     tmp[HEALTH_BOUNDARIES %in% input$chsa,   which = TRUE]
+#   })
+#   filter3_rows <- reactive({
+#     tmp[DISEASE %in% input$disease,   which = TRUE]
+#   })
+#   output$plot <- renderPlotly({
+#     fig <- plot_ly(data = tmp, x = ~YEAR, y = ~join_fitted, mode = 'lines+markers') 
+#     fig <- fig %>% add_trace(y = ~join_obs, mode = 'markers')
+#     
+#   })
+# }
+
+shinyApp(ui = ui, server = server)

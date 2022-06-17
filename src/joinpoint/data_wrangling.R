@@ -34,11 +34,13 @@ df_temp <- dfList %>%
   lapply( wrangling )
 
 df_merged <- bind_rows(df_temp, .id = "keys") %>%
-  mutate(keys = as.factor(keys)) %>% 
-  mutate(RATE = recode_factor(keys, 
+  mutate(keys = as.factor(keys),
+         RATE = recode_factor(keys, 
                               '1' = "HSC", 
                               '2' = "INCIDENCE", 
-                              '3' = "LIFE_PREV")) %>%
+                              '3' = "LIFE_PREV"),
+         DISEASE = str_replace(DISEASE, "_", " "),
+         HEALTH_BOUNDARIES =str_trim(gsub('^[[:digit:]]+', '', HEALTH_BOUNDARIES))) %>%
   dplyr::select(-c(keys)) %>%
   dplyr::select(RATE, everything())
 
