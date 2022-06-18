@@ -154,11 +154,10 @@ ui <- fluidPage(
                                fluidRow(
                                  plotlyOutput("region_tab_bar_chart", height = 350) |> withSpinner()
                                )),
-                             column(2, 
+                             column(3, 
                                     fluidRow(htmlOutput("region_tab_text1")),
                                     fluidRow(htmlOutput("region_tab_text2")))),
                              
-                               
                                fluidRow(column(
                                  4,
                                  material_switch("region_tab_line_y0switch", "Y-axis from 0")
@@ -170,9 +169,9 @@ ui <- fluidPage(
                                fluidRow(
                                  column(9,
                                         fluidRow(plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner())),
-                                 column(2, 
+                                 column(3, 
                                         fluidRow(htmlOutput("region_tab_text3")),
-                                        fluidRow(),
+                                        # fluidRow(),
                                         fluidRow(htmlOutput("region_tab_text4"))))
                                
                            
@@ -1536,31 +1535,25 @@ server <- function(input, output,session) {
   })
   
   output$region_tab_text1 <- renderText({
-    paste0("1st Disease by Age Standardized Life Prevalence in ", most_recent_year,
-      "<div id=stat>", top_4_diseases()$DISEASE[1],"</div>"
-    )
+    paste0("Top 1 Disease by Age Standardized Life Prevalence in ", most_recent_year,
+           "<div id=stat>", top_4_diseases()$DISEASE[1],"</div>")
   })
   
   output$region_tab_text2 <- renderText({
-    paste0("2nd Disease by Age Standardized Life Prevalence in ", most_recent_year,
-           "<div id=stat>", top_4_diseases()$DISEASE[2],"</div>"
-    )
+    paste0("Top 2 Disease by Age Standardized Life Prevalence in ", most_recent_year,
+           "<div id=stat>", top_4_diseases()$DISEASE[2],"</div>")
   })
   
   output$region_tab_text3 <- renderText({
-    paste0("3rd Disease by Age Standardized Life Prevalence in ", most_recent_year,
-           "<div id=stat>", top_4_diseases()$DISEASE[3],"</div>"
-    )
+    paste0("Top 3 Disease by Age Standardized Life Prevalence in ", most_recent_year,
+           "<div id=stat>", top_4_diseases()$DISEASE[3],"</div>")
   })
   
   output$region_tab_text4 <- renderText({
-    paste0("4th Disease by Age Standardized Life Prevalence in ", most_recent_year,
-           "<div id=stat>", top_4_diseases()$DISEASE[4],"</div>"
-    )
+    paste0("Top 4 Disease by Age Standardized Life Prevalence in ", most_recent_year,
+           "<div id=stat>", top_4_diseases()$DISEASE[4],"</div>")
   })
     
-    
-  
   
   ################################
   # Data Tab Server Side Logic
