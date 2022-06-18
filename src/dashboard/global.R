@@ -149,6 +149,32 @@ inc_rate_df <- wrangle_data_frame(inc_rate_df)
 hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
 life_prev_df <- wrangle_data_frame(life_prev_df)
 
+# Load, Read, Define fst file for joinpoint regression:
+
+data= reactiveVal(NULL)
+tmp_all = reactiveValues(fst = NULL, 
+                         cols_fst = NULL)
+
+tmp_fst = fst("data/joinpoint/joinfast.fst")
+
+cols_fst = c("RATE", 
+             "DISEASE", 
+             "HEALTH_BOUNDARIES",
+             "YEAR",
+             "join_obs",
+             "join_fitted")
+tmp_all$fst = tmp_fst
+
+joinpoint_df = tmp_fst[cols_fst] %>% setDT()
+
+join_rates <- sort(unique(levels(as.factor(joinpoint_df$RATE))))
+join_chsa <- sort(unique(levels(as.factor(joinpoint_df$HEALTH_BOUNDARIES))))
+join_disease <- sort(unique(levels(as.factor(joinpoint_df$DISEASE))))
+
+
+
+
+
 # Define dataframe of HA colours
 HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern"),
                          Colors = c("#3891A7","#C3860D","#C42E2E", "#67A63C","#914FAB"))
