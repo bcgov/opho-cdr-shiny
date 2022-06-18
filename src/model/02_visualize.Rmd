@@ -138,7 +138,9 @@ renderText({
   paste("The selected model was:", hsc_selected_data()$model[1])
 })
 ```
-Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
+Ribbons: Blue = 95% confidence interval, 
+Grey = 95% credible interval if RW1 or RW2 selected, 
+otherwise 95% confidence interval if loess selected
 
 ## Age-Standardized Incidence Rate
 
@@ -180,7 +182,9 @@ renderText({
   paste("The selected model was:", inc_selected_data()$model[1])
 })
 ```
-Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
+Ribbons: Blue = 95% confidence interval, 
+Grey = 95% credible interval if RW1 or RW2 selected, 
+otherwise 95% confidence interval if loess selected
 
 ## Age-Standardized Life Prevalence Rate
 
@@ -222,4 +226,6 @@ renderText({
   paste("The selected model was:", life_selected_data()$model[1])
 })
 ```
-Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
+Ribbons: Blue = 95% confidence interval, 
+Grey = 95% credible interval if RW1 or RW2 selected, 
+otherwise 95% confidence interval if loess selected
