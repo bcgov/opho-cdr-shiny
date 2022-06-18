@@ -14,8 +14,6 @@ Options:
 --output=<output>     Path to results directory for model output
 " -> doc
 
-#--rate=<rate>         Rate to analyze (STD_RATE_PER_1000, CRUDE_RATE_PER_1000)
-
 library(docopt)
 library(tidyverse)
 library(INLA)
