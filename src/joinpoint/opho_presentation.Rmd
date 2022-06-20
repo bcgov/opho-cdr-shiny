@@ -1,0 +1,234 @@
+---
+title: 'DRAFT: BC Chronic Diseases trends: A joinpoint regression analysis'
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: 'Mahmoodur Rahman'
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+bibliography: joinpoint_ref.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+
+
+```{r libraries}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(segmented)
+library(broom)
+library(tidyr)
+library(modelr)
+library(purrr)
+library(knitr)
+```
+
+
+# Rationale:
+
+#### Diseases have trends ovber time, which often is not a straight line
+#### There may be ups and down in the trend of a diseas over time
+#### Beyween two points, a linear relation can be considered with time
+#### Well establish methodlogy in oncology, chronic diseases, ecology, clinical longitudinal trials and most rencetly, Covid 19
+#### Joinpoint regression / segmented regression / peicewise regression
+ 
+```{r Load Data}
+
+## Data Pre-processing:
+
+### Loading data
+
+CHSA_df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") %>%
+  mutate( RATE = as.factor(RATE)) %>% 
+  mutate( DISEASE = as.factor(DISEASE)) %>%
+  mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) %>% 
+  drop_na()
+
+CHSA_df[CHSA_df == "" | CHSA_df == 0] <- NA
+row.has.na <- apply(CHSA_df, 1, function(x){any(is.na(x))})
+sum(row.has.na)
+CHSA_df <- CHSA_df[!row.has.na,]
+
+```
+
+
+
+```{r subset}
+### Susetting data:
+
+# Split the data frames according to Rates:
+
+CHSA_data_list <- split(CHSA_df, f = CHSA_df$RATE) 
+
+HSC_CHSA_df <- CHSA_data_list[[1]] %>% 
+  as.data.frame()%>%
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95))
+  
+Incidence_CHSA_df <- CHSA_data_list[[2]] %>% 
+  as.data.frame() %>% 
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95)) %>%
+  filter(!(HEALTH_BOUNDARIES=='4111 Downtown Victoria/Vic West' & 
+             DISEASE=='EPILEPSY')) %>% 
+  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='HAEMORR_STROKE')) %>% 
+  filter(!(HEALTH_BOUNDARIES=='4114 Oak Bay' & 
+             DISEASE=='EPILEPSY')) %>% 
+    filter(!(HEALTH_BOUNDARIES=='5232 Vanderhoof Rural' & 
+             DISEASE=='HAEMORR_STROKE')) %>% 
+  filter(!(HEALTH_BOUNDARIES=='2334 Panorama' & 
+             DISEASE=='HOSP_STROKE')) %>% 
+  filter(!(HEALTH_BOUNDARIES=='1260 Grand Forks' & 
+             DISEASE=='HOSP_TIA')) %>%  
+  filter(!(HEALTH_BOUNDARIES=='2150 Agassiz/Harrison' & 
+             DISEASE=='HOSP_TIA')) %>%  
+  filter(!(HEALTH_BOUNDARIES=='5222 Burns Lake South' & 
+             DISEASE=='HOSP_TIA')) %>% 
+  filter(!(HEALTH_BOUNDARIES=='1461 West Cariboo' & 
+             DISEASE=='PARKINSONISM'))%>% 
+  filter(!(HEALTH_BOUNDARIES=='2150 Agassiz/Harrison' & 
+             DISEASE=='RHEUMATOID_ARTHRITIS'))%>% 
+  filter(!(HEALTH_BOUNDARIES=='2223 Burnaby Southwest' & 
+             DISEASE=='RHEUMATOID_ARTHRITIS'))%>% 
+  filter(!(HEALTH_BOUNDARIES=='2334 Panorama' & 
+             DISEASE=='OSTEOARTHRITIS'))%>% 
+  filter(!(DISEASE=='JUVENILE_ARTHRITIS'))%>% 
+  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='MS'))%>% 
+  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='PARKINSONISM'))%>% 
+  filter(!(HEALTH_BOUNDARIES=='5110 Snow Country' & 
+             DISEASE=='SCHIZOPHRENIA'))%>% 
+  filter(!(HEALTH_BOUNDARIES=='5222 Burns Lake South' & 
+             DISEASE=='PARKINSONISM'))%>%
+  filter(!(HEALTH_BOUNDARIES=='5232 Vanderhoof Rural' & 
+             DISEASE=='PARKINSONISM'))%>%
+  filter(!(HEALTH_BOUNDARIES== "5322 Hudson's Hope" & 
+             DISEASE=='MS'))%>%
+  filter(!(HEALTH_BOUNDARIES== "5313 Tumbler Ridge" & 
+             DISEASE=='PARKINSONISM'))%>%
+  filter(!(HEALTH_BOUNDARIES== "5331 Fort Nelson Population Centre" & 
+             DISEASE=='MS'))%>%
+  filter(!(HEALTH_BOUNDARIES== "1110 Fernie" & 
+             DISEASE=='ALZHEIMER_DEMENTIA'))
+
+
+
+LifeP_CHSA_df <- CHSA_data_list[[3]] %>% 
+  as.data.frame() %>% 
+  dplyr::select(-c(RATE, STD_UCL_95, STD_LCL_95)) 
+
+```
+
+
+## We are looking at Age-standardized Incidence Rates of Chronic Diseases in Kimberley CHSA in from 2001 to 2020
+
+```{r eda, fig.width=14, fig.height=12}
+# sample data
+
+Incidence_CHSA_df %>%
+  filter(HEALTH_BOUNDARIES == "1130 Kimberley") %>%
+  ggplot(aes(x=YEAR, y=STD_RATE_PER_1000)) +
+  geom_line() +
+  facet_wrap(~DISEASE) +
+  labs(x = "Years", y = "Age standardized Incidence Rate (per 1000)") +
+  ggtitle("Age-standardized Incidence Rates by Diseases in Kimberley (2001 to 2020")
+
+```
+
+#### "Breakpoints" can be seen. Not smooth
+#### Each "Piece" is considered a linear relation between Rates and Time (Year)
+ 
+## Summery sattistics of rates:
+
+```{r rates summary}
+
+summary(HSC_CHSA_df$STD_RATE_PER_1000)
+summary(Incidence_CHSA_df$STD_RATE_PER_1000)
+summary(LifeP_CHSA_df$STD_RATE_PER_1000)
+
+```
+### Observations: 
+
+#### None of the three rates, namely, HSC Prevalence, Age-Standardized Incidence Rate, and  Age-Standardized Life Prevalence have any negative value
+
+## Building the Model:
+
+### Specifics :
+
+#### Model : Segmented regression (Joinpoint regression)
+#### Response (y): Age-Standardized Incidence Rate
+#### Predictor : Year
+#### `segmented.lm` is used
+#### Filtering ALZHEIMER_DEMENTIA and 3213 Fairview CHSA
+ 
+```{r linear regression}
+
+sample_df <- Incidence_CHSA_df %>%
+  filter(HEALTH_BOUNDARIES == "3213 Fairview" &
+           DISEASE == "ALZHEIMER_DEMENTIA")
+
+lm_model <- lm(log(STD_RATE_PER_1000)~YEAR, data = sample_df)
+seg_obj<-segmented(lm_model,seg.Z=~YEAR)
+
+```
+
+
+### Model daignostics:
+
+#### Regression coefficients:
+
+```{r}
+print(summary(seg_obj))
+```
+### Observations: 
+
+#### Breakpoint is in Year 2009
+
+#### average annual per cent (AAPC) change:
+
+To summarize piecewise linear relationships in segmented
+regression models.
+```{r aapc}
+print(aapc(seg_obj, wrong.se = FALSE))
+
+```
+###Observations:
+
+#### Positive AAPC refers to an significant changes is trend over time.
+#### It is the weighted average of the Annual Percentage Changes each year 
+#### APC is the differences in slopes between two lines meeting in a chnagepoint.
+
+#### Plotting:
+
+```{r}
+plot(seg_obj, 
+     conf.level=.95, 
+     is=TRUE, isV=FALSE,
+     col=1, shade = TRUE, 
+     res=TRUE, 
+     res.col=1, 
+     pch=19,
+     main = "Predicted Age-standardized Incidence Rates of ALZHEIMER in Fairview CHSA (2001 to 2020)",
+     xlab = "Time in Years",
+     ylab = "log(Age-standardized Incidence Rate")
+
+```
+
+### Observations: (Will elaborate later)
+
+#### Epidemiological emphasis: Possible causes can be explored looking at the "Breakpoint" of Year 2009. 
+
+# References
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
