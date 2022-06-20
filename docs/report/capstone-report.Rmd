@@ -122,7 +122,7 @@ HTML was used for text formatting and other styling options throughout the dashb
 labels, and the plot legends. CSS was needed for reusable customized styling, and streamlined the style modification process in the dashboard. 
 Much of the element layouts, colours, and spacing were achieved through the use of CSS.
 
-Over 15 different packages were used to create the dashboard, with the most important ones being Shiny, Leaflet, and Plotly. Shiny was used 
+Nearly 15 different packages were used to create the dashboard, with the most important ones being Shiny, Leaflet, and Plotly. Shiny was used 
 to build the overall app framework, and was a requirement on part of the Capstone Project. Leaflet was used to create the interactive map on the
 By Disease tab, and was chosen due to its easy integration with Shiny and Plotly. However, the difficulty with using Leaflet is that it does 
 not easily animate within R and Shiny, and thus the custom Javascript functions were needed in this case. Plotly was used to create the interactive plots 
@@ -144,24 +144,47 @@ for a unique selection of diseases, health boundaries, sex, and year. With the v
 comparisons as needed to address specific research questions, and can easily visualize temporal trends through animations
 of multiple data visualizations over time.
 
+The homepage of the dashboard is `About` page of the Information tab, which describes the usage and features of the various tabs on the
+dashboard. The Information tab consists of three other pages, which include information and definitions of Rate Types, Diseases, and a 
+Data Dictionary. An image of the Information tab is shown below in Figure \@ref(fig:info_tab).
+
+``` {r info_tab, echo=FALSE, fig.cap="Homepage of the dashboard showing four pages in the `Information` tab", out.width = '100%'}
+knitr::include_graphics("images/info_tab.png")
+```
+
 On the By Disease tab, a user can select a single disease and rate type of interest, multiple health boundaries within a single health boundary type, 
 and a single sex and year. The dashboard subsequently displays the health boundary with the highest maximum and highest average 
 disease rate, the median recorded rate over all health boundaries in the selected health boundary type, and the year of the
 highest median disease rate. A choropleth map showing the disease rate over the selected health boundary type is also displayed,
 along with a bar chart showing the rate and confidence intervals of the disease rate for the user selected health boundaries, 
 and a line chart showing the change in the disease rate of the selected health boundaries over time.  Additional information 
-is displayed upon hover on any of the plots. 
+is displayed upon hover on any of the plots. The layout of the By Disease tab is shown below in Figure \@ref(fig:disease_tab).
+
+``` {r disease_tab, echo=FALSE, fig.cap="Layout of the `By Disease` tab of the dashboard, showing summary statistics, map, and two graphs.", out.width = '100%'}
+knitr::include_graphics("images/disease_tab.png")
+```
 
 On the By Region tab, a user can select a single health boundary within either of the health boundary types, multiple diseases, a single 
 rate type, sex, and year. The dashboard will then display a bar chart of the disease rate and confidence intervals for the selected diseases,
 and a line chart showing the change in disease rates of the selected diseases over time. The top 4 diseases with the highest rate in the 
-selected health boundary are also displayed.
+selected health boundary are also displayed. The layout of the By Region tab is shown below in Figure \@ref(fig:region_tab).
+
+#``` {r region_tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = #'100%'}
+#knitr::include_graphics("images/region_tab.png")
+#```
 
 On both the By Disease and By Region tab, a toggle switch appears above the line
 chart when modelled data is available, which allows the user to quickly switch between raw data and smoothed time trends. 
 A permanent toggle switch is also present above the line chart that controls whether the y-axis starts from 0 or is 
 adjusted to the range of the data. This customization allows the user to better understand how a disease rate changes
 over time based on their needs.
+
+Lastly, the Data tab allows a user to select data on multiple diseases and health boundaries, and download the data for further analysis.
+The layout of the Data tab is shown below in Figure \@ref(fig:data_tab).
+
+``` {r data_tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = '100%'}
+knitr::include_graphics("images/data_tab.png")
+```
 
 The creation of this dashboard has the potential to streamline health data extraction and intepretation for
 epidemiologists and other health professionals, and will increase public awareness of chronic diseases when
