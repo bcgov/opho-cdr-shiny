@@ -160,20 +160,30 @@ ui <- fluidPage(
                                  4,
                                  material_switch("region_tab_line_y0switch", "Y-axis from 0")
                                ),
-                               column(8, conditionalPanel(
-                                 condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
-                                 material_switch("region_tab_smoothing_switch","Smoothed Time Trends ")
-                               ))),
-                               fluidRow(plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner())
-                               ),
-                             column(2, 
-                                    fluidRow(htmlOutput("region_tab_text1")),
-                                    fluidRow(htmlOutput("region_tab_text2")),
-                                    fluidRow(htmlOutput("region_tab_text3")),
-                                    fluidRow(htmlOutput("region_tab_text4")),
-                                    fluidRow(htmlOutput("region_tab_text5")),
-                                    style = 'padding:2px;'))
-                           ))), 
+                               column(
+                                 8,
+                                 conditionalPanel(
+                                   condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
+                                   material_switch("region_tab_smoothing_switch", "Smoothed Time Trends ")
+                                 )
+                               )),
+                               fluidRow(
+                                 plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner()
+                               )
+                             ),
+                             column(
+                               3,
+                               fluidRow(htmlOutput("region_tab_text1")),
+                               br(),
+                               fluidRow(htmlOutput("region_tab_text2")),
+                               br(),
+                               fluidRow(htmlOutput("region_tab_text3")),
+                               br(),
+                               fluidRow(htmlOutput("region_tab_text4")),
+                               br(),
+                               fluidRow(htmlOutput("region_tab_text5"))
+                             )
+                           )))), 
       
       ################################
       # Download Data Tab UI Side Logic
@@ -1555,24 +1565,24 @@ server <- function(input, output,session) {
   })
   
   output$region_tab_text1 <- renderText({
-    paste0("Diseases with the Top 4 Highest Age Standardized Life Prevalence in ", input$region_tab_region_selected,
+    paste0("Top 4 Highest Age Standardized Life Prevalence in ", input$region_tab_region_selected,
            " in ", most_recent_year)
   })
   
   output$region_tab_text2 <- renderText({
-    paste0("First Highest Rate", "<div id=stat>", top_4_diseases()$DISEASE[1], "</div>")
+    paste0("First Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[1], "</div>")
   })
   
   output$region_tab_text3 <- renderText({
-    paste0("Second Highest Rate", "<div id=stat>", top_4_diseases()$DISEASE[2], "</div>")
+    paste0("Second Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[2], "</div>")
   })
   
   output$region_tab_text4 <- renderText({
-    paste0("Third Highest Rate", "<div id=stat>", top_4_diseases()$DISEASE[3], "</div>")
+    paste0("Third Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[3], "</div>")
   })
   
   output$region_tab_text5 <- renderText({
-    paste0("Fourth Highest Rate", "<div id=stat>", top_4_diseases()$DISEASE[4], "</div>")
+    paste0("Fourth Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[4], "</div>")
   })
     
   

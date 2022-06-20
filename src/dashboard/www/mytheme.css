@@ -107,25 +107,27 @@
 #region_tab_text1{
   background-color:var(--white) ;
   text-align: left;
+  margin-left: 8px;
   padding-right: 5px;
   padding-left: 5px;
   padding-top: 5px;
   padding-bottom: 20px;
-  height: 30px;
-  font-size: 12px;
+  height: 100px;
+  font-size: 16px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 #region_tab_text2,#region_tab_text3,#region_tab_text4,#region_tab_text5{
   background-color:var(--white) ;
   text-align: left;
+  margin-left: 8px;
   padding-right: 5px;
   padding-left: 5px;
   padding-top: 5px;
-  padding-bottom: 20px;
-  height: 100px;
-  font-size: 12px;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  padding-bottom: 5px;
+  height: 140px;
+  font-size: 14px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 6px 0 rgba(0, 0, 0, 0.19);
 }
 
 #stat{
@@ -133,6 +135,15 @@
   font-size: 28px;
   font-weight: bold;
   padding-top: 8px;
+  text-align: center;
+  line-height: 1;
+}
+
+#region_tab_stat{
+  color:var(--navy);
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 10px;
   text-align: center;
   line-height: 1;
 }
