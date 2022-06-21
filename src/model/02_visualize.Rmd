@@ -41,9 +41,9 @@ wrangle_orig_df <- function(data) {
     mutate(YEAR = as.numeric(substr(FISC_YR_LABEL, 4, 7)))
 }
 
-#' Create line plot with smoothing model with original point 
+#' Create line plot with smoothing model with original point
 #' observations and confidence intervals
-#' 
+#'
 #' @param model_data dataframe with fitted model results
 #' @param orig_data dataframe with original data
 #' @param title y_title title for y-axis (character)
@@ -59,7 +59,7 @@ line_plot <- function(model_data, orig_data, y_title, input_disease, input_regio
       alpha = 0.2,
       fill = "lightblue"
     ) +
-    geom_point(aes(y = y_obs)) +
+    geom_point(data = orig_data, aes(x = YEAR, y = STD_RATE_PER_1000)) +
     geom_line() +
     geom_ribbon(
       aes(ymin = ci_95_ll, ymax = ci_95_ul),
@@ -67,12 +67,15 @@ line_plot <- function(model_data, orig_data, y_title, input_disease, input_regio
     ) +
     geom_line(aes(x = year, y = y_fitted), linetype = 2) +
     labs(
-      x = "Year", y = y_title,
+      x = "Fiscal Year", y = y_title,
       title = paste(input_disease, "in", input_region)
     ) +
     theme_grey(base_size = 14) +
-    theme(panel.grid.minor = element_blank()) +
-    scale_x_continuous(n.breaks = 20) +
+    theme(
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
+    scale_x_continuous(breaks = year_labels, labels = fiscal_year_labels) +
     expand_limits(y = 0)
 }
 
@@ -88,6 +91,11 @@ orig_inc_rate_df <- load_files(here("data", "Data_T_CHSA", "IncidenceRate")) |>
   wrangle_orig_df()
 orig_life_prev_df <- load_files(here("data", "Data_T_CHSA", "LifePrevalence")) |>
   wrangle_orig_df()
+
+
+year_labels <- unique(orig_hsc_prev_df$YEAR)
+fiscal_year_labels <- unique(orig_hsc_prev_df$FISC_YR_LABEL) |>
+  substr(4, 12)
 ```
 
 ## Age-Standardized HSC Prevalence Rate
@@ -97,12 +105,12 @@ orig_life_prev_df <- load_files(here("data", "Data_T_CHSA", "LifePrevalence")) |
 inputPanel(
   selectInput("hsc_region",
     label = "CHSA",
-    choices = sort(unique(hsc_prev_df$HEALTH_BOUNDARIES)),
+    choices = sort(unique(orig_hsc_prev_df$HEALTH_BOUNDARIES)),
     selected = "1110 Fernie"
   ),
   selectInput("hsc_disease",
     label = "Disease",
-    choices = unique(hsc_prev_df$DISEASE),
+    choices = unique(orig_hsc_prev_df$DISEASE),
     selected = "AMI_EPI"
   )
 )
@@ -130,7 +138,9 @@ renderText({
   paste("The selected model was:", hsc_selected_data()$model[1])
 })
 ```
-Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
+Ribbons: Blue = 95% confidence interval, 
+Grey = 95% credible interval if RW1 or RW2 selected, 
+otherwise 95% confidence interval if loess selected
 
 ## Age-Standardized Incidence Rate
 
@@ -139,7 +149,7 @@ Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
 inputPanel(
   selectInput("inc_region",
     label = "CHSA",
-    choices = sort(unique(inc_rate_df$HEALTH_BOUNDARIES)),
+    choices = sort(unique(orig_inc_rate_df$HEALTH_BOUNDARIES)),
     selected = "1110 Fernie"
   ),
   selectInput("inc_disease",
@@ -172,7 +182,9 @@ renderText({
   paste("The selected model was:", inc_selected_data()$model[1])
 })
 ```
-Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
+Ribbons: Blue = 95% confidence interval, 
+Grey = 95% credible interval if RW1 or RW2 selected, 
+otherwise 95% confidence interval if loess selected
 
 ## Age-Standardized Life Prevalence Rate
 
@@ -181,7 +193,7 @@ Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
 inputPanel(
   selectInput("life_region",
     label = "CHSA",
-    choices = sort(unique(life_prev_df$HEALTH_BOUNDARIES)),
+    choices = sort(unique(orig_life_prev_df$HEALTH_BOUNDARIES)),
     selected = "1110 Fernie"
   ),
   selectInput("life_disease",
@@ -214,4 +226,6 @@ renderText({
   paste("The selected model was:", life_selected_data()$model[1])
 })
 ```
-Ribbons: Grey = 95% credible interval, Blue = 95% confidence interval
+Ribbons: Blue = 95% confidence interval, 
+Grey = 95% credible interval if RW1 or RW2 selected, 
+otherwise 95% confidence interval if loess selected

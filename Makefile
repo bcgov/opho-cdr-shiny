@@ -28,9 +28,17 @@ results/model/LifePrevalence : src/model/01_analysis.R
 # Generate model overview report
 src/eda/03_model_overview.html : src/eda/03_model_overview.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
 	Rscript -e "rmarkdown::render('src/eda/03_model_overview.Rmd', output_format = 'html_document')"
+	
+# Generate additional EDA reports
+src/eda/04_modeling_eda_tweedie.html : src/eda/04_modeling_eda_tweedie.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
+	Rscript -e "rmarkdown::render('src/eda/04_modeling_eda_tweedie.Rmd', output_format = 'html_document')"
+	
+src/eda/05_modeling_eda_gamma_2.html : src/eda/05_modeling_eda_gamma_2.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
+	Rscript -e "rmarkdown::render('src/eda/05_modeling_eda_gamma_2.Rmd', output_format = 'html_document')"
 
 clean:
 	rm -rf data/processed
 	rm -rf src/eda/01_modeling_eda_loess.html src/eda/02_modeling_eda_inla.html
 	rm -rf results
 	rm -rf src/eda/03_model_overview.html
+	rm -rf src/eda/04_modeling_eda_tweedie.html src/eda/05_modeling_eda_gamma_2.html
