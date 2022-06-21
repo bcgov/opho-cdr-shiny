@@ -168,9 +168,9 @@ of multiple data visualizations over time.
 
 The homepage of the dashboard is `About` page of the Information tab, which describes the usage and features of the various tabs on the
 dashboard. The Information tab consists of three other pages, which include information and definitions of Rate Types, Diseases, and a 
-Data Dictionary. An image of the Information tab is shown below in Figure \@ref(fig:info_tab).
+Data Dictionary. An image of the Information tab is shown below in Figure \@ref(fig:info-tab).
 
-``` {r info_tab, echo=FALSE, fig.cap="Homepage of the dashboard showing four pages in the `Information` tab", out.width = '100%'}
+``` {r info-tab, echo=FALSE, fig.cap="Homepage of the dashboard showing four pages in the `Information` tab", out.width = '100%'}
 knitr::include_graphics("images/info_tab.png")
 ```
 
@@ -180,18 +180,18 @@ disease rate, the median recorded rate over all health boundaries in the selecte
 highest median disease rate. A choropleth map showing the disease rate over the selected health boundary type is also displayed,
 along with a bar chart showing the rate and confidence intervals of the disease rate for the user selected health boundaries, 
 and a line chart showing the change in the disease rate of the selected health boundaries over time.  Additional information 
-is displayed upon hover on any of the plots. The layout of the By Disease tab is shown below in Figure \@ref(fig:disease_tab).
+is displayed upon hover on any of the plots. The layout of the By Disease tab is shown below in Figure \@ref(fig:disease-tab).
 
-``` {r disease_tab, echo=FALSE, fig.cap="Layout of the `By Disease` tab of the dashboard, showing summary statistics, map, and two graphs.", out.width = '100%'}
+``` {r disease-tab, echo=FALSE, fig.cap="Layout of the `By Disease` tab of the dashboard, showing summary statistics, map, and two graphs.", out.width = '100%'}
 knitr::include_graphics("images/disease_tab.png")
 ```
 
 On the By Region tab, a user can select a single health boundary within either of the health boundary types, multiple diseases, a single 
 rate type, sex, and year. The dashboard will then display a bar chart of the disease rate and confidence intervals for the selected diseases,
 and a line chart showing the change in disease rates of the selected diseases over time. The top 4 diseases with the highest rate in the 
-selected health boundary are also displayed. The layout of the By Region tab is shown below in Figure \@ref(fig:region_tab).
+selected health boundary are also displayed. The layout of the By Region tab is shown below in Figure \@ref(fig:region-tab).
 
-#``` {r region_tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = #'100%'}
+#``` {r region-tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = #'100%'}
 #knitr::include_graphics("images/region_tab.png")
 #```
 
@@ -202,9 +202,9 @@ adjusted to the range of the data. This customization allows the user to better 
 over time based on their needs.
 
 Lastly, the Data tab allows a user to select data on multiple diseases and health boundaries, and download the data for further analysis.
-The layout of the Data tab is shown below in Figure \@ref(fig:data_tab).
+The layout of the Data tab is shown below in Figure \@ref(fig:data-tab).
 
-``` {r data_tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = '100%'}
+``` {r data-tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = '100%'}
 knitr::include_graphics("images/data_tab.png")
 ```
 
