@@ -99,8 +99,8 @@ With INLA, we used a Gamma generalized linear model to smoothen the
 age-standardized rate, which is a continuous, positive response. The effect of
 year was modeled using a Random Walk prior to account for temporal autocorrelation.
 On each CHSA, disease, and rate, a first-order random walk (RW1) 
-and second-order random walk (RW2) model was fit and the best RW model was selected using the
-Widely Applicable Information Criterion (WAIC).
+and a smoother second-order random walk (RW2) model was fit. 
+The best RW model was selected using the Widely Applicable Information Criterion (WAIC).
 
 A limitation of this Bayesian approach was that rare diseases with low incidence and prevalence rates
 could not be modelled, because the Gamma distribution does not provide support for values of 0.
@@ -110,22 +110,23 @@ Despite this limitation, our Bayesian smoothing model could be applied to 91% of
 and more specifically, 84% of incidence rate data, 91% of HSC prevalence rate data, 
 and 98% of life prevalence rate data.
 
-Alternative approaches that were explored to accommodate the data with zero values were to
-use the Tweedie distribution, which can accommodate positive continuous data
-with a point mass at zero (@kurz_2017). 
-The implementation of the Tweedie distribution in R-INLA remains experimental and subject to change, 
-however, and this approach was not further pursued due to poor model fit on our data. 
-Zero-inflated gamma and hurdle gamma models were also investigated to accommodate zero values,
-but were not supported by R-INLA at the time of this project. 
-Lastly, modification of the zero values into small non-zero values (0.0001) was explored,
-however, the RW1 and RW2 models did not demonstrate appropriate smoothing of values
-and may require further adjustments of the priors and the scaling of the Bayesian model.
-
 On the remaining 9% of the data containing zeroes, the local polynomial (LOESS) 
 regression baseline model was fit for smoothing.
 The LOESS regression is a weighted least-squares regression method 
 that considers neighbouring points within a given span. The span was automatically
 optimized for each set of data using the `fANCOVA::loess.as()` function.
+
+Alternative approaches that were explored to accommodate the data with zero values were to
+use the Tweedie distribution, which can accommodate positive continuous data
+with a point mass at zero (@kurz_2017). 
+However, the implementation of the Tweedie distribution in R-INLA remains experimental and subject to change,
+and was not further pursued due to reproducibility concerns.
+Secondly, zero-inflated Gamma and hurdle Gamma models were also investigated to accommodate zero values,
+but were not supported by R-INLA at this time.
+Lastly, modification of the zero values into small non-zero values (0.0001) was explored
+to be used within the Gamma model, however, 
+the RW1 and RW2 models did not demonstrate a suitable level of smoothing after this modification. 
+Further adjustment of the priors and the scaling of the INLA model may be required.
 
 ## Dashboard
 
@@ -201,7 +202,7 @@ The layout of the Data tab is shown below in Figure \@ref(fig:data_tab).
 knitr::include_graphics("images/data_tab.png")
 ```
 
-The creation of this dashboard has the potential to streamline health data extraction and intepretation for
+The creation of this dashboard has the potential to streamline health data extraction and interpretation for
 epidemiologists and other health professionals, and will increase public awareness of chronic diseases when
 it is eventually made public. Future improvements that could be made to the dashboard are to increase the 
 processing speed of the dashboard when new data is selected and visualizations are recalculated and reloaded. 
