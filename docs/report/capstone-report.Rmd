@@ -25,7 +25,7 @@ rates of disease are recorded for different health boundary types, including HAs
 variables such as sex. In this project we aim to develop an analysis pipeline to describe
 the temporal trends in the data, and then build an interactive dashboard that will allow users
 of all technical expertise to explore and visualize spatial and temporal information of the 
-disease rates. This proposal will outline the approach we took to
+disease rates. This report will outline the approach we took to
 tackle this problem and a description of our final data product.
 
 \newpage
@@ -59,9 +59,15 @@ Service Areas (CHSA).
 
 ## Temporal Modelling
 
-
-
-
+To help interpret chronic disease trends across the province, 
+we generated models to smoothen disease rate estimates at the most
+granular health boundary, the CHSA, since estimates from smaller communities 
+can have large fluctuations and confidence intervals. 
+We selected a Bayesian modeling approach and a local polynomial regression (LOESS) model 
+to be fit on data over 20 fiscal years from each combination of 
+disease, CHSA, and age-standardized rate type. 
+These temporal models were integrated into the final dashboard to allow 
+users to easily compare chronic disease rates and trends between different CHSA.
 
 ## Dashboard
 
