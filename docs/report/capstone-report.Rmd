@@ -57,7 +57,7 @@ focus on the least and the most granular health boundaries, which are
 the 5 Health Authorities (HA) and the 195 Community Health
 Service Areas (CHSA).
 
-## Temporal Modeling
+## Temporal Modelling
 
 
 
@@ -83,34 +83,49 @@ were familiar to the team, while others tools were newly learned. The
 tools and techniques used in each aspect of the project are described in
 this section.
 
-## Temporal Modeling
+## Temporal Modelling
 
-For temporal modeling, we selected the INLA approximation approach for Bayesian modeling. 
-INLA is faster compared to Markov Chain Monte Carlo simulation based methods (@wang_2018), 
+For temporal modelling, we selected the Integrated Nested Laplace Approximation (INLA) 
+approach for Bayesian modelling. 
+INLA is faster compared to Markov Chain Monte Carlo simulation-based methods (@wang_2018), 
 and since there were over 10,000 combinations of 
-CHSAs, diseases, and rates to be modeled, computational speed was a key consideration.
+CHSAs, diseases, and rates to be modelled, computational speed was a key consideration.
 Potential disadvantages of INLA include that small variations between repeated runs 
 can occur as a trade-off for the faster computation gained by using multiple cores (@wang_2018). 
-However, these small variations are well beyond the significant digits of our data, therefore, we considered this to be an acceptable trade-off.
+However, these small variations are well beyond the significant digits of our data, 
+therefore, we considered this to be an acceptable trade-off.
 
 With INLA, we used a Gamma generalized linear model to smoothen the 
 age-standardized rate, which is a continuous, positive response. The effect of
 year was modeled using a Random Walk prior to account for temporal autocorrelation.
-On each CHSA, disease, and rate, a first order random walk (RW1) 
-and second order random walk (RW2) model was fit and the best RW model was selected using the
+On each CHSA, disease, and rate, a first-order random walk (RW1) 
+and second-order random walk (RW2) model was fit and the best RW model was selected using the
 Widely Applicable Information Criterion (WAIC).
 
-A limitation of this approach was that rare diseases with low incidence and prevalence rates
-could not be modeled, because the Gamma distribution does not provide support for values of 0.
-Despite this limitation, our model was applied to 84% of incidence rate data, 91% of HSC prevalence rate data, and 98% of life prevalence rate data.
+A limitation of this Bayesian approach was that rare diseases with low incidence and prevalence rates
+could not be modelled, because the Gamma distribution does not provide support for values of 0.
+This most frequently affected small communities and rare diseases, 
+such as juvenile arthritis, multiple sclerosis, and rare forms of stroke.
+Despite this limitation, our Bayesian smoothing model could be applied to 91% of the data, 
+and more specifically, 84% of incidence rate data, 91% of HSC prevalence rate data, 
+and 98% of life prevalence rate data.
 
-Alternative approaches that were explored to accommodate the zero values were to
+Alternative approaches that were explored to accommodate the data with zero values were to
 use the Tweedie distribution, which can accommodate positive continuous data
 with a point mass at zero (@kurz_2017). 
 The implementation of the Tweedie distribution in R-INLA remains experimental and subject to change, 
 however, and this approach was not further pursued due to poor model fit on our data. 
 Zero-inflated gamma and hurdle gamma models were also investigated to accommodate zero values,
-but were not supported by R-INLA at the time of this project.
+but were not supported by R-INLA at the time of this project. 
+Lastly, modification of the zero values into small non-zero values (0.0001) was explored,
+however, the RW1 and RW2 models did not demonstrate appropriate smoothing of values
+and may require further adjustments of the priors and the scaling of the Bayesian model.
+
+On the remaining 9% of the data containing zeroes, the local polynomial (LOESS) 
+regression baseline model was fit for smoothing.
+The LOESS regression is a weighted least-squares regression method 
+that considers neighbouring points within a given span. The span was automatically
+optimized for each set of data using the `fANCOVA::loess.as()` function.
 
 ## Dashboard
 
@@ -134,7 +149,7 @@ components, and its ability to create smooth animations via proxies.
 
 
 
-## Temporal Modeling
+## Temporal Modelling
 
 
 ## Dashboard
