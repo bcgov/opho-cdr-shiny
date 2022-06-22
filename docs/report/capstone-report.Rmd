@@ -280,7 +280,9 @@ over time. The top 4 diseases with the highest rate in the selected
 health boundary are also displayed. The layout of the By Region tab is
 shown below in Figure \@ref(fig:region-tab).
 
-\#`` {r region-tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = #'100%'} #knitr::include_graphics("images/region_tab.png") # ``
+```{r region-tab, echo=FALSE, fig.cap="Layout of the `By Region` tab of the dashboard, showing two graphs, and the top four diseases in a given region.", out.width = '100%'}
+knitr::include_graphics("images/region_tab.png")
+```
 
 On both the By Disease and By Region tab, a toggle switch appears above
 the line chart when modelled data is available, which allows the user to
@@ -337,6 +339,9 @@ Second, we generate models to interpret the temporal trends. We use a Bayesian m
 Last but not least, as something extra, we apply join-point regression to estimate abrupt changes in rates. The model can help epidemiologists locate the break points at a certain time and later draw inferences.
 
 While we attempted to perfect the deliverables based on constant partner feedback and academic research, due to the short time frame of this capstone project, we acknowledge that there are areas we can improve on. Here are the recommendations on future endeavors. For the dashboard, the main improvement lies in the processing speed. Currently, we have only tested the dashboard locally on individual laptops. The performance in terms of processing speed is acceptable, but varies by computer. We have documented the attempts to increase the processing time in a Github issue in the project repository. 
+
+To improve the Bayesian approach, additional fine-tuning of the model priors
+and scaling of the random walk model with the modified zero Gamma model is recommended
 
 
 # References
