@@ -208,8 +208,8 @@ because the change-points are fixed *a priori* (regression splines) or
 are not considered at all (smoothing splines and polynomial regression).
 Moreover, regression parameters obtained in regression splines or
 polynomial regression approach are not directly interpretable
-(\@rj1990generalized). The `R` package, `segmented`
-(\@muggeo2008segmented) is capable to account for the unknown
+(@rj1990generalized). The `R` package, `segmented`
+(@muggeo2008segmented) is capable to account for the unknown
 breakpoints, and providing fitted values.
 
 We used `segmented.lm` function from the `segmented` package on data
@@ -218,10 +218,9 @@ log-linear regression considering rates as response and time as
 explanatory variable, then applied the `segmented.lm` function, which
 gave us fitted estimates, and when plotted shows us the desired
 breakpoints. A plot from the fitted values of estimated age-standardized
-incidence rate of Gout in Kimberley CHSA is shown in
-\@ref(fig:jp_method).
+incidence rate of Gout in Kimberley CHSA is shown below.
 
-```{r jp_method, echo=FALSE, fig.cap="Estimated Age-standardized incidence rate of Gout in Kimberley CHSA", out.width = '100%'}
+```{r jp-method, echo=FALSE, fig.cap="Estimated Age-standardized incidence rate of Gout in Kimberley", out.width = '100%'}
 knitr::include_graphics("images/jp_method.png")
 ```
 
@@ -319,13 +318,11 @@ estimates from the model and also the original data point over a period
 of 2001 to 2020. There are filters for choosing the Standardized Rate
 (Response), the Diease, and the CHSA. Toggling these selections, the
 user can visualize the breakpoints, and also how it reflects the
-original distribution. The following figure \@ref(fig:jp_shiny shows the
+original distribution. The following figure shows the
 dash board showing the estimated Age-standardized Incidence Rate of
-Asthma in Kimberley CHSA for the period of 2001 to 2020
+Asthma in Kimberley CHSA for the period of 2001 to 2020.
 
-e .
-
-```{r jp_shiny, echo=FALSE, fig.cap="Layout of the `Jointpoint Regression` tab of the dashboard", out.width = '100%'}
+```{r jp-shiny, echo=FALSE, fig.cap="Layout of the `Jointpoint Regression` tab of the dashboard", out.width = '100%'}
 knitr::include_graphics("images/jp_shiny.png")
 ```
 
