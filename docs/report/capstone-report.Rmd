@@ -348,18 +348,20 @@ knitr::include_graphics("images/jp_shiny.png")
 
 Every year, the Office of British Columbia Provincial Health Officer analyzes British Columbians' healthcare utilization pattern and aggregates counts and rates of 25 chronic conditions by time, location, and sex. For this project, they sought for two well-defined deliverables: an interactive data visualization Shiny app and spatio-temporal analysis tools to interpret trends in the data, which we successfully produce. 
 
-First, we build an Shiny dashboard that allows health professionals and non-experts alike to explore the distribution of diseases. It is fully interactive, user-friendly and visually appealing and consistent with the BC government's color scheme. We add interactivity that enrich the user experience, such as the hover information, linked highlighting effect. We also use methods to improve the app's performance on first start and during plots rendering. 
+First, we build an Shiny dashboard that allows health professionals and non-experts alike to explore the distribution of diseases. It is fully interactive, user-friendly, and visually appealing and consistent with the BC government's color scheme. Additional interactivity, such as hover information and linked highlighting effect enrich the user experience.
 
 Second, we generate models to interpret the temporal trends. We use a Bayesian modeling approach to smoothen the large fluctuations and thus wide confidence intervals in smaller health communities. We also apply the local polynomial regression (LOESS) model as an alternative to fit the data for low rate diseases. The smoothened temporal trends are incorporated into the dashboard for users to easily compare trends.
 
 Finally, we explore join-point regression, which provides epidemiologists with information on abrupt rises and falls in temporal trends. The model's limitations being that it is sensitive to missing values and diseases with stationary rates.
 
-While we attempted to perfect the deliverables based on constant partner feedback, due to the short time frame of this capstone project, we acknowledge that there are areas we can improve on and we provide some recommendations on future endeavors. 
+While we attempted to perfect the deliverables based on constant partner feedback, due to the short time frame of this capstone project, we acknowledge that there are areas we can improve on and provide some recommendations on future endeavors. 
 
 For the dashboard, the main improvement lies in the speed. The performance is acceptable for a single user per session, though varies greatly by laptops. In the case that multiple users will be active simultaneously, asynchronous programming can be applied to increase scalability. More details on how to speed up the Shiny dashboard can be found in the project repository. 
 
 To improve the Bayesian approach, additional fine-tuning of the model priors
 and scaling of the random walk model with the modified zero Gamma model is recommended.
+
+For the join-point analysis, its potential can be extended if including other covariates such as sex, socioecnomic status, and other confounders. Consideration of regional hierarchy and spatial components would also make the model more robust. 
 
 Overall, we are confident that our data products fit the partner's initial needs and will be useful to inform the Ministers and the general public on chronic diseases and public health issues.
 
