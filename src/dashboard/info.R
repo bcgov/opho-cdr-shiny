@@ -160,7 +160,7 @@ disease_info <- "The BCCDR includes 25 chronic disease registries built and main
                       High blood pressure (hypertension)<br/>
                 </p>
                 
-                For more information on these diseases, click 'Show PDF' button below.
+                For more information on these diseases, click 'More Info' button below.
 
 "
 

@@ -82,12 +82,12 @@
 
 /* Disease Tab Styles */
 
-#disease_graph_line{
+#disease_graph_line, #region_bar_line_chart{
   padding-bottom: 10px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-#disease_graph_bar{
+#disease_graph_bar, #region_bar_bar_chart{
   margin-bottom:5px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
@@ -104,12 +104,48 @@
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
+#region_tab_text1{
+  background-color:var(--white) ;
+  text-align: left;
+  margin-left: 8px;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  height: 100px;
+  font-size: 16px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#region_tab_text2,#region_tab_text3,#region_tab_text4,#region_tab_text5{
+  background-color:var(--white) ;
+  text-align: left;
+  margin-left: 8px;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  height: 140px;
+  font-size: 14px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 6px 0 rgba(0, 0, 0, 0.19);
+}
+
 #stat{
   color:var(--navy);
   font-size: 28px;
   font-weight: bold;
-  padding-top: 3px;
+  padding-top: 8px;
   text-align: center;
+  line-height: 1;
+}
+
+#region_tab_stat{
+  color:var(--navy);
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 10px;
+  text-align: center;
+  line-height: 1;
 }
 
 .col-sm-3{
@@ -150,7 +186,7 @@
   padding-top: 85px;
 }
 
-#filters_d, #filters_r, #filters_data, #filters_model{
+#filters_d, #filters_r, #filters_m, #filters_data, #filters_model{
   background-color: #FFFAEB;
   border-radius: 15px;
   border: 5px solid var(--yellow);

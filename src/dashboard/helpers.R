@@ -3,28 +3,22 @@
 wrangle_df_for_merge <- function(df){
   df|>
     mutate(YEAR = as.numeric(str_sub(FISC_YR_LABEL, 4, 7)),
-           y_fitted = NA,
-           ci_95_ll = NA,
-           ci_95_ul = NA,
+           y_fitted = NA
     )|>
     select(-FISC_YR_LABEL) 
 }
-
+# wrangle_df_for_merge <- memoise(wrangle_df_for_merge)
 
 # Function to merge raw data with modeled data
 merge_df <- function(df,new_df_model){
   df|>
     left_join(new_df_model, by =c("DISEASE","HEALTH_BOUNDARIES","YEAR"="year"))|>
-    mutate(y_fitted = coalesce(y_fitted.x, y_fitted.y),
-           ci_95_ll = coalesce(ci_95_ll.x, ci_95_ll.y),
-           ci_95_ul = coalesce(ci_95_ul.x, ci_95_ul.y)) |>
-    select(-y_fitted.x, -y_fitted.y,
-           -ci_95_ll.x, -ci_95_ll.y,
-           -ci_95_ul.x, -ci_95_ul.y)
+    mutate(y_fitted = coalesce(y_fitted.x, y_fitted.y)) |>
+    select(-y_fitted.x, -y_fitted.y)
   
 }
-
-
+# merge_df <- memoise(merge_df)
+  
 # Clean the data frames using a function
 
 # This function wrangles a data frame based on the following steps:
@@ -43,9 +37,11 @@ wrangle_data_frame <- function(df) {
     mutate(DISEASE = str_replace_all(DISEASE, disease_dict),
            DISEASE = ifelse(endsWith(DISEASE, "_EPI"), str_sub(DISEASE, 1, -5), DISEASE)) |>
     data.table::setcolorder(c("YEAR")) |>
-    filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))
+    filter(!str_detect(HEALTH_BOUND_NAME, "Unknown"))|>
+    distinct()
 }
 
+# wrangle_data_frame <- memoise(wrangle_data_frame)
 
 #helper function for choropleth animation
 setShapeStyle <- function( map, data = getMapData(map), layerId,
@@ -78,6 +74,7 @@ setShapeStyle <- function( map, data = getMapData(map), layerId,
   leaflet::invokeMethod(map, data, "setStyle", "shape", layerId, style);
 }
 
+# setShapeStyle <- memoise(setShapeStyle)
 
 #helper function in JS for choropleth animation
 leafletjs <-  tags$head(
@@ -142,10 +139,14 @@ vline <- function(x = 0, color = "gray40") {
   )
 }
 
+# vline <- memoise(vline)
+
 # To format and round all values to 2 decimals
 format_round <- function(x, dec = 2){
-  format(round(x,2),2)
+  format(round(x,digits = dec),nsmall = dec)
 }
+
+# format_round <- memoise(format_round)
 
 # Dynamic Health Boundaries selection
 health_bounds <- function(input){
@@ -155,8 +156,9 @@ health_bounds <- function(input){
   else 
     return(c(sort(unique(filter(inc_rate_df,GEOGRAPHY=="CHSA")$HEALTH_BOUND_NAME))))
   )
-
 }
+
+# health_bounds <- memoise(health_bounds)
 
 # Fiscal year tooltip
  fisc_year_tt <- function(id){
@@ -165,6 +167,8 @@ health_bounds <- function(input){
              placement = "right"
    )
  }
+ 
+ # fisc_year_tt <- memoise(fisc_year_tt)
  
  # Sex radio buttons template
  sex_radio_buttons <- function(id){
@@ -175,6 +179,8 @@ health_bounds <- function(input){
                 inline = TRUE)
  }
  
+ # sex_radio_buttons <- memoise(sex_radio_buttons)
+ 
  # Geography radio buttons template
  geography_radio_buttons <- function(id){
    radioButtons(id,
@@ -182,6 +188,8 @@ health_bounds <- function(input){
                 choices = GEOGRAPHY_CHOICES,
                 selected=GEOGRAPHY_CHOICES[1])
  }
+ 
+ # geography_radio_buttons <- memoise(geography_radio_buttons)
  
  # Year slider input template
  year_slider <- function(id, year_info_id, anim = TRUE) {
@@ -202,7 +210,7 @@ health_bounds <- function(input){
          value = 2001,
          sep = "",
          ticks = TRUE,
-         animate = animationOptions(interval = 1000)
+         animate = animationOptions(interval = 1500)
        )
      )
    } else{
@@ -224,6 +232,8 @@ health_bounds <- function(input){
    }
  }
  
+ # year_slider <- memoise(year_slider)
+ 
  # Rate type dropdown template
  rate_type_input <- function(id){
    selectInput(
@@ -232,6 +242,8 @@ health_bounds <- function(input){
      choices = RATE_TYPE_CHOICES
    )
  }
+ 
+ # rate_type_input <- memoise(rate_type_input)
  
  # Dataset switch function
  dataset_switch <- function (input){
@@ -244,12 +256,16 @@ health_bounds <- function(input){
           "Age Standardized HSC Prevalence" = hsc_prev_df)
  }
  
+ # dataset_switch <- memoise(dataset_switch)
+ 
  # Rate input switch function
  rate_switch <- function(input){
    ifelse(startsWith(input, "Age"),
           "STD_RATE_PER_1000",
           "CRUDE_RATE_PER_1000")
  }
+ 
+ # rate_switch <- memoise(rate_switch)
  
  # Toggle template
  material_switch <- function(id, lab){
@@ -260,6 +276,8 @@ health_bounds <- function(input){
      inline= TRUE
    )
  }
+ 
+ # material_switch<- memoise(material_switch)
  
  # Hover template for line chart 
  hovertemplate_line <- paste0('<b>Health Region</b>: %{fullData.name}',
@@ -284,8 +302,9 @@ health_bounds <- function(input){
         linewidth=1, 
         linecolor='black',
         rangemode = range_mode)
-   
  }
+ 
+ # y_axis_spec <- memoise(y_axis_spec)
  
  # Bar Graph x-axis options template
  x_axis_bar_spec <- function(title,so=0 ){
@@ -295,9 +314,13 @@ health_bounds <- function(input){
         showline= T, linewidth=1, linecolor='black')
  }
  
+ # x_axis_bar_spec <- memoise(x_axis_bar_spec)
+ 
  # Line Graph x-axis options template
  x_axis_line_spec <- function(title,so=10 ){
    list(title = list(text = title, standoff = 10),
         gridcolor = "#d9dadb",
         showline= T, linewidth=1, linecolor='black')
  }
+ 
+ # x_axis_line_spec <- memoise(x_axis_line_spec)

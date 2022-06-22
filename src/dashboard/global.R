@@ -133,7 +133,7 @@ for(dir in list.dirs("data/model")[-1]){
   for (file in list.files(dir)){
     new_df_model<- data.table::fread(paste0(dir, "/", file),
                                      verbose = FALSE,
-                                     drop = c("dic","waic","model","y_obs"))
+                                     select = c("DISEASE","HEALTH_BOUNDARIES","year","y_fitted"))
     
     if (dir == "data/model/IncidenceRate") {
       inc_rate_df <- merge_df(inc_rate_df,new_df_model)
@@ -142,13 +142,38 @@ for(dir in list.dirs("data/model")[-1]){
     } else if (dir == "data/model/HSCPrevalence") {
       hsc_prev_df <- merge_df(hsc_prev_df,new_df_model)
     }
-    
   }
 }
 
 inc_rate_df <- wrangle_data_frame(inc_rate_df)
 hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
 life_prev_df <- wrangle_data_frame(life_prev_df)
+
+# Load, Read, Define fst file for joinpoint regression:
+
+data= reactiveVal(NULL)
+tmp_all = reactiveValues(fst = NULL, 
+                         cols_fst = NULL)
+
+tmp_fst = fst("data/joinpoint/joinfast.fst")
+
+cols_fst = c("RATE", 
+             "DISEASE", 
+             "HEALTH_BOUNDARIES",
+             "YEAR",
+             "join_obs",
+             "join_fitted")
+tmp_all$fst = tmp_fst
+
+joinpoint_df = tmp_fst[cols_fst] %>% setDT()
+
+join_rates <- sort(unique(levels(as.factor(joinpoint_df$RATE))))
+join_chsa <- sort(unique(levels(as.factor(joinpoint_df$HEALTH_BOUNDARIES))))
+join_disease <- sort(unique(levels(as.factor(joinpoint_df$DISEASE))))
+
+
+
+
 
 # Define dataframe of HA colours
 HA_colours <- data.frame(Regions = c("Interior","Fraser","Vancouver Coastal","Vancouver Island","Northern"),
@@ -172,9 +197,9 @@ for (i in seq(1,5)){
 }
 
 # Define dataframe of Disease colour mappings
-set.seed(94)
+set.seed(2001)
 DISEASE_colors <- data.frame(DISEASE = sample(unique(inc_rate_df$DISEASE)))
-DISEASE_colors$Colors <- colorRampPalette(c(HA_colours[,2]))(length(unique(inc_rate_df$DISEASE))) 
+DISEASE_colors$Colors <- colorRampPalette(HA_colours[,2])(length(unique(inc_rate_df$DISEASE))) 
 
 # Define list of all diseases
 ALL_DISEASES <- sort(unique(inc_rate_df$DISEASE))
