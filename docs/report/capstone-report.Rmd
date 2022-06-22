@@ -221,5 +221,18 @@ public, since the data can be wrangled once, and the pre-processed data can be s
 
 # Conclusion and Recommendations
 
+Chronic diseases affect millions of people in the Province of British Columbia. For disease prevention and management, health professionals need to closely monitor the distribution of diseases. Each year, the Office of British Columbia Provincial Health Officer summarizes aggregated counts and rates of 25 chronic diseases based in healthcare utilization patterns of every British Columbian. To better answer questions about chronic diseases in BC, our team analyzed the temporal trends of the data and incorporate them into an interactive Shiny Dashboard to allow health professionals and non-experts alike to explore and visualize the distribution of chronic conditions.
+
+We successfully delivered the two required data products, First, a Shiny app that would allow a non-expert user to explore data and spatiotemporal distribution of disease prevalence. Second, an analysis pipeline in R to describe spatiotemporal trends in the data. As a stretch goal, these trend analyses would also appear in the Shiny app. 
+
+The functionality and interactivity of the dashboard is satisfying. We are able to implement all the proposed features, such as the overall layout, including a map, and animated yearly changes. Moreover, we add additional feature that will enrich the user experience. For example, a linking effect, hovering texts, keeping the color scheme consistent with BC government's branding colors, allowing change whether y-axis should start from 0.
+
+For the model, 
+
+
+
+
+
+Comment on how well your product answered their question/solved their problem, and discuss any limitations of the product in its ability of doing so. Include in what ways your data science question might fall short of addressing the partners business/high-level problem statement. Describe recommendations for the partner to continue/improve the project in the future. 
 
 # References
