@@ -331,19 +331,19 @@ knitr::include_graphics("images/jp_shiny.png")
 
 # Conclusion and Recommendations
 
-Chronic diseases affect millions of people in the Province of British Columbia. For disease prevention and management, health professionals need to closely monitor the distribution of diseases. Each year, the Office of British Columbia Provincial Health Officer summarizes aggregated counts and rates of 25 chronic diseases based in healthcare utilization patterns of every British Columbian. To better answer questions about chronic diseases in BC, our team analyzed the temporal trends of the data and incorporate them into an interactive Shiny Dashboard to allow health professionals and non-experts alike to explore and visualize the distribution of chronic conditions.
+Every year, our capstone partner, the Office of British Columbia Provincial Health Officer, analyzes the interactions British Columbians have with the BC healthcare system and creates a data product called the Chronic Disease Registry that matches the healthcare utilization patterns to the case definition for 25 chronic conditions. They then aggregate these diseases' counts and rates by time, location, and sex. They sought for two well-defined deliverables: 1) an interactive data visualization tool using Shiny for the Chronic Disease Registry and 2) spatiotemporal analysis tools to interpret trends in the data.
 
-We successfully delivered the two required data products, First, a Shiny app that would allow a non-expert user to explore data and spatiotemporal distribution of disease prevalence. Second, an analysis pipeline in R to describe spatiotemporal trends in the data. As a stretch goal, these trend analyses would also appear in the Shiny app. 
-
-The functionality and interactivity of the dashboard is satisfying. We are able to implement all the proposed features, such as the overall layout, including a map, and animated yearly changes. Moreover, we add additional feature that will enrich the user experience. For example, a linking effect, hovering texts, keeping the color scheme consistent with BC government's branding colors, allowing change whether y-axis should start from 0.
-
-For the model, 
+After working diligently for seven weeks, our team of four successfully produce the two required data products. First, we build a Shiny dashboard that allows health professionals and non-experts alike to explore the distribution of diseases. The dashboard is fully interactive, user-friendly in that it provides the necessary information to navigate, and visually appealing and consistent with the BC government's color scheme. We are able to implement all the proposed features, such as the four-tab layout design, showing a map alongside the graphs, and animating the plots to display yearly changes. Moreover, we add additional functionality and interactivity that ease and enrich the user experience: such as the hover information, linked highlighting effect for all the plots in one tab, and choosing whether y-axis should start from 0. We also use various methods to improve the app's performance for first loading and later rerendering.
 
 
+Second, we develop an analysis pipeline in R to describe the temporal trends in the data. As proposed, we 
+
+Last but not least, we achieved the stretch goal of incorporating these trend analyses into the Shiny app. 
 
 
 
-Comment on how well your product answered their question/solved their problem, and discuss any limitations of the product in its ability of doing so. Include in what ways your data science question might fall short of addressing the partners business/high-level problem statement. Describe recommendations for the partner to continue/improve the project in the future. 
+
+
 
 
 # References
