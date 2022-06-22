@@ -1547,13 +1547,13 @@ server <- function(input, output,session) {
 
   
   #####################
-  # Show Top 4 Diseases by Age Standardized Prevalence in Most Recent Year
+  # Show Top 4 Diseases by Incidence Rate in Most Recent Year
   #####################
-  # get the dataset for Age Standardized Prevalence
-  most_recent_year <- max(life_prev_df$YEAR)
+  # get the dataset for Incidence Rate
+  most_recent_year <- max(inc_rate_df$YEAR)
   
   top_4_diseases <- reactive({
-    life_prev_df |>
+    inc_rate_df |>
       filter((YEAR == most_recent_year) &
                (CLNT_GENDER_LABEL == "T") &
                (HEALTH_BOUND_NAME %in% input$region_tab_region_selected)
@@ -1565,7 +1565,7 @@ server <- function(input, output,session) {
   })
   
   output$region_tab_text1 <- renderText({
-    paste0("Top 4 Highest Age Standardized Life Prevalence in ", input$region_tab_region_selected,
+    paste0("Top 4 Highest Incidence Rates in ", input$region_tab_region_selected,
            " in ", most_recent_year)
   })
   
