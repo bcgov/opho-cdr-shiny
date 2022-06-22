@@ -233,6 +233,23 @@ segmented lines.
 
 ## Temporal Modelling
 
+In total, 11 956 temporal models were generated at the CHSA level and made available
+to explore within an R Shiny document. 
+An R Shiny document was selected to visualize the models due to the large number of models,
+which made it challenging to display at an individual level within other formats, 
+such as a PDF report.
+The R Shiny document visualizes the original observations, 95% confidence intervals, 
+as well as the selected model (Bayesian or LOESS). 
+This data product allows data scientists and epidemiologists on the team
+to visually inspect and assess the fit of the selected models at a more in-depth level 
+compared to the final dashboard product, which is targeted towards a wider audience.
+For the general audience, the smoothened time trends models were integrated 
+into the dashboard using a toggle switch, as described in the Dashboard section below.
+
+```{r temporal-shiny, echo=FALSE, fig.cap="Fitted temporal models displayed in an R Shiny document. The R Shiny document allows users to explore the 11 956 temporal models relative to the original observations and confidence intervals.", out.width = '100%'}
+knitr::include_graphics("images/temporal_shiny.png")
+```
+
 ## Dashboard
 
 The dashboard allows the flexibility for the user to explore and
@@ -334,6 +351,8 @@ After working diligently for seven weeks, our team of four successfully produce 
 
 
 Second, we generate models to interpret the temporal trends. We use a Bayesian modeling approach as first proposed to fit on 20-year data for each disease, CHSA, and age-standardized rate type. The fitted values smoothen the large fluctuations and thus wide confidence intervals in smaller health communities. However, 9% of the data, which are rare diseases with very low rates, can not be modeled using the Bayesian approach since the Gamma distribution does not provide support for zeros. We explore the local polynomial regression (LOESS) model as an alternative. The smoothened temporal trends are incorporated into the dashboard for users to easily compare trends between different CHSAs.
+To improve the Bayesian approach, additional fine-tuning of the model priors
+and scaling of the random walk model with the modified zero Gamma model is recommended.
 
 Last but not least, as something extra, we apply join-point regression to estimate abrupt changes in rates. The model can help epidemiologists locate the break points at a certain time and later draw inferences.
 
