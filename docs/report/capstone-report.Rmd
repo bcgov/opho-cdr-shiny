@@ -329,6 +329,8 @@ eliminated in the future when the data is made public, since the data
 can be wrangled once, and the pre-processed data can be safely stored on
 a server.
 
+## Join-point Regression
+
 The Joinpoint Regression tab of our R Shiny app plots the fitted
 estimates from the model and also the original data point over a period
 of 2001 to 2020. There are filters for choosing the Standardized Rate
@@ -350,7 +352,13 @@ After working diligently for seven weeks, our team of four successfully produce 
 
 Second, we generate models to interpret the temporal trends. We use a Bayesian modeling approach as first proposed to fit on 20-year data for each disease, CHSA, and age-standardized rate type. The fitted values smoothen the large fluctuations and thus wide confidence intervals in smaller health communities. However, 9% of the data, which are rare diseases with very low rates, can not be modeled using the Bayesian approach since the Gamma distribution does not provide support for zeros. We explore the local polynomial regression (LOESS) model as an alternative. The smoothened temporal trends are incorporated into the dashboard for users to easily compare trends.
 
-Last but not least, as something extra, we apply join-point regression to estimate abrupt changes in rates. The model can help epidemiologists locate the break points at a certain time and later draw inferences.
+Finally, we explored methods such as Join-point Regression, which
+provides insights into trends of chronic disease rates through temporal
+analysis. The model provides epidemiologists with information on abrurpt
+rise and fall in trend, which aids in decision-making. But, there are
+several limitations such as the model is sensitive to missing values,
+and diseases with stationary rates. In such cases, the model is not
+useful, because of not having sufficient checkpoints in the data.
 
 While we attempted to perfect the deliverables based on constant partner feedback and further research, due to the short time frame of this capstone project, we acknowledge that there are areas we can improve on. Here are the recommendations on future endeavors. 
 For the dashboard, the main improvement lies in the processing speed. Currently, we have only tested the dashboard locally for a single user per session. The performance in terms of processing speed is acceptable, but varies greatly by individual laptops. If it is foreseeable that multiple users will be active simultaneously, asynchronous programming can be applied to increase scalability. For more details on all our attempts to speed up the Shiny dashboards, please refer to [this Github issue](https://github.com/bcgov/opho-cdr-shiny/issues/34) in the project repository. 
