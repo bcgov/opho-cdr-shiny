@@ -164,7 +164,7 @@ the zero values into small non-zero values (0.0001) was explored to be
 used within the Gamma model, however, the RW1 and RW2 models did not
 demonstrate a suitable level of smoothing after this modification.
 Further adjustment of the priors and the scaling of the INLA model may
-be required.
+be required, but were not further explored due to time constraints.
 
 ## Dashboard
 
