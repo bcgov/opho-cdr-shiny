@@ -115,7 +115,6 @@ shiny::runApp('src/dashboard')
     -   leaflet=2.1.1
     -   sp=1.4-7
     -   rgdal=1.5-32
-    -   shinythemes=1.2.0
     -   plotly=4.10.0
     -   scales=1.2.0
     -   shinycssloaders=1.0.0
