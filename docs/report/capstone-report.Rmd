@@ -272,14 +272,11 @@ knitr::include_graphics("images/info_tab.png")
 
 On the By Disease tab, a user can select a single disease and rate type
 of interest, multiple health boundaries within a single health boundary
-type, and a single sex and year. The dashboard subsequently displays the
-health boundary with the highest maximum and highest average disease
-rate, the median recorded rate over all health boundaries in the
-selected health boundary type, and the year of the highest median
-disease rate. A choropleth map showing the disease rate over the
-selected health boundary type is also displayed, along with a bar chart
+type, and a single sex and year. The dashboard subsequently displays four summary statistics
+about the chosen disease, a choropleth map showing the disease rate over the
+selected health boundary type, along with a bar chart
 showing the rate and confidence intervals of the disease rate for the
-user selected health boundaries, and a line chart showing the change in
+selected health boundaries, and a line chart showing the change in
 the disease rate of the selected health boundaries over time. Additional
 information is displayed upon hover on any of the plots. The layout of
 the By Disease tab is shown below in Figure \@ref(fig:disease-tab).
