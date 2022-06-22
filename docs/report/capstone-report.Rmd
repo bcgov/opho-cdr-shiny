@@ -354,7 +354,7 @@ Second, we generate models to interpret the temporal trends. We use a Bayesian m
 
 Finally, we explored methods such as Join-point Regression, which
 provides insights into trends of chronic disease rates through temporal
-analysis. The model provides epidemiologists with information on abrurpt
+analysis. The model provides epidemiologists with information on abrupt
 rise and fall in trend, which aids in decision-making. But, there are
 several limitations such as the model is sensitive to missing values,
 and diseases with stationary rates. In such cases, the model is not
