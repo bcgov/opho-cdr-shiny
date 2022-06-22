@@ -228,31 +228,31 @@ ui <- fluidPage(
       # Joinpoint TAB
       #############
       
-      # tabPanel("Joinpoint Regression",
-      #          sidebarLayout(
-      #            sidebarPanel(
-      #              id="filters_m",
-      #              width = 3,
-      #              h2("Data Selection"),
-      #              hr(),
-      #              selectInput("rates_m",
-      #                          label= "Select Rate",
-      #                          choices = join_rates,
-      #                          selected = "Incidence Rate"),
-      #              selectInput("chsa_m",
-      #                          label= "Select CHSA",
-      #                          choices = join_chsa,
-      #                          selected = "Panorama"),
-      #              selectInput("disease_m",
-      #                          label= "Select Disease",
-      #                          choices = join_disease,
-      #                          selected = "ASTHMA"),
-      #              br(),
-      #              actionButton("reset_m", "Reset")
-      #            ),
-      #            mainPanel(
-      #              plotlyOutput('jp_plot')
-      #            ))),
+      tabPanel("Joinpoint Regression",
+               sidebarLayout(
+                 sidebarPanel(
+                   id="filters_m",
+                   width = 3,
+                   h2("Data Selection"),
+                   hr(),
+                   selectInput("rates_m",
+                               label= "Select Rate",
+                               choices = join_rates,
+                               selected = "Incidence Rate"),
+                   selectInput("chsa_m",
+                               label= "Select CHSA",
+                               choices = join_chsa,
+                               selected = "Panorama"),
+                   selectInput("disease_m",
+                               label= "Select Disease",
+                               choices = join_disease,
+                               selected = "ASTHMA"),
+                   br(),
+                   actionButton("reset_m", "Reset")
+                 ),
+                 mainPanel(
+                   plotlyOutput('jp_plot')
+                 ))),
   )
 )
 
@@ -1718,7 +1718,15 @@ server <- function(input, output,session) {
       t <- trend()
       p <-plot_ly(data=t, x=~YEAR,  y = ~join_obs, name = "Observed points",
                   type = 'scatter', mode = 'markers')
-      p = add_lines(p, x=~YEAR, y=~join_fitted, name="Predicted trend")
+      p = add_lines(p, x=~YEAR, y=~join_fitted, name="Predicted trend") %>%
+        layout(
+          yaxis = list(title = ""),
+          xaxis = list(
+            title = "",
+            dtick = 1, 
+            tick0 = 2001, 
+            tickmode = "linear"
+          ))
       
     })
     }})
