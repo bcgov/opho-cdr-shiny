@@ -338,10 +338,11 @@ Second, we generate models to interpret the temporal trends. We use a Bayesian m
 
 Last but not least, as something extra, we apply join-point regression to estimate abrupt changes in rates. The model can help epidemiologists locate the break points at a certain time and later draw inferences.
 
-While we attempted to perfect the deliverables based on constant partner feedback and academic research, due to the short time frame of this capstone project, we acknowledge that there are areas we can improve on. Here are the recommendations on future endeavors. For the dashboard, the main improvement lies in the processing speed. Currently, we have only tested the dashboard locally on individual laptops. The performance in terms of processing speed is acceptable, but varies by computer. We have documented the attempts to increase the processing time in a Github issue in the project repository. 
+While we attempted to perfect the deliverables based on constant partner feedback and further research, due to the short time frame of this capstone project, we acknowledge that there are areas we can improve on. Here are the recommendations on future endeavors. 
+For the dashboard, the main improvement lies in the processing speed. Currently, we have only tested the dashboard locally for a single user per session. The performance in terms of processing speed is acceptable, but varies greatly by individual laptops. If it is foreseeable that multiple users will be active simultaneously, asynchronous programming can be applied to increase scalability. Storing pre-processed data on a cloud server can be considered to decrease the start up time. For more details on all our attempts to speed up the Shiny dashboards, please refer to this [Github issue](https://github.com/bcgov/opho-cdr-shiny/issues/34) in the project repository. 
 
 To improve the Bayesian approach, additional fine-tuning of the model priors
-and scaling of the random walk model with the modified zero Gamma model is recommended
+and scaling of the random walk model with the modified zero Gamma model is recommended.
 
 
 # References
