@@ -329,6 +329,8 @@ eliminated in the future when the data is made public, since the data
 can be wrangled once, and the pre-processed data can be safely stored on
 a server.
 
+## Join-point Regression
+
 The Joinpoint Regression tab of our R Shiny app plots the fitted
 estimates from the model and also the original data point over a period
 of 2001 to 2020. There are filters for choosing the Standardized Rate
@@ -350,7 +352,13 @@ First, we build an Shiny dashboard that allows health professionals and non-expe
 
 Second, we generate models to interpret the temporal trends. We use a Bayesian modeling approach to smoothen the large fluctuations and thus wide confidence intervals in smaller health communities. We also apply the local polynomial regression (LOESS) model as an alternative to fit the data for low rate diseases. The smoothened temporal trends are incorporated into the dashboard for users to easily compare trends.
 
-Last but not least, as something extra, we apply join-point regression to estimate abrupt changes in rates. The model can help epidemiologists locate the break points at a certain time and later draw inferences.
+Finally, we explored methods such as Join-point Regression, which
+provides insights into trends of chronic disease rates through temporal
+analysis. The model provides epidemiologists with information on abrurpt
+rise and fall in trend, which aids in decision-making. But, there are
+several limitations such as the model is sensitive to missing values,
+and diseases with stationary rates. In such cases, the model is not
+useful, because of not having sufficient checkpoints in the data.
 
 While we attempted to perfect the deliverables based on constant partner feedback, due to the short time frame of this capstone project, we acknowledge that there are areas we can improve on. Here are the recommendations on future endeavors. 
 
