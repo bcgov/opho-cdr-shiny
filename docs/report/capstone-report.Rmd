@@ -239,11 +239,11 @@ An R Shiny document was selected to visualize the models due to the large number
 which made it challenging to display at an individual level within other formats, 
 such as a PDF report.
 The R Shiny document visualizes the original observations, 95% confidence intervals, 
-as well as the selected model (Bayesian or LOESS). 
+as well as the selected model (Bayesian or LOESS) as shown in Figure  \@ref(fig:temporal-shiny). 
 This data product allows data scientists and epidemiologists on the team
 to visually inspect and assess the fit of the selected models at a more in-depth level 
 compared to the final dashboard product, which is targeted towards a wider audience.
-For the general audience, the smoothened time trends models were integrated 
+For the general audience, the smoothened time trend models were integrated 
 into the dashboard using a toggle switch, as described in the Dashboard section below.
 
 ```{r temporal-shiny, echo=FALSE, fig.cap="Fitted temporal models displayed in an R Shiny document. The R Shiny document allows users to explore the 11 956 temporal models relative to the original observations and confidence intervals.", out.width = '100%'}
