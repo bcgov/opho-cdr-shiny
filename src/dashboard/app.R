@@ -15,7 +15,6 @@ library(rgeos)
 library(shinyWidgets)
 library(DT)
 library(shinyBS)
-library(memoise)
 library(fst)
 library(data.table)
 })
@@ -30,7 +29,6 @@ source('helpers.R', local = T)
 source('global.R', local = T) 
 
 options(spinner.color="#003366")
-# shinyOptions(cache = "app")
 
 ################################
 # UI Side Logic
@@ -275,7 +273,6 @@ server <- function(input, output,session) {
   observeEvent(input$navbarID, {
     if(input$navbarID %in% c("Diseases")){
 
-
       # Show disease pdf on button click
       observeEvent(input$show_pdf, {
         output$pdfviewer<-renderUI({
@@ -293,9 +290,6 @@ server <- function(input, output,session) {
   ################################
   # By Disease Tab Server Side Logic
   ################################
-  # observeEvent(input$navbarID, {
-  #   if(input$navbarID %in% c("By Disease")){
-      
 
   # Reset filters
   observeEvent(input$reset_d, {
@@ -341,9 +335,7 @@ server <- function(input, output,session) {
       dataset_switch(input$dataset_d)
     }
   })
-  # |>
-  #   bindCache(input$dataset_d)|>
-  #   bindEvent(input$dataset_d)
+
   
   # Rate selection based on user input
   rateInput_d <- reactive({
@@ -352,9 +344,7 @@ server <- function(input, output,session) {
       rate_switch(input$dataset_d)
     }
   })
-  # |>
-  #   bindCache(input$dataset_d)|>
-  #   bindEvent(input$dataset_d)
+
   
   # Geography selection based on user input
   healthboundInput_d <- reactive ({
@@ -365,9 +355,7 @@ server <- function(input, output,session) {
            "Community Health Service Areas" = "CHSA")
     }
   })
-  # |>
-  #   bindCache(input$health_bound_d)|>
-  #   bindEvent(input$health_bound_d)
+
   
   # Map geography selection based on user input
   spdf_d <- reactive ({
@@ -378,9 +366,6 @@ server <- function(input, output,session) {
            "Community Health Service Areas" = chsa_spdf)
     }
   })
-  # |>
-  #   bindCache(input$health_bound_d)|>
-  #   bindEvent(input$health_bound_d)
   
   # Filter dataset based on user input
   filter_df_d <- reactive({
@@ -390,25 +375,19 @@ server <- function(input, output,session) {
               (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
       )
   })
-  # |>
-  #   bindCache(input$dataset_d,input$health_bound_d,input$disease_d,input$gender_d)|>
-  #   bindEvent(input$dataset_d,input$health_bound_d,input$disease_d,input$gender_d)
+
   
   filter_df_reg_d <- reactive({
     filter_df_d() |>
       filter (HEALTH_BOUND_NAME %in% input$region_d)
   })
-  # |>
-  #   bindCache(filter_df_d(),input$region_d)|>
-  #   bindEvent(filter_df_d(),input$region_d)
+
   
   filter_df_yr_d <- reactive({
     filter_df_d() |>
       filter (YEAR == input$year_d)
   })
-  # |>
-  #   bindCache(filter_df_d(),input$year_d)|>
-  #   bindEvent(filter_df_d(),input$year_d)
+
   
   # Define reactive error bounds 
   error <- reactiveValues(
@@ -429,9 +408,7 @@ server <- function(input, output,session) {
       " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
     )
   })
-  # |>
-  #   bindCache(filter_df_d())|>
-  #   bindEvent(filter_df_d())
+
   
   output$text_d2 <- renderText({
     data <- filter_df_d()|>
@@ -447,9 +424,7 @@ server <- function(input, output,session) {
       " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
     )
   })
-  # |>
-  #   bindCache(filter_df_d())|>
-  #   bindEvent(filter_df_d())
+
   
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
@@ -458,9 +433,7 @@ server <- function(input, output,session) {
       "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
     )
   })
-  # |>
-  #   bindCache(filter_df_d())|>
-  #   bindEvent(filter_df_d())
+
   
   output$text_d4 <- renderText({
     data<-filter_df_d()|>
@@ -476,9 +449,7 @@ server <- function(input, output,session) {
       "<br>", "<div id=stat>", year_max,"</div>"
     )
   })
-  # |>
-  #   bindCache(filter_df_d())|>
-  #   bindEvent(filter_df_d())
+
   
   # Render disease bar graph for each rate/disease 
   output$disease_graph_bar <- renderPlotly({
@@ -550,7 +521,6 @@ server <- function(input, output,session) {
     p <- plotlyProxy("disease_graph_bar", session)
 
     for(reg in seq_along(input$region_d)){
-      # df <- newdata[which(newdata$HEALTH_BOUND_NAME==input$region_d[reg]),]
       df <- newdata|>
         filter(HEALTH_BOUND_NAME == sort(input$region_d)[reg])
       p |>
@@ -617,7 +587,6 @@ server <- function(input, output,session) {
       hovertemplate = hovertemplate_line
       
     )|>
-    
       layout(yaxis = append(list(range = list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
                                               max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
                             y_axis_spec(input$dataset_d,"nonnegative")),
@@ -635,9 +604,7 @@ server <- function(input, output,session) {
   # Update disease line graph new data
   observe({
     invalidateLater(500)
-
     p <- plotlyProxy("disease_graph_line", session)
-    
     p |>
       plotlyProxyInvoke("relayout",
                         list(
@@ -645,12 +612,10 @@ server <- function(input, output,session) {
                         ))
   })
 
-
   # Switch to change line graph to start at 0
   observe({
     invalidateLater(500) #necessary line
     p <- plotlyProxy("disease_graph_line", session)
-    
     p |>
       plotlyProxyInvoke("relayout",
                         list(yaxis = y_axis_spec(
@@ -671,7 +636,6 @@ server <- function(input, output,session) {
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
 
       for(reg in input$region_d){
-        # df <- data[which(data$HEALTH_BOUND_NAME==reg),]
         df <- data |>
           filter(HEALTH_BOUND_NAME == reg)
         p |>
@@ -687,14 +651,12 @@ server <- function(input, output,session) {
                                           color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
                               hovertemplate = hovertemplate_line
                             ))
-
       }
 
     }else{
       p |>
         plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
       for(reg in input$region_d){
-        # df <- data[which(data$HEALTH_BOUND_NAME==reg),]
         df <- data |>
           filter(HEALTH_BOUND_NAME == reg)
         p |>
@@ -713,7 +675,6 @@ server <- function(input, output,session) {
       }
     }
     })
-
 
   # Render map once per Input Rate/Disease
   output$map <- renderLeaflet({
@@ -751,7 +712,7 @@ server <- function(input, output,session) {
               paste0(mybins[4]," - ",mybins[5]),
               paste0(mybins[5]," + ")
     )
-
+    
     mytext <- paste("<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
                     "<b>",input$dataset_d,": ","</b>",
                     format_round(dummy_spdf@data[[rateInput_d()]]),"<br/>",
@@ -1057,8 +1018,6 @@ server <- function(input, output,session) {
           group = "selected"
         )}
   })
-  #   } # end observe navbarid
-  # }) # end observe navbarid
 
   ################################
   # By Region Tab Server Side Logic
@@ -1106,7 +1065,6 @@ server <- function(input, output,session) {
     }
   })
   
-
   # Get the corresponding column name for the rate type selected
   region_tab_rate_as_variable <- reactive({
     shiny::validate(need(input$region_tab_rate_type_selected, message = F))
@@ -1133,7 +1091,6 @@ server <- function(input, output,session) {
                (DISEASE %in% input$region_tab_diseases_selected) &
                (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
   })
-  
   
   #####################
   # Line Chart Related Logic
@@ -1185,7 +1142,6 @@ server <- function(input, output,session) {
   observe({
     invalidateLater(500)
     p <- plotlyProxy("region_tab_line_chart", session)
-
     p |>
       plotlyProxyInvoke("relayout",
                         list(shapes = list(
@@ -1425,8 +1381,6 @@ server <- function(input, output,session) {
                            ))
 
   })
-
-
 
   #####################
   # Logic to Link Hover Activity on Charts
@@ -1691,7 +1645,6 @@ server <- function(input, output,session) {
   }) # end observe navbarid
 
 
-
     ################################
     # Joinpoint Tab Server Side Logic
     ################################
@@ -1702,7 +1655,6 @@ server <- function(input, output,session) {
   observeEvent(input$reset_m, {
     reset("filters_m")
   })  
-    
     
     # Get the filtered dataset based on user selection
     trend<- reactive({
@@ -1729,6 +1681,7 @@ server <- function(input, output,session) {
       
     })
     }})
+  
 } # end server 
 
 ################################
