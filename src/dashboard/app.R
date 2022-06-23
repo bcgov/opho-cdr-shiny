@@ -2,37 +2,37 @@
 # Load packages
 # ################################
 suppressPackageStartupMessages({
-library(shiny)
-library(shinyjs)
-library(plyr)
-library(tidyverse)
-library(leaflet)
-library(sp)
-library(rgdal)
-library(plotly)
-library(shinycssloaders)
-library(rgeos)
-library(shinyWidgets)
-library(DT)
-library(shinyBS)
-library(fst)
-library(data.table)
+  library(shiny)
+  library(shinyjs)
+  library(plyr)
+  library(tidyverse)
+  library(leaflet)
+  library(sp)
+  library(rgdal)
+  library(plotly)
+  library(shinycssloaders)
+  library(rgeos)
+  library(shinyWidgets)
+  library(DT)
+  library(shinyBS)
+  library(fst)
+  library(data.table)
 })
 
 ################################
 # Source helper functions and templates
-# 
+#
 # Define and load all the global variables, including the data frames and shape files
 ################################
 source('info.R', local = T)
 source('helpers.R', local = T)
-source('global.R', local = T) 
+source('global.R', local = T)
 
-options(spinner.color="#003366")
+options(spinner.color = "#003366")
 
 ################################
 # UI Side Logic
-# 
+#
 # Define the ui of the four main tabs of the dashboard from left to right
 ################################
 ui <- fluidPage(
@@ -40,227 +40,277 @@ ui <- fluidPage(
   shinyjs::useShinyjs(),
   leafletjs,
   tab_colsjs,
-  id="body",
-  list(tags$head(HTML('<link rel="icon", href="bc-gov-logo.png", type="image/png" />'))),
-  navbarPage(title = div(img(id = "logo",src="bc-gov-logo.png"),"BC Chronic Disease Dashboard"),
-             position = "fixed-top", 
-             id = "navbarID",
-      ################################
-      # Information Tab UI Side Logic
-      ################################
-      navbarMenu("Information",
-        tabPanel("About",
-                 p(HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")),
-                 h5("Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"),
-                 h6("UBC Master of Data Science Capstone Project"),
-                 p(HTML(about_info)),
-                 hr(style = "margin-bottom: 20px;
-                             border: 0;
-                             border-top: 1px solid #eee"),
-                 helpText(HTML("For internal use only. Do not distribute.<br/>
-                                For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"))
-                 ),
-        tabPanel("Rate Types",
-                 p(HTML("<u><h2>Rate Types</h2></u></br>")),
-                 p(HTML(rate_info))
-                 ),
-        tabPanel("Diseases",
-                 p(HTML("<u><h2>Diseases</h2></u></br>")),
-                 p(HTML(disease_info)),
-                 actionButton("show_pdf", "More Info"),
-                 uiOutput("pdfviewer")
-                 ),
-        tabPanel("Data Dictionary",
-                 p(HTML("<u><h2>Data Dictionary</h2></u></br>")),
-                 p(HTML(data_dict_info))
-                ),
+  id = "body",
+  list(tags$head(
+    HTML(
+      '<link rel="icon", href="bc-gov-logo.png", type="image/png" />'
+    )
+  )),
+  navbarPage(
+    title = div(
+      img(id = "logo", src = "bc-gov-logo.png"),
+      "BC Chronic Disease Dashboard"
+    ),
+    position = "fixed-top",
+    id = "navbarID",
+    
+    ################################
+    # Information Tab UI Side Logic
+    ################################
+    navbarMenu(
+      "Information",
+      tabPanel(
+        "About",
+        p(
+          HTML("<h1><u>Welcome to the BC Chronic Disease Dashboard!</u></h1>")
         ),
-      
-      ################################
-      # "By Disease" Tab UI Side Logic
-      ################################
-      tabPanel("By Disease",
-               sidebarLayout(
-                 sidebarPanel(
-                   id="filters_d",
-                   width = 3,
-                   h2("Data Selection"),
-                   hr(),
-                   selectInput("disease_d",
-                               label= "Select Disease",
-                               choices = ALL_DISEASES),
-                   rate_type_input("dataset_d"),
-                   geography_radio_buttons("health_bound_d"),
-                   selectInput("region_d",
-                               label = "Select Health Boundaries",
-                               choices = HA_CHOICES,
-                               multiple = TRUE),
-                   sex_radio_buttons("gender_d"),
-                   year_slider("year_d", "year_info_d"),
-                   fisc_year_tt("year_info_d"),
-                   br(),
-                   actionButton("reset_d", "Reset")
+        h5(
+          "Developed by Jessie Wong, Jennifer Hoang, Mahmoodur Rahman, and Irene Yan"
+        ),
+        h6("UBC Master of Data Science Capstone Project"),
+        p(HTML(about_info)),
+        hr(style = "margin-bottom: 20px;
+                     border: 0;
+                     border-top: 1px solid #eee"),
+        helpText(
+          HTML(
+            "For internal use only. Do not distribute.<br/>
+             For questions about this dashboard, please contact hlth.cdrwg@gov.bc.ca"
+          )
+        )
+      ),
+      tabPanel("Rate Types",
+               p(HTML(
+                 "<u><h2>Rate Types</h2></u></br>"
+               )),
+               p(HTML(rate_info))),
+      tabPanel(
+        "Diseases",
+        p(HTML("<u><h2>Diseases</h2></u></br>")),
+        p(HTML(disease_info)),
+        actionButton("show_pdf", "More Info"),
+        uiOutput("pdfviewer")
+      ),
+      tabPanel("Data Dictionary",
+               p(
+                 HTML("<u><h2>Data Dictionary</h2></u></br>")
+               ),
+               p(HTML(data_dict_info))),
+    ),
+    
+    ################################
+    # "By Disease" Tab UI Side Logic
+    ################################
+    tabPanel("By Disease",
+             sidebarLayout(
+               sidebarPanel(
+                 id = "filters_d",
+                 width = 3,
+                 h2("Data Selection"),
+                 hr(),
+                 selectInput("disease_d",
+                             label = "Select Disease",
+                             choices = ALL_DISEASES),
+                 rate_type_input("dataset_d"),
+                 geography_radio_buttons("health_bound_d"),
+                 selectInput(
+                   "region_d",
+                   label = "Select Health Boundaries",
+                   choices = HA_CHOICES,
+                   multiple = TRUE
                  ),
+                 sex_radio_buttons("gender_d"),
+                 year_slider("year_d", "year_info_d"),
+                 fisc_year_tt("year_info_d"),
+                 br(),
+                 actionButton("reset_d", "Reset")
+               ),
                mainPanel(
                  width = 9,
                  fluidRow(
-                   column(3,htmlOutput("text_d1")),
-                   column(3,htmlOutput("text_d2")),
-                   column(3,htmlOutput("text_d3")),
-                   column(3,htmlOutput("text_d4"))
+                   column(3, htmlOutput("text_d1")),
+                   column(3, htmlOutput("text_d2")),
+                   column(3, htmlOutput("text_d3")),
+                   column(3, htmlOutput("text_d4"))
                  ),
                  fluidRow(
-                   column(6, leafletOutput("map",height=645)|> withSpinner()),
-                   column(6, 
-                          fluidRow(column(12,plotlyOutput("disease_graph_bar",height=295)|> withSpinner())),
-                          fluidRow(column(4,material_switch("yax_switch_d","Y-axis from 0")),
-                                   column(8, conditionalPanel(
-                                               condition = "input.gender_d == 'Total' && input.health_bound_d == 'Community Health Service Areas' && input.dataset_d.startsWith('Age')",
-                                               material_switch("modeldata_d_switch","Smoothed Time Trends ")
-                                                 ))),
-                          fluidRow(column(12,plotlyOutput("disease_graph_line",height=295)|> withSpinner())),
-                          )))
-               )),
-      
-      ################################
-      # "By Region" Tab UI Side Logic
-      ################################
-      tabPanel("By Region",
-               sidebarLayout(
-                 sidebarPanel(
-                   id="filters_r",
-                   width = 3,
-                   h2("Data Selection"),
-                   hr(),
-                   geography_radio_buttons("region_tab_geography_selected"),
-                   uiOutput("region_tab_region_selected"),
-                   selectInput("region_tab_diseases_selected",
-                               label= "Select Disease(s)",
-                               choices = ALL_DISEASES,
-                               multiple = TRUE,
-                               selected = ALL_DISEASES[1:3]),
-                   rate_type_input("region_tab_rate_type_selected"),
-                   sex_radio_buttons("region_tab_sex_selected"),
-                   year_slider("region_tab_year_selected", "region_tab_year_slider_info"),
-                   fisc_year_tt("region_tab_year_slider_info"),
-                   br(),
-                   actionButton("region_tab_reset_button", "Reset")
+                   column(6, leafletOutput("map", height = 645) |> withSpinner()),
+                   column(
+                     6,
+                     fluidRow(column(
+                       12,
+                       plotlyOutput("disease_graph_bar", height = 295) |> withSpinner()
+                     )),
+                     fluidRow(column(
+                       4, material_switch("yax_switch_d", "Y-axis from 0")
+                     ),
+                     column(
+                       8,
+                       conditionalPanel(
+                         condition = "input.gender_d == 'Total' && input.health_bound_d == 'Community Health Service Areas' && input.dataset_d.startsWith('Age')",
+                         material_switch("modeldata_d_switch", "Smoothed Time Trends ")
+                       )
+                     )),
+                     fluidRow(column(
+                       12,
+                       plotlyOutput("disease_graph_line", height = 295) |> withSpinner()
+                     )),
+                   )
+                 )
+               )
+             )), 
+    
+    ################################
+    # "By Region" Tab UI Side Logic
+    ################################
+    tabPanel("By Region",
+             sidebarLayout(
+               sidebarPanel(
+                 id = "filters_r",
+                 width = 3,
+                 h2("Data Selection"),
+                 hr(),
+                 geography_radio_buttons("region_tab_geography_selected"),
+                 uiOutput("region_tab_region_selected"),
+                 selectInput(
+                   "region_tab_diseases_selected",
+                   label = "Select Disease(s)",
+                   choices = ALL_DISEASES,
+                   multiple = TRUE,
+                   selected = ALL_DISEASES[1:3]
                  ),
-                 mainPanel(width = 9,
-                           fluidRow(
-                             column(
-                               9,
-                               fluidRow(
-                                 plotlyOutput("region_tab_bar_chart", height = 350) |> withSpinner()
-                               ),
-                               fluidRow(column(
-                                 4,
-                                 material_switch("region_tab_line_y0switch", "Y-axis from 0")
-                               ),
-                               column(
-                                 8,
-                                 conditionalPanel(
-                                   condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
-                                   material_switch("region_tab_smoothing_switch", "Smoothed Time Trends ")
-                                 )
-                               )),
-                               fluidRow(
-                                 plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner()
-                               )
+                 rate_type_input("region_tab_rate_type_selected"),
+                 sex_radio_buttons("region_tab_sex_selected"),
+                 year_slider("region_tab_year_selected", "region_tab_year_slider_info"),
+                 fisc_year_tt("region_tab_year_slider_info"),
+                 br(),
+                 actionButton("region_tab_reset_button", "Reset")
+               ),
+               mainPanel(width = 9,
+                         fluidRow(
+                           column(
+                             9,
+                             fluidRow(
+                               plotlyOutput("region_tab_bar_chart", height = 350) |> withSpinner()
+                             ),
+                             fluidRow(column(
+                               4,
+                               material_switch("region_tab_line_y0switch", "Y-axis from 0")
                              ),
                              column(
-                               3,
-                               fluidRow(htmlOutput("region_tab_text1")),
-                               br(),
-                               fluidRow(htmlOutput("region_tab_text2")),
-                               br(),
-                               fluidRow(htmlOutput("region_tab_text3")),
-                               br(),
-                               fluidRow(htmlOutput("region_tab_text4")),
-                               br(),
-                               fluidRow(htmlOutput("region_tab_text5"))
+                               8,
+                               conditionalPanel(
+                                 condition = "input.region_tab_sex_selected == 'Total' && input.region_tab_geography_selected == 'Community Health Service Areas' && input.region_tab_rate_type_selected.startsWith('Age')",
+                                 material_switch("region_tab_smoothing_switch", "Smoothed Time Trends ")
+                               )
+                             )),
+                             fluidRow(
+                               plotlyOutput("region_tab_line_chart", height = 350) |> withSpinner()
                              )
-                           )))), 
-      
-      ################################
-      # Download Data Tab UI Side Logic
-      ################################
-      tabPanel("Data",
-               sidebarLayout(
-                 #Filters
-                 sidebarPanel(
-                   id="filters_data",
-                   width = 3,
-                   h2("Data Selection"),
-                   hr(),
-                   rate_type_input("dataset_data"),
-                   selectInput("disease_data", 
-                               label = "Select Disease(s)",
-                               choices = append("All",ALL_DISEASES),
-                               multiple = TRUE,
-                               selected = "All"),
-                   geography_radio_buttons("health_bound_data"),
-                   selectInput("region_data",
-                               label = "Select Health Boundaries",
-                               choices = append("All",HA_CHOICES),
-                               multiple = TRUE,
-                               selected = "All"),
-                   year_slider("year_range_data", "year_info_data", anim = FALSE),
-                   fisc_year_tt("year_info_data"),
-                   sex_radio_buttons("gender_data"),
-                   br(),br(),
-                   actionButton("reset_data", "Reset")
+                           ),
+                           column(
+                             3,
+                             fluidRow(htmlOutput("region_tab_text1")),
+                             br(),
+                             fluidRow(htmlOutput("region_tab_text2")),
+                             br(),
+                             fluidRow(htmlOutput("region_tab_text3")),
+                             br(),
+                             fluidRow(htmlOutput("region_tab_text4")),
+                             br(),
+                             fluidRow(htmlOutput("region_tab_text5"))
+                           )
+                         ))
+             )),
+    
+    ################################
+    # Download Data Tab UI Side Logic
+    ################################
+    tabPanel("Data",
+             sidebarLayout(
+               #Filters
+               sidebarPanel(
+                 id = "filters_data",
+                 width = 3,
+                 h2("Data Selection"),
+                 hr(),
+                 rate_type_input("dataset_data"),
+                 selectInput(
+                   "disease_data",
+                   label = "Select Disease(s)",
+                   choices = append("All", ALL_DISEASES),
+                   multiple = TRUE,
+                   selected = "All"
                  ),
-                 mainPanel(
-                   width = 9,
-                   downloadButton("download_data", label = "Download Data"),
-                   hr(style = "margin-bottom: 20px;
+                 geography_radio_buttons("health_bound_data"),
+                 selectInput(
+                   "region_data",
+                   label = "Select Health Boundaries",
+                   choices = append("All", HA_CHOICES),
+                   multiple = TRUE,
+                   selected = "All"
+                 ),
+                 year_slider("year_range_data", "year_info_data", anim = FALSE),
+                 fisc_year_tt("year_info_data"),
+                 sex_radio_buttons("gender_data"),
+                 br(),
+                 br(),
+                 actionButton("reset_data", "Reset")
+               ),
+               mainPanel(
+                 width = 9,
+                 downloadButton("download_data", label = "Download Data"),
+                 hr(style = "margin-bottom: 20px;
                                border: 0;
                                border-top: 1px solid #eee"),
-                   DTOutput("data_table")
-                 )
-               )),
-
-      #############
-      # Joinpoint TAB
-      #############
-      
-      tabPanel("Joinpoint Regression",
-               sidebarLayout(
-                 sidebarPanel(
-                   id="filters_m",
-                   width = 3,
-                   h2("Data Selection"),
-                   hr(),
-                   selectInput("rates_m",
-                               label= "Select Rate",
-                               choices = join_rates,
-                               selected = "Incidence Rate"),
-                   selectInput("chsa_m",
-                               label= "Select CHSA",
-                               choices = join_chsa,
-                               selected = "Panorama"),
-                   selectInput("disease_m",
-                               label= "Select Disease",
-                               choices = join_disease,
-                               selected = "ASTHMA"),
-                   br(),
-                   actionButton("reset_m", "Reset")
+                 DTOutput("data_table")
+               )
+             )),
+    
+    #############
+    # Joinpoint TAB
+    #############
+    tabPanel("Joinpoint Regression",
+             sidebarLayout(
+               sidebarPanel(
+                 id = "filters_m",
+                 width = 3,
+                 h2("Data Selection"),
+                 hr(),
+                 selectInput(
+                   "rates_m",
+                   label = "Select Rate",
+                   choices = join_rates,
+                   selected = "Incidence Rate"
                  ),
-                 mainPanel(
-                   plotlyOutput('jp_plot')
-                 ))),
+                 selectInput(
+                   "chsa_m",
+                   label = "Select CHSA",
+                   choices = join_chsa,
+                   selected = "Panorama"
+                 ),
+                 selectInput(
+                   "disease_m",
+                   label = "Select Disease",
+                   choices = join_disease,
+                   selected = "ASTHMA"
+                 ),
+                 br(),
+                 actionButton("reset_m", "Reset")
+               ),
+               mainPanel(plotlyOutput('jp_plot'))
+             )),
   )
 )
+
 
 ################################
 # Server Side Logic
 ################################
-server <- function(input, output,session) {
-  
+server <- function(input, output, session) {
   # Change bg color depending on tab
   observeEvent(input$navbarID, {
-    if(input$navbarID %in% c("About","Rate Types","Diseases","Data Dictionary")){
+    if (input$navbarID %in% c("About", "Rate Types", "Diseases", "Data Dictionary")) {
       session$sendCustomMessage("background-color", "white")
     } else {
       session$sendCustomMessage("background-color", "#cccccc")
@@ -271,91 +321,99 @@ server <- function(input, output,session) {
   # Info Tab Server Side Logic
   ################################
   observeEvent(input$navbarID, {
-    if(input$navbarID %in% c("Diseases")){
-
+    if (input$navbarID %in% c("Diseases")) {
       # Show disease pdf on button click
       observeEvent(input$show_pdf, {
-        output$pdfviewer<-renderUI({
-          tags$iframe(
-            src="CDR_Case_Definitions.pdf",
-            width="100%",
-            height="800px")
-
+        output$pdfviewer <- renderUI({
+          tags$iframe(src = "CDR_Case_Definitions.pdf",
+                      width = "100%",
+                      height = "800px")
+          
         })
       })
-
     } # end observe navbarid
   }) # end observe navbarid
   
   ################################
   # By Disease Tab Server Side Logic
   ################################
-
+  
   # Reset filters
   observeEvent(input$reset_d, {
     reset("filters_d")
   })
-
-
+  
+  
   # Dynamic UI for rate selection
-  observeEvent(input$disease_d,{
+  observeEvent(input$disease_d, {
     updateSelectInput(
       session,
       "dataset_d",
       label = "Select Rate Type",
       choices = (
-        if(input$disease_d %in% HSC_DISEASES) RATE_TYPE_CHOICES
+        if (input$disease_d %in% HSC_DISEASES)
+          RATE_TYPE_CHOICES
         else
-          c("Crude Incidence Rate",
+          c(
+            "Crude Incidence Rate",
             "Age Standardized Incidence Rate",
             "Crude Life Prevalence",
-            "Age Standardized Life Prevalence")
+            "Age Standardized Life Prevalence"
+          )
       ),
       selected = "Crude Incidence Rate"
     )
   })
-
+  
   # Dynamic UI for region selection
-  observeEvent(input$health_bound_d,{
+  observeEvent(input$health_bound_d, {
     updateSelectInput(
       session,
       "region_d",
       label = "Select Health Boundaries",
       choices = health_bounds(input$health_bound_d),
       selected = (
-        if(input$health_bound_d == "Health Authorities") HA_CHOICES
-        else c("100 Mile House","Comox","Mackenzie","Port Coquitlam","Kitsilano")
-      ))
+        if (input$health_bound_d == "Health Authorities")
+          HA_CHOICES
+        else
+          c(
+            "100 Mile House",
+            "Comox",
+            "Mackenzie",
+            "Port Coquitlam",
+            "Kitsilano"
+          )
+      )
+    )
   })
-
+  
   # Dataset selection based on user input
   datasetInput_d <- reactive({
-    shiny::validate(need(input$dataset_d, message=F))
-    if(!is.null(input$dataset_d)){
+    shiny::validate(need(input$dataset_d, message = F))
+    if (!is.null(input$dataset_d)) {
       dataset_switch(input$dataset_d)
     }
   })
-
   
   # Rate selection based on user input
   rateInput_d <- reactive({
-    shiny::validate(need(input$dataset_d, message=F))
-    if(!is.null(input$dataset_d)){
+    shiny::validate(need(input$dataset_d, message = F))
+    if (!is.null(input$dataset_d)) {
       rate_switch(input$dataset_d)
     }
   })
-
   
   # Geography selection based on user input
   healthboundInput_d <- reactive ({
-    shiny::validate(need(input$health_bound_d, message=F))
-    if(!is.null(input$health_bound_d)){
-    switch(input$health_bound_d,
-           "Health Authorities" = "HA",
-           "Community Health Service Areas" = "CHSA")
+    shiny::validate(need(input$health_bound_d, message = F))
+    if (!is.null(input$health_bound_d)) {
+      switch(
+        input$health_bound_d,
+        "Health Authorities" = "HA",
+        "Community Health Service Areas" = "CHSA"
+      )
     }
   })
-
   
   # Map geography selection based on user input
   spdf_d <- reactive ({
@@ -370,248 +428,301 @@ server <- function(input, output,session) {
   # Filter dataset based on user input
   filter_df_d <- reactive({
     datasetInput_d() |>
-      filter ((GEOGRAPHY == healthboundInput_d())&
-              (DISEASE == input$disease_d) &
-              (CLNT_GENDER_LABEL == substr(input$gender_d,1,1))
+      filter ((GEOGRAPHY == healthboundInput_d()) &
+                (DISEASE == input$disease_d) &
+                (CLNT_GENDER_LABEL == substr(input$gender_d, 1, 1))
       )
   })
-
   
   filter_df_reg_d <- reactive({
     filter_df_d() |>
       filter (HEALTH_BOUND_NAME %in% input$region_d)
   })
-
   
   filter_df_yr_d <- reactive({
     filter_df_d() |>
       filter (YEAR == input$year_d)
   })
-
   
-  # Define reactive error bounds 
-  error <- reactiveValues(
-    lower = NULL,
-    upper = NULL
-  )
-
+  # Define reactive error bounds
+  error <- reactiveValues(lower = NULL,
+                          upper = NULL)
+  
   #Render disease stats
   output$text_d1 <- renderText({
     data <- filter_df_d()
-    reg_max <-data|>
-      arrange(desc(data[[rateInput_d()]]))|>
-      slice(1)|>
+    reg_max <- data |>
+      arrange(desc(data[[rateInput_d()]])) |>
+      slice(1) |>
       pull(HEALTH_BOUND_NAME)
-
+    
     paste0(
-      healthboundInput_d()," with Highest Maximum ",input$dataset_d,
-      " in 2001-2020 <br>", "<div id=stat>",reg_max,"</div>"
+      healthboundInput_d(),
+      " with Highest Maximum ",
+      input$dataset_d,
+      " in 2001-2020 <br>",
+      "<div id=stat>",
+      reg_max,
+      "</div>"
     )
   })
-
   
   output$text_d2 <- renderText({
-    data <- filter_df_d()|>
-      group_by(HEALTH_BOUND_NAME)|>
+    data <- filter_df_d() |>
+      group_by(HEALTH_BOUND_NAME) |>
       summarize_at(rateInput_d(), mean)
-    reg_avg<- data|>
-      arrange(desc(data[[rateInput_d()]]))|>
-      slice(1)|>
+    reg_avg <- data |>
+      arrange(desc(data[[rateInput_d()]])) |>
+      slice(1) |>
       pull(HEALTH_BOUND_NAME)
-
+    
     paste0(
-      healthboundInput_d()," with Highest Average ",input$dataset_d,
-      " in 2001-2020 <br>","<div id=stat>", reg_avg,"</div>"
+      healthboundInput_d(),
+      " with Highest Average ",
+      input$dataset_d,
+      " in 2001-2020 <br>",
+      "<div id=stat>",
+      reg_avg,
+      "</div>"
     )
   })
-
   
   output$text_d3 <- renderText({
     avg_rate <- median(filter_df_d()[[rateInput_d()]])
     paste0(
-      "Median Recorded ",input$dataset_d," Over All ", healthboundInput_d(),"s",
-      "<br>", "<div id=stat>",sprintf('%.2f',avg_rate),"</div>"
+      "Median Recorded ",
+      input$dataset_d,
+      " Over All ",
+      healthboundInput_d(),
+      "s",
+      "<br>",
+      "<div id=stat>",
+      sprintf('%.2f', avg_rate),
+      "</div>"
     )
   })
-
   
   output$text_d4 <- renderText({
-    data<-filter_df_d()|>
-      group_by(YEAR)|>
-      summarize_at(rateInput_d(),median)
-    year_max <- data|>
-      arrange(desc(data[[rateInput_d()]]))|>
-      slice(1)|>
+    data <- filter_df_d() |>
+      group_by(YEAR) |>
+      summarize_at(rateInput_d(), median)
+    year_max <- data |>
+      arrange(desc(data[[rateInput_d()]])) |>
+      slice(1) |>
       pull(YEAR)
-
+    
     paste0(
-      "Year of Highest Median Recorded ",input$dataset_d,
-      "<br>", "<div id=stat>", year_max,"</div>"
+      "Year of Highest Median Recorded ",
+      input$dataset_d,
+      "<br>",
+      "<div id=stat>",
+      year_max,
+      "</div>"
     )
   })
-
   
-  # Render disease bar graph for each rate/disease 
+  # Render disease bar graph for each rate/disease
   output$disease_graph_bar <- renderPlotly({
-
     dummyData <- datasetInput_d() |>
-      filter(CLNT_GENDER_LABEL=='T',
-             HEALTH_BOUND_NAME %in% input$region_d,
-             DISEASE=="Asthma",
-             YEAR==2001)
-
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-
+      filter(
+        CLNT_GENDER_LABEL == 'T',
+        HEALTH_BOUND_NAME %in% input$region_d,
+        DISEASE == "Asthma",
+        YEAR == 2001
+      )
+    
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    
     p <- plot_ly(source = "disease_graph_bar")
-    for(reg in input$region_d){
-      # dummy_df <- dummyData[which(dummyData$HEALTH_BOUND_NAME==reg),]
+    for (reg in input$region_d) {
       dummy_df <- dummyData |>
         filter(HEALTH_BOUND_NAME == reg)
       p <- p |>
-        add_trace(x=dummy_df$HEALTH_BOUND_NAME,
-                  y=dummy_df[[rateInput_d()]],
-                  type = 'bar',
-                  error_y=list(
-                    type = "data",
-                    symmetric = FALSE,
-                    arrayminus =dummy_df[[rateInput_d()]]- dummy_df[[error$lower]],
-                    array = dummy_df[[error$upper]]- dummy_df[[rateInput_d()]],
-                    color = '#000000',
-                    width = 10),
-                  marker = list(color = if(input$health_bound_d == "Health Authorities")
-                                  HA_colours$Colors[match(dummy_df$HEALTH_BOUND_NAME,HA_colours$Regions)]
-                                else
-                                  CHSA_colours$Colors[match(dummy_df$HEALTH_BOUND_NAME,CHSA_colours$Regions)]
-                  ),
-                  hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                        '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                        '<br><b>95% Confidence Interval</b>: (',
-                                        format_round(dummy_df[[error$lower]]), ',',
-                                        format_round(dummy_df[[error$upper]]),')',
-                                        '<extra></extra>')
+        add_trace(
+          x = dummy_df$HEALTH_BOUND_NAME,
+          y = dummy_df[[rateInput_d()]],
+          type = 'bar',
+          error_y = list(
+            type = "data",
+            symmetric = FALSE,
+            arrayminus = dummy_df[[rateInput_d()]] - dummy_df[[error$lower]],
+            array = dummy_df[[error$upper]] - dummy_df[[rateInput_d()]],
+            color = '#000000',
+            width = 10
+          ),
+          marker = list(color = if (input$health_bound_d == "Health Authorities")
+            HA_colours$Colors[match(dummy_df$HEALTH_BOUND_NAME, HA_colours$Regions)]
+            else
+              CHSA_colours$Colors[match(dummy_df$HEALTH_BOUND_NAME, CHSA_colours$Regions)]),
+          hovertemplate = paste(
+            '<b>Health Region</b>: %{x}',
+            '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+            '<br><b>95% Confidence Interval</b>: (',
+            format_round(dummy_df[[error$lower]]),
+            ',',
+            format_round(dummy_df[[error$upper]]),
+            ')',
+            '<extra></extra>'
+          )
         )
     }
     
-   p |>
-      layout(yaxis = append(list(range=list(0,max(dummyData[[error$upper]],na.rm=TRUE)*1.05)),
-                             y_axis_spec(input$dataset_d,"nonnegative")),
-             xaxis = x_axis_bar_spec('Health Region',5),
-             title = list(text = paste0('<b>',input$dataset_d," of \n", "Asthma in 2001 </b>"),
-                          y=0.92,
-                          font = list(size = 16)),
-             barmode = "overlay",
-             margin = list(t = 80,b=50),
-             showlegend = FALSE
+    p |>
+      layout(
+        yaxis = append(
+          list(range = list(0, max(
+            dummyData[[error$upper]], na.rm = TRUE
+          ) * 1.05)),
+          y_axis_spec(input$dataset_d, "nonnegative")
+        ),
+        xaxis = x_axis_bar_spec('Health Region', 5),
+        title = list(
+          text = paste0('<b>', input$dataset_d, " of \n", "Asthma in 2001 </b>"),
+          y = 0.92,
+          font = list(size = 16)
+        ),
+        barmode = "overlay",
+        margin = list(t = 80, b = 50),
+        showlegend = FALSE
       ) |>
       event_register('plotly_hover')
-
+    
   })
-
+  
   # Update Disease Bar Graph with filter changes
   observe({
     invalidateLater(500)
-    newdata <- filter_df_d()|>
+    newdata <- filter_df_d() |>
       filter(YEAR == input$year_d,
              HEALTH_BOUND_NAME %in% input$region_d)
-
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-
+    
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    
     p <- plotlyProxy("disease_graph_bar", session)
-
-    for(reg in seq_along(input$region_d)){
-      df <- newdata|>
+    
+    for (reg in seq_along(input$region_d)) {
+      df <- newdata |>
         filter(HEALTH_BOUND_NAME == sort(input$region_d)[reg])
       p |>
         plotlyProxyInvoke("restyle",
                           "y",
                           list(list(df[[rateInput_d()]])),
-                          as.integer(reg)-1
-        )|>
+                          as.integer(reg) - 1) |>
         plotlyProxyInvoke("restyle",
                           list(
-                          error_y=list(
-                            type = "data",
-                            symmetric = FALSE,
-                            arrayminus =list(df[[rateInput_d()]]- df[[error$lower]]),
-                            array = list(df[[error$upper]]- df[[rateInput_d()]]),
-                            color = '#000000',
-                            width = 10),
-                          hovertemplate = paste('<b>Health Region</b>: %{x}',
-                                                '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                                                '<br><b>95% Confidence Interval</b>: (',
-                                                format_round(df[[error$lower]]),',',
-                                                format_round(df[[error$upper]]),')',
-                                                '<extra></extra>'
-                          )),
-                          as.integer(reg)-1)
-
+                            error_y = list(
+                              type = "data",
+                              symmetric = FALSE,
+                              arrayminus = list(df[[rateInput_d()]] - df[[error$lower]]),
+                              array = list(df[[error$upper]] - df[[rateInput_d()]]),
+                              color = '#000000',
+                              width = 10
+                            ),
+                            hovertemplate = paste(
+                              '<b>Health Region</b>: %{x}',
+                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                              '<br><b>95% Confidence Interval</b>: (',
+                              format_round(df[[error$lower]]),
+                              ',',
+                              format_round(df[[error$upper]]),
+                              ')',
+                              '<extra></extra>'
+                            )
+                          ),
+                          as.integer(reg) - 1)
+      
     }
-  
     p |>  plotlyProxyInvoke("relayout",
-                        list(
-                          autosize = F,
-                          yaxis = append(list(range=list(0,na.omit(max(filter_df_reg_d()[[error$upper]]))*1.05)),
-                                        y_axis_spec(input$dataset_d,"nonnegative")),
-                          xaxis = append(list(fixedrange = TRUE),
-                                         x_axis_bar_spec('Health Region',5)),
-                          title = list(text = HTML(paste0('<b>',input$dataset_d," of<br>",input$disease_d, " in ",input$year_d, "</b><br>   ")),
-                                       y=0.92,
-                                       font = list(size = 16)
-                                       )
-                        ))
-
+                            list(
+                              autosize = F,
+                              yaxis = append(
+                                list(range = list(0, na.omit(
+                                  max(filter_df_reg_d()[[error$upper]])
+                                ) * 1.05)),
+                                y_axis_spec(input$dataset_d, "nonnegative")
+                              ),
+                              xaxis = append(list(fixedrange = TRUE),
+                                             x_axis_bar_spec('Health Region', 5)),
+                              title = list(
+                                text = HTML(
+                                  paste0(
+                                    '<b>',
+                                    input$dataset_d,
+                                    " of<br>",
+                                    input$disease_d,
+                                    " in ",
+                                    input$year_d,
+                                    "</b><br>   "
+                                  )
+                                ),
+                                y = 0.92,
+                                font = list(size = 16)
+                              )
+                            ))
+    
   })
-
+  
   # Render disease line graph
   output$disease_graph_line <- renderPlotly({
-
-    d <- filter_df_d()|>
+    d <- filter_df_d() |>
       filter(HEALTH_BOUND_NAME %in% sort(input$region_d))
-
+    
     d |>
-    plot_ly(
-      x= d$YEAR,
-      y=d[[rateInput_d()]],
-      source = "disease_graph_line",
-      type = "scatter",
-      mode="lines",
-      customdata = ~HEALTH_BOUND_NAME,
-      line = list(width=2),
-      color = ~HEALTH_BOUND_NAME,
-      colors = if(input$health_bound_d == "Health Authorities")
-                  setNames(HA_colours$Colors,HA_colours$Regions)
-               else
-                setNames(CHSA_colours$Colors,CHSA_colours$Regions),
-      hovertemplate = hovertemplate_line
-      
-    )|>
-      layout(yaxis = append(list(range = list(min(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*0.95,
-                                              max(filter_df_reg_d()[[rateInput_d()]],na.rm=TRUE)*1.05)),
-                            y_axis_spec(input$dataset_d,"nonnegative")),
-             xaxis = x_axis_line_spec('Year'),
-             title = list(text = paste0('<b>',input$dataset_d," of  \n",input$disease_d, " Over Time </b>"),
-                          y=0.92,
-                          font = list(size = 16)),
-             margin = list(t=80,b=50),
-             legend = list(title=list(text='Health Region')),
-             shapes = list(vline(2001))
+      plot_ly(
+        x = d$YEAR,
+        y = d[[rateInput_d()]],
+        source = "disease_graph_line",
+        type = "scatter",
+        mode = "lines",
+        customdata = ~ HEALTH_BOUND_NAME,
+        line = list(width = 2),
+        color = ~ HEALTH_BOUND_NAME,
+        colors = if (input$health_bound_d == "Health Authorities")
+          setNames(HA_colours$Colors, HA_colours$Regions)
+        else
+          setNames(CHSA_colours$Colors, CHSA_colours$Regions),
+        hovertemplate = hovertemplate_line
+        
+      ) |>
+      layout(
+        yaxis = append(
+          list(range = list(
+            min(filter_df_reg_d()[[rateInput_d()]], na.rm = TRUE) * 0.95,
+            max(filter_df_reg_d()[[rateInput_d()]], na.rm =
+                  TRUE) * 1.05
+          )),
+          y_axis_spec(input$dataset_d, "nonnegative")
+        ),
+        xaxis = x_axis_line_spec('Year'),
+        title = list(
+          text = paste0(
+            '<b>',
+            input$dataset_d,
+            " of  \n",
+            input$disease_d,
+            " Over Time </b>"
+          ),
+          y = 0.92,
+          font = list(size = 16)
+        ),
+        margin = list(t = 80, b = 50),
+        legend = list(title = list(text = 'Health Region')),
+        shapes = list(vline(2001))
       ) |>
       event_register('plotly_hover')
   })
-
+  
   # Update disease line graph new data
   observe({
     invalidateLater(500)
     p <- plotlyProxy("disease_graph_line", session)
     p |>
       plotlyProxyInvoke("relayout",
-                        list(
-                          shapes = list(vline(input$year_d))
-                        ))
+                        list(shapes = list(vline(input$year_d))))
   })
-
+  
   # Switch to change line graph to start at 0
   observe({
     invalidateLater(500) #necessary line
@@ -624,880 +735,979 @@ server <- function(input, output,session) {
                                  "tozero", "nonnegative")
                         )))
   })
-
+  
   # Switch to change line graph to modeled data
   observe({
-    data <- filter_df_d()|>
+    data <- filter_df_d() |>
       filter(HEALTH_BOUND_NAME %in% input$region_d)
-
+    
     p <- plotlyProxy("disease_graph_line", session)
-    if(input$modeldata_d_switch==TRUE){
+    if (input$modeldata_d_switch == TRUE) {
       p |>
-        plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
-
-      for(reg in input$region_d){
+        plotlyProxyInvoke("deleteTraces", as.list(seq(0, length(input$region_d) -
+                                                        1)))
+      for (reg in input$region_d) {
         df <- data |>
           filter(HEALTH_BOUND_NAME == reg)
-        p |>
-          plotlyProxyInvoke("addTraces",
-                            list(
-                              x = df$YEAR,
-                              y = df$y_fitted,
-                              type = "scatter",
-                              mode="lines",
-                              name=reg,
-                              customdata = df$HEALTH_BOUND_NAME,
-                              line = list(width=2,
-                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
-                              hovertemplate = hovertemplate_line
-                            ))
-      }
-
-    }else{
-      p |>
-        plotlyProxyInvoke("deleteTraces",as.list(seq(0,length(input$region_d)-1)))
-      for(reg in input$region_d){
-        df <- data |>
-          filter(HEALTH_BOUND_NAME == reg)
-        p |>
-          plotlyProxyInvoke("addTraces",
-                            list(
-                              x = df$YEAR,
-                              y = df[[rateInput_d()]],
-                              type = "scatter",
-                              mode="lines",
-                              name=reg,
-                              customdata = df$HEALTH_BOUND_NAME,
-                              line = list(width=2,
-                                          color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)]),
-                              hovertemplate = hovertemplate_line
-                            ))
-      }
-    }
-    })
-
-  # Render map once per Input Rate/Disease
-  output$map <- renderLeaflet({
-
-    #select dummy data
-    dummyData_inc <- datasetInput_d() |>
-      filter(CLNT_GENDER_LABEL=='T',
-             GEOGRAPHY=="HA",
-             DISEASE=="Acute Myocardial Infarction")
-    dummyData <- dummyData_inc|>
-      filter(YEAR==2001)
-
-    dummy_spdf <- data.table::copy(spdf_d())
-
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-
-    if(input$health_bound_d == "Health Authorities"){
-      dummy_spdf@data <- spdf_d()@data|>
-        left_join(dummyData,by=c("HA_Name"="HEALTH_BOUND_NAME"))
-    }else{
-      dummy_spdf@data <- spdf_d()@data|>
-        left_join(dummyData,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
-    }
-
-    legend_inc <- round_any(unname(quantile(dummyData_inc[[rateInput_d()]],0.85))/5,
-                            ifelse(max(dummyData_inc[[rateInput_d()]])<10,0.005,0.1))
-    mybins <- append(seq(round_any(min(dummyData_inc[[rateInput_d()]]),0.05, f=floor),
-                         by=legend_inc,length.out=5),Inf)
-    mypalette <- colorBin( palette="YlOrBr", domain=dummy_spdf@data[[rateInput_d()]],
-                           bins=mybins, na.color="#cccccc")
-    labels<-c(paste0("< ",mybins[2]),
-              paste0(mybins[2]," - ",mybins[3]),
-              paste0(mybins[3]," - ",mybins[4]),
-              paste0(mybins[4]," - ",mybins[5]),
-              paste0(mybins[5]," + ")
-    )
-    
-    mytext <- paste("<b>HA</b>: ", dummy_spdf@data$HA_Name, "<br/>",
-                    "<b>",input$dataset_d,": ","</b>",
-                    format_round(dummy_spdf@data[[rateInput_d()]]),"<br/>",
-                    "<b>95% Confidence Interval</b>: (",
-                    format_round(dummy_spdf@data[[error$lower]]),",",
-                    format_round(dummy_spdf@data[[error$upper]]),")",
-                    sep="") |>
-      lapply(htmltools::HTML)
-    
-    leaflet(dummy_spdf) |> 
-      setView( lat=53.5, lng=-127 , zoom=4.5) |>
-      addProviderTiles(providers$CartoDB.PositronNoLabels)|>
-      addPolygons( 
-        layerId = (if(input$health_bound_d == "Health Authorities") ~HA_Name else ~CHSA_Name),
-        fillColor = ~mypalette(dummy_spdf@data[[rateInput_d()]]),
-        stroke=TRUE,
-        fillOpacity = 0.9,
-        color="gray",
-        weight=1,
-        label = mytext,
-        highlight = highlightOptions(
-          weight = 2,
-          color = "black",
-          opacity = 1.0)
-      ) |>
-      addLegend( pal=mypalette, values=dummy_spdf@data[[rateInput_d()]], opacity=0.9,
-                 title = paste0(input$dataset_d," Per 1000"), position = "bottomleft",
-                 labFormat = function(type, cuts, p) {
-                   paste0(labels)
-                 })
-
-  })
-
-#Update map with filter changes
-  observe({
-
-    year_filtered_map_df <- filter_df_yr_d()
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-    current_map_spdf <- data.table::copy(spdf_d())
-    if(input$health_bound_d == "Health Authorities"){
-      current_map_spdf@data <- spdf_d()@data|>
-        left_join(year_filtered_map_df,by=c("HA_Name"="HEALTH_BOUND_NAME"))
-    }else{
-      current_map_spdf@data <- spdf_d()@data|>
-        left_join(year_filtered_map_df,by=c("CHSA_Name"="HEALTH_BOUND_NAME"))
-    }
-
-    if(input$health_bound_d == "Health Authorities"){
-      current_map_spdf@data$text <- paste0(
-        "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>",
-        format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
-        "<b>95% Confidence Interval</b>: (",
-        format_round(current_map_spdf@data[[error$lower]]),",",
-        format_round(current_map_spdf@data[[error$upper]]),")")
-    }else{
-      current_map_spdf@data$text <- paste0(
-        "<b>CHSA</b>: ", current_map_spdf@data$CHSA_Name,"<br/>",
-        "<b>HA</b>: ", current_map_spdf@data$HA_Name, "<br/>",
-        "<b>",input$dataset_d,": ","</b>",
-        format_round(current_map_spdf@data[[rateInput_d()]]),"<br/>",
-        "<b>95% Confidence Interval</b>: (",
-        format_round(current_map_spdf@data[[error$lower]]),",",
-        format_round(current_map_spdf@data[[error$upper]]),")")
-  }
-
-    legend_inc <- round_any(unname(quantile(filter_df_d()[[rateInput_d()]],0.85))/5,
-                            ifelse(max(filter_df_d()[[rateInput_d()]])<10,0.005,0.1))
-    mybins <- append(seq(round_any(min(filter_df_d()[[rateInput_d()]]),0.05, f=floor),
-                         by=legend_inc,length.out=5),Inf)
-  
-    mybins_leg <- mybins |> 
-      sapply(format_round,dec = ifelse(year_filtered_map_df$DISEASE[1] == "Juvenile Idiopathic Arthritis",3,2))
-
-    mypalette <- colorBin( palette="YlOrBr", domain=current_map_spdf@data[[rateInput_d()]],
-                           bins=mybins, na.color="#cccccc")
-    labels<-c(paste0("< ",mybins_leg[2]),
-              paste0(mybins_leg[2]," - ", mybins_leg[3]),
-              paste0(mybins_leg[3]," - ", mybins_leg[4]),
-              paste0(mybins_leg[4]," - ", mybins_leg[5]),
-              paste0(mybins_leg[5]," + ")
-    )
-    
-    leafletProxy("map",data = current_map_spdf) |>
-      clearMarkers() |>
-      clearControls()|>
-      addLegend( pal=mypalette, 
-                 values=current_map_spdf@data[[rateInput_d()]], 
-                 opacity=0.9,
-                 title = paste0(input$dataset_d," Per 1000"),
-                 position = "bottomleft",
-                 labFormat = function(type, cuts, p) {
-                   paste0(labels)
-                 })|>
-      setShapeStyle(layerId = (if(input$health_bound_d == "Health Authorities") 
-                                ~HA_Name
-                               else ~CHSA_Name),
-                    fillColor = mypalette(current_map_spdf@data[[rateInput_d()]]),
-                    label = current_map_spdf@data$text
-                    )
-
-  })
-
-  ## Linked highlighting when hovering on map
-  rv_shape <- reactiveVal(FALSE)
-  rv_location <- reactiveValues(id=NULL,lat=NULL,lng=NULL)
-  rv_location_move_old <- reactiveValues(lat=NULL,lng=NULL)
-
-  # Track mouseover activity
-  observeEvent(input$map_shape_mouseover,{
-    rv_shape(TRUE)
-    event_info <- input$map_shape_mouseover
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-    bar_data<- filter_df_yr_d()
-    ppl <-  plotlyProxy("disease_graph_line", session)
-    ppb <- plotlyProxy("disease_graph_bar", session)
-    rv_location$id <- event_info$id
-    rv_location$lat <- event_info$lat
-    rv_location$lng <- event_info$lng
-    if ((event_info$id %in% input$region_d)){
-      for (reg in my_traces()){
-        ppl |>
-          plotlyProxyInvoke(
-            method = "restyle",
-            list(line = list(width = 0.5,
-                             color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
-            as.integer(match(reg,my_traces())-1)
-          )
-      }
-      ppl |>
-        plotlyProxyInvoke(
-          method = "restyle",
-          "line",
-          list(width = 3,
-               color = CHSA_colours$Colors[match(event_info$id,CHSA_colours$Regions)]),
-          as.integer(match(event_info$id,my_traces())-1)
-        )
-      ppb |>
-        plotlyProxyInvoke(
-          method = "restyle",
-          list(opacity=0.2)
-        ) |>
-        plotlyProxyInvoke(
-          method = "restyle",
-          list(opacity = 1),
-          as.integer(match(event_info$id, my_traces())-1))
-
-   }
-  })
-
-  # Track mouseout activity
-  observeEvent(input$map_shape_mouseout, {
-    event_info <- input$map_shape_mouseover
-    event_info_old <- reactiveValuesToList(rv_location_move_old)
-    ppl <-  plotlyProxy("disease_graph_line", session)
-    ppb <- plotlyProxy("disease_graph_bar", session)
-
-    if (all(unlist(event_info[c('lat','lng')]) == unlist(event_info_old[c('lat','lng')]))){
-      rv_shape(FALSE)
-      for (reg in my_traces()){
-        ppl |> plotlyProxyInvoke(method="restyle",
-                                  list(line = list(width=2,
-                                                   color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
-                                  as.integer(match(reg,my_traces())-1))
-        
-      } 
-      ppb |> plotlyProxyInvoke(method = "restyle",list(opacity = 1))
-
-    }else{
-      rv_location_move_old$lat <- event_info$lat
-      rv_location_move_old$lng <- event_info$lng
-    }
-  })
-
-  # Define graph traces
-  my_traces <- reactive({
-    sort(input$region_d)
-  })
-
-  # Link highlighting when hovering on bar graph
-  observe({
-    req(filter_df_d())
-      event <- event_data("plotly_hover",source = "disease_graph_bar")
-      error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-      error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-      bar_data<- filter_df_yr_d()
-      ppl <-plotlyProxy("disease_graph_line", session)
-      ppb <- plotlyProxy("disease_graph_bar", session)
-      lp <- leafletProxy("map",session)
-      if (is.null(event)){
-        for (reg in my_traces()){
-          ppl |> plotlyProxyInvoke(method="restyle",
-                                    list(line = list(width=2,
-                                                     color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
-                                    as.integer(match(reg,my_traces())-1))
-        } 
-        ppb |> plotlyProxyInvoke(method = "restyle",list(opacity = 1))   
-        lp |> clearGroup('selected')
-      }else{
-        for (reg in my_traces()){
-          ppl |>
-            plotlyProxyInvoke(
-              method = "restyle",
-              list(line = list(width = 0.5,
-                               color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
-              as.integer(match(reg,my_traces())-1)
-            )
-        }
-        ppl |>
-          plotlyProxyInvoke(
-            method = "restyle",
-            "line",
-            list(width = 3,
-                 color = CHSA_colours$Colors[match(event[["x"]],CHSA_colours$Regions)]),
-            as.integer(match(event[["x"]],my_traces())-1)
-          )
-        
-        ppb |>
-          plotlyProxyInvoke(
-            method = "restyle",
-            list(opacity=0.2)
-          ) |>
-          plotlyProxyInvoke(
-            method = "restyle",
-            list(opacity = 1),
-            as.integer(match(event[["x"]], input$region_d)-1)
-          )
-        
-      lp |>
-        addPolygons(
-          data=subset(spdf_d(),
-                      (if(input$health_bound_d == "Health Authorities") HA_Name
-                       else CHSA_Name)
-                      == event[["x"]]),
-          stroke= TRUE,
-          weight = 2,
-          color = "black",
-          fill= NaN,
-          group = "selected"
-        )}
-    })
-
-  ## Linked highlighting when hovering on line graph
-  observe({
-    req(filter_df_d())
-    event <- event_data("plotly_hover",source = "disease_graph_line")
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()),"_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()),"_UCL_95")
-    bar_data<- filter_df_yr_d()
-    ppl <-plotlyProxy("disease_graph_line", session)
-    ppb <- plotlyProxy("disease_graph_bar", session)
-    lp <- leafletProxy("map",session)
-    if (is.null(event)){
-      for (reg in my_traces()){
-      ppl |> plotlyProxyInvoke(method="restyle",list(line = list(width=2,
-                                                                  color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
-                                as.integer(match(reg,my_traces())-1))
-                                
-      }                                  
-      ppb |>  plotlyProxyInvoke(method = "restyle",list(opacity = 1)) 
-      lp |> clearGroup('selected')
-    }else{
-      for (reg in my_traces()){
-        ppl |>
-          plotlyProxyInvoke(
-            method = "restyle",
-            list(line = list(width = 0.5,
-                             color = CHSA_colours$Colors[match(reg,CHSA_colours$Regions)])),
-            as.integer(match(reg,my_traces())-1)
-          )
-      }
-      ppl |>
-        plotlyProxyInvoke(
-          method = "restyle",
-          "line",
-          list(width = 3,
-               color = CHSA_colours$Colors[match(event[["customdata"]],CHSA_colours$Regions)]),
-          as.integer(match(event[["customdata"]],my_traces())-1)
-        )
-      
-      ppb |>
-        plotlyProxyInvoke(
-          method = "restyle",
-          list(opacity=0.2)
-        ) |>
-        plotlyProxyInvoke(
-          method = "restyle",
-          list(opacity = 1),
-          as.integer(match(event[["customdata"]],my_traces())-1)
-          )
-      lp |>
-        addPolygons(
-          data=subset(spdf_d(),
-                      (if(input$health_bound_d == "Health Authorities") HA_Name
-                       else CHSA_Name)
-                      == event[["customdata"]]),
-          stroke= TRUE,
-          weight = 2,
-          color = "black",
-          fill= NaN,
-          group = "selected"
-        )}
-  })
-
-  ################################
-  # By Region Tab Server Side Logic
-  ################################
-
-  observeEvent(input$navbarID, {
-    if(input$navbarID %in% c("By Region")){
-
-  # Reset filters
-  observeEvent(input$region_tab_reset_button, {
-    reset("filters_r")
-  })
-      
-  # Show possible rate types based on the diseases selected.
-  # If any non relapsing-remitting disease is selected, then HSC rate will not
-  #   show to avoid error.
-  observeEvent(input$region_tab_diseases_selected,
-               {
-                 updateSelectInput(
-                   session,
-                   "region_tab_rate_type_selected",
-                   label = "Select Rate Type",
-                   choices = if (setequal(
-                     intersect(input$region_tab_diseases_selected, HSC_DISEASES),
-                     input$region_tab_diseases_selected
-                   ))
-                     RATE_TYPE_CHOICES
-                   else
-                     c(
-                       "Crude Incidence Rate",
-                       "Age Standardized Incidence Rate",
-                       "Crude Life Prevalence",
-                       "Age Standardized Life Prevalence"
-                     ),
-                   # Ensure the current selection not be overrode
-                   selected = input$region_tab_rate_type_selected
-                 )
-               })
-
-  # Get dataset based on the rate type selected
-  region_tab_dataset_used <- reactive({
-    shiny::validate(need(input$region_tab_rate_type_selected, message = F))
-    if (!is.null(input$region_tab_rate_type_selected)) {
-      dataset_switch(input$region_tab_rate_type_selected)
-    }
-  })
-  
-  # Get the corresponding column name for the rate type selected
-  region_tab_rate_as_variable <- reactive({
-    shiny::validate(need(input$region_tab_rate_type_selected, message = F))
-    if (!is.null(input$region_tab_rate_type_selected)) {
-      rate_switch(input$region_tab_rate_type_selected)
-    }
-  })
-
-  # Show health boundary choices based on geography selected
-  output$region_tab_region_selected <- renderUI({
-    selectInput(
-      "region_tab_region_selected",
-      label = "Select Health Boundary",
-      choices = health_bounds(input$region_tab_geography_selected),
-      multiple = FALSE,
-      selected = HA_CHOICES[1]
-    )
-  })
-
-  # Get the filtered dataset based on user selection
-  region_tab_filtered_data <- reactive({
-    region_tab_dataset_used() |>
-      filter((HEALTH_BOUND_NAME %in% input$region_tab_region_selected) &
-               (DISEASE %in% input$region_tab_diseases_selected) &
-               (CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)))
-  })
-  
-  #####################
-  # Line Chart Related Logic
-
-  # Plot a line chart showing trends of diseases over time
-  # x is YEAR, y is the selected rate type, color is DISEASE
-  #####################
-  output$region_tab_line_chart <- renderPlotly({
-    data <- region_tab_filtered_data()
-
-    data |>
-      plot_ly(
-        x = data$YEAR,
-        y = data[[region_tab_rate_as_variable()]],
-        type = "scatter",
-        mode = "lines",
-        source = "region_tab_line_chart",
-        line = list(width = 2),
-        color = ~ DISEASE,
-        customdata = ~ DISEASE,
-        showlegend = T,
-        colors = setNames(DISEASE_colors$Colors, DISEASE_colors$DISEASE),
-        hovertemplate = region_tab_hovertemplate_line
-      ) |>
-      layout(
-        yaxis = c(
-          list(range = list(
-            min(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 0.95,
-            max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 1.05
-          )),
-          y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
-        ),
-        xaxis = x_axis_line_spec('Year'),
-        title = list(
-          text = paste0('<b>',
-                        input$region_tab_rate_type_selected,
-                        " Over Time </b>"),
-          y = 0.92,
-          font = list(size = 16)
-        ),
-        margin = list(t = 80, b = 50),
-        legend = list(title = list(text = 'Disease')),
-        shapes = list(vline(2001))
-      )  |>
-      event_register('plotly_hover')
-  })
-
-  # Update the vertical line in the line graph with year input
-  observe({
-    invalidateLater(500)
-    p <- plotlyProxy("region_tab_line_chart", session)
-    p |>
-      plotlyProxyInvoke("relayout",
-                        list(shapes = list(
-                          vline(input$region_tab_year_selected)
-                        )))
-  })
-
-  # Modify line chart's yaxis to start from 0 when the switch is on
-  observe( {
-    invalidateLater(500)
-    p <- plotlyProxy("region_tab_line_chart", session)
-    p |>
-      plotlyProxyInvoke("relayout",
-                        list(yaxis = y_axis_spec(
-                          input$region_tab_rate_type_selected,
-                          ifelse(input$region_tab_line_y0switch,
-                                 "tozero", "nonnegative")
-                        )))
-  })
-
-  # Change line chart to show smoothed time trends data
-  observe({
-    data <- region_tab_filtered_data()
-    p <- plotlyProxy("region_tab_line_chart", session)
-
-    if (input$region_tab_smoothing_switch == TRUE) {
-      p |>
-        plotlyProxyInvoke("deleteTraces", as.list(seq(
-          0, length(input$region_tab_diseases_selected) -
-            1
-        )))
-
-      for (disease in input$region_tab_diseases_selected) {
-        df <- data[which(data$DISEASE == disease), ]
         p |>
           plotlyProxyInvoke(
             "addTraces",
             list(
               x = df$YEAR,
               y = df$y_fitted,
-              customdata = df$DISEASE,
               type = "scatter",
               mode = "lines",
-              name = disease,
+              name = reg,
+              customdata = df$HEALTH_BOUND_NAME,
               line = list(width = 2,
-                          color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
-              hovertemplate = region_tab_hovertemplate_line
+                          color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]),
+              hovertemplate = hovertemplate_line
             )
           )
       }
-
-    } else {
+      
+    } else{
       p |>
-        plotlyProxyInvoke("deleteTraces", as.list(seq(
-          0, length(input$region_tab_diseases_selected) -
-            1
-        )))
-
-      for (disease in input$region_tab_diseases_selected) {
-        df <- data[which(data$DISEASE == disease), ]
+        plotlyProxyInvoke("deleteTraces", as.list(seq(0, length(input$region_d) -
+                                                        1)))
+      for (reg in input$region_d) {
+        df <- data |>
+          filter(HEALTH_BOUND_NAME == reg)
         p |>
           plotlyProxyInvoke(
             "addTraces",
             list(
               x = df$YEAR,
-              y = df[[region_tab_rate_as_variable()]],
-              customdata = df$DISEASE,
+              y = df[[rateInput_d()]],
               type = "scatter",
               mode = "lines",
-              name = disease,
+              name = reg,
+              customdata = df$HEALTH_BOUND_NAME,
               line = list(width = 2,
-                          color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
-              hovertemplate = region_tab_hovertemplate_line
+                          color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]),
+              hovertemplate = hovertemplate_line
             )
           )
       }
     }
   })
-
-  #####################
-  # Bar Chart Related Logic
-
-  # Plot a bar chart comparing rates for diseases in a year
-  # x is DISEASE, y is the selected rate type, color is DISEASE
-  #####################
-
-  # Define reactive error bounds
-  error <- reactiveValues(
-    lower = NULL,
-    upper = NULL
-  )
-
-  # First use dummy data to plot a basic chart
-  output$region_tab_bar_chart <- renderPlotly({
-    dummyData <- region_tab_dataset_used() |>
-      filter(
-        HEALTH_BOUND_NAME == "Fraser",
-        DISEASE %in% input$region_tab_diseases_selected,
-        CLNT_GENDER_LABEL == 'T',
-        YEAR == 2001
-      )
-
-    error$lower <-
-      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
-    error$upper <-
-      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
-
-    p <- plot_ly(source = "region_tab_bar_chart")
-
-    for (disease in input$region_tab_diseases_selected) {
-      dummy_df <- dummyData[which(dummyData$DISEASE == disease),]
-      p <- p |>
-        add_trace(
-          x = dummy_df$DISEASE,
-          y = dummy_df[[region_tab_rate_as_variable()]],
-          type = 'bar',
-          error_y = list(
-            type = "data",
-            symmetric = FALSE,
-            arrayminus = dummy_df[[region_tab_rate_as_variable()]] - dummy_df[[error$lower]],
-            array = dummy_df[[error$upper]] - dummy_df[[region_tab_rate_as_variable()]],
-            color = '#000000',
-            width = 10
-          ),
-          marker = list(color = DISEASE_colors$Colors[match(dummy_df$DISEASE, DISEASE_colors$DISEASE)]),
-          hovertemplate = paste(
-            '<br><b>Disease</b>: %{x}',
-            '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-            '<br><b>95% Confidence Interval</b>: (',
-            format_round(dummy_df[[error$lower]]),
-            ',',
-            format_round(dummy_df[[error$upper]]),
-            ')',
-            '<extra></extra>'
-          )
-        )
-    }
-    p |>
-      layout(
-        yaxis = append(
-          list(range = list(0, max(
-            dummyData[[error$upper]], na.rm = TRUE
-          ) * 1.05)),
-          y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
-        ),
-        xaxis = x_axis_bar_spec("Disease"),
-        title = list(
-          text = paste0(
-            "<b>Disease Distribution by ",
-            input$region_tab_rate_type_selected,
-            " in 2001",
-            "</b>"
-          ),
-          y = 0.92,
-          font = list(size = 16)
-        ),
-        barmode = "overlay",
-        margin = list(t = 80, b = 50),
-        showlegend = FALSE
-      ) |>
-      event_register("plotly_hover")
-  })
-
-
-  # Then use proxy to update bar graph when filter changes
-  observe({
-    invalidateLater(500)
-    bar_chart_data <- region_tab_filtered_data() |>
-      filter(
-        YEAR == input$region_tab_year_selected
-      )
-    error$lower <-
-      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_LCL_95")
-    error$upper <-
-      paste0(sub("\\_.*", "", region_tab_rate_as_variable()), "_UCL_95")
-
-    p <- plotlyProxy("region_tab_bar_chart", session)
-
-    for (disease in seq_along(input$region_tab_diseases_selected)) {
-      filtered_df <-
-        bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]), ]
-      p |>
-        plotlyProxyInvoke("restyle",
-                          "y",
-                          list(list(filtered_df[[region_tab_rate_as_variable()]])),
-                          as.integer(disease) - 1) |>
-        plotlyProxyInvoke("restyle",
-                          list(
-                            error_y = list(
-                              type = "data",
-                              symmetric = FALSE,
-                              arrayminus = list(filtered_df[[region_tab_rate_as_variable()]] - filtered_df[[error$lower]]),
-                              array = list(filtered_df[[error$upper]] - filtered_df[[region_tab_rate_as_variable()]]),
-                              color = '#000000',
-                              width = 10
-                            ),
-                            hovertemplate = paste(
-                              '<br><b>Disease</b>: %{x}',
-                              '<br><b>Year</b>: ',
-                              input$region_tab_year_selected,
-                              '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
-                              '<br><b>95% Confidence Interval</b>: (',
-                              format_round(filtered_df[[error$lower]]),
-                              ',',
-                              format_round(filtered_df[[error$upper]]),
-                              ')',
-                              '<extra></extra>'
-                            )
-                          ),
-                          as.integer(disease) - 1)
-    }
-
-    p |> plotlyProxyInvoke("relayout",
-                           list(
-                             autosize = F,
-                             yaxis = append(
-                               list(range = list(
-                                 0, max(region_tab_filtered_data()[[error$upper]], na.rm = TRUE) * 1.05
-                               )),
-                               y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
-                             ),
-                             xaxis = append(list(fixedrange = TRUE),
-                                            x_axis_bar_spec("Disease")),
-                             title = list(
-                               text = HTML(
-                                 paste0(
-                                   "<b>Disease Distribution by ",
-                                   input$region_tab_rate_type_selected,
-                                   " in ",
-                                   input$region_tab_year_selected,
-                                   "</b>"
-                                 )
-                               ),
-                               y = 0.92,
-                               font = list(size = 16)
-                             )
-                           ))
-
-  })
-
-  #####################
-  # Logic to Link Hover Activity on Charts
-  #####################
-  # Define graph traces by diseases selected
-  region_tab_traces <- reactive({
-    sort(input$region_tab_diseases_selected)
-  })
-
-  # Track hovering activity sourced from the line chart and link highlighting effect
-  observe({
-    req(region_tab_filtered_data())
-    event <-
-      event_data("plotly_hover", source = "region_tab_line_chart")
-    ppl <-  plotlyProxy("region_tab_line_chart", session)
-    ppb <- plotlyProxy("region_tab_bar_chart", session)
-
-    # If no event, keep things the same
-    if (is.null(event)) {
-      for (disease in region_tab_traces()) {
-        ppl |> plotlyProxyInvoke(method = "restyle",
-                                 list(line = list(
-                                   width = 2,
-                                   color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
-                                 )),
-                                 as.integer(match(disease, region_tab_traces()) -
-                                              1))
-
-      }
-      ppb |>  plotlyProxyInvoke(method = "restyle", list(opacity = 1))
-    } else {
-      # If a disease line has a hover activity
-      #  Then highlight that line and make other lines narrower
-      for (disease in region_tab_traces()) {
-        ppl |>
-          plotlyProxyInvoke(method = "restyle",
-                            list(line = list(
-                              width = 0.5,
-                              color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
-                            )),
-                            as.integer(match(disease, region_tab_traces()) - 1))
-      }
- 
-      ppl |>
-        plotlyProxyInvoke(method = "restyle",
-                          "line",
-                          list(width = 3,
-                               list(
-                                 width = 3,
-                                 color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)]
-                               )),
-                          as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
-
-      # And make the bar of the highlighted disease opaque and others transparent
-      ppb |>
-        plotlyProxyInvoke(method = "restyle",
-                          list(opacity = 0.2)) |>
-        plotlyProxyInvoke(method = "restyle",
-                          list(opacity = 1),
-                          as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
-    }
-  })
-
-  # Track hovering activity sourced from the bar chart and link highlighting effect
-  observe({
-    req(region_tab_filtered_data())
-    event <-
-      event_data("plotly_hover", source = "region_tab_bar_chart")
-    ppl <- plotlyProxy("region_tab_line_chart", session)
-    ppb <- plotlyProxy("region_tab_bar_chart", session)
-
-    if (is.null(event)) {
-      for (disease in region_tab_traces()) {
-        ppl |> plotlyProxyInvoke(method = "restyle",
-                                 list(line = list(
-                                   width = 2,
-                                   color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
-                                 )),
-                                 as.integer(match(disease, region_tab_traces()) - 1))
-      }
-      ppb |> plotlyProxyInvoke(method = "restyle", list(opacity = 1))
+  
+  # Render map once per Input Rate/Disease
+  output$map <- renderLeaflet({
+    #select dummy data
+    dummyData_inc <- datasetInput_d() |>
+      filter(CLNT_GENDER_LABEL == 'T',
+             GEOGRAPHY == "HA",
+             DISEASE == "Acute Myocardial Infarction")
+    dummyData <- dummyData_inc |>
+      filter(YEAR == 2001)
+    
+    dummy_spdf <- data.table::copy(spdf_d())
+    
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    
+    if (input$health_bound_d == "Health Authorities") {
+      dummy_spdf@data <- spdf_d()@data |>
+        left_join(dummyData, by = c("HA_Name" = "HEALTH_BOUND_NAME"))
     } else{
-      # If a disease bar has a hover activity
-      #  Then highlight the corresponding line by keeping its width
-      #    and make other lines narrower
-      for (disease in region_tab_traces()) {
+      dummy_spdf@data <- spdf_d()@data |>
+        left_join(dummyData, by = c("CHSA_Name" = "HEALTH_BOUND_NAME"))
+    }
+    
+    legend_inc <-
+      round_any(unname(quantile(dummyData_inc[[rateInput_d()]], 0.85)) / 5,
+                ifelse(max(dummyData_inc[[rateInput_d()]]) <
+                         10, 0.005, 0.1))
+    mybins <-
+      append(seq(
+        round_any(min(dummyData_inc[[rateInput_d()]]), 0.05, f = floor),
+        by = legend_inc,
+        length.out = 5
+      ), Inf)
+    mypalette <-
+      colorBin(
+        palette = "YlOrBr",
+        domain = dummy_spdf@data[[rateInput_d()]],
+        bins = mybins,
+        na.color = "#cccccc"
+      )
+    labels <- c(
+      paste0("< ", mybins[2]),
+      paste0(mybins[2], " - ", mybins[3]),
+      paste0(mybins[3], " - ", mybins[4]),
+      paste0(mybins[4], " - ", mybins[5]),
+      paste0(mybins[5], " + ")
+    )
+    
+    mytext <- paste(
+      "<b>HA</b>: ",
+      dummy_spdf@data$HA_Name,
+      "<br/>",
+      "<b>",
+      input$dataset_d,
+      ": ",
+      "</b>",
+      format_round(dummy_spdf@data[[rateInput_d()]]),
+      "<br/>",
+      "<b>95% Confidence Interval</b>: (",
+      format_round(dummy_spdf@data[[error$lower]]),
+      ",",
+      format_round(dummy_spdf@data[[error$upper]]),
+      ")",
+      sep = ""
+    ) |>
+      lapply(htmltools::HTML)
+    
+    leaflet(dummy_spdf) |>
+      setView(lat = 53.5,
+              lng = -127 ,
+              zoom = 4.5) |>
+      addProviderTiles(providers$CartoDB.PositronNoLabels) |>
+      addPolygons(
+        layerId = (if (input$health_bound_d == "Health Authorities")
+          ~ HA_Name
+          else
+            ~ CHSA_Name),
+        fillColor = ~ mypalette(dummy_spdf@data[[rateInput_d()]]),
+        stroke = TRUE,
+        fillOpacity = 0.9,
+        color = "gray",
+        weight = 1,
+        label = mytext,
+        highlight = highlightOptions(
+          weight = 2,
+          color = "black",
+          opacity = 1.0
+        )
+      ) |>
+      addLegend(
+        pal = mypalette,
+        values = dummy_spdf@data[[rateInput_d()]],
+        opacity = 0.9,
+        title = paste0(input$dataset_d, " Per 1000"),
+        position = "bottomleft",
+        labFormat = function(type, cuts, p) {
+          paste0(labels)
+        }
+      )
+    
+  })
+  
+  #Update map with filter changes
+  observe({
+    year_filtered_map_df <- filter_df_yr_d()
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    current_map_spdf <- data.table::copy(spdf_d())
+    if (input$health_bound_d == "Health Authorities") {
+      current_map_spdf@data <- spdf_d()@data |>
+        left_join(year_filtered_map_df,
+                  by = c("HA_Name" = "HEALTH_BOUND_NAME"))
+    } else{
+      current_map_spdf@data <- spdf_d()@data |>
+        left_join(year_filtered_map_df,
+                  by = c("CHSA_Name" = "HEALTH_BOUND_NAME"))
+    }
+    
+    if (input$health_bound_d == "Health Authorities") {
+      current_map_spdf@data$text <- paste0(
+        "<b>HA</b>: ",
+        current_map_spdf@data$HA_Name,
+        "<br/>",
+        "<b>",
+        input$dataset_d,
+        ": ",
+        "</b>",
+        format_round(current_map_spdf@data[[rateInput_d()]]),
+        "<br/>",
+        "<b>95% Confidence Interval</b>: (",
+        format_round(current_map_spdf@data[[error$lower]]),
+        ",",
+        format_round(current_map_spdf@data[[error$upper]]),
+        ")"
+      )
+    } else{
+      current_map_spdf@data$text <- paste0(
+        "<b>CHSA</b>: ",
+        current_map_spdf@data$CHSA_Name,
+        "<br/>",
+        "<b>HA</b>: ",
+        current_map_spdf@data$HA_Name,
+        "<br/>",
+        "<b>",
+        input$dataset_d,
+        ": ",
+        "</b>",
+        format_round(current_map_spdf@data[[rateInput_d()]]),
+        "<br/>",
+        "<b>95% Confidence Interval</b>: (",
+        format_round(current_map_spdf@data[[error$lower]]),
+        ",",
+        format_round(current_map_spdf@data[[error$upper]]),
+        ")"
+      )
+    }
+    
+    legend_inc <-
+      round_any(unname(quantile(filter_df_d()[[rateInput_d()]], 0.85)) / 5,
+                ifelse(max(filter_df_d()[[rateInput_d()]]) <
+                         10, 0.005, 0.1))
+    mybins <-
+      append(seq(
+        round_any(min(filter_df_d()[[rateInput_d()]]), 0.05, f = floor),
+        by = legend_inc,
+        length.out = 5
+      ), Inf)
+    
+    mybins_leg <- mybins |>
+      sapply(
+        format_round,
+        dec = ifelse(
+          year_filtered_map_df$DISEASE[1] == "Juvenile Idiopathic Arthritis",
+          3,
+          2
+        )
+      )
+    
+    mypalette <-
+      colorBin(
+        palette = "YlOrBr",
+        domain = current_map_spdf@data[[rateInput_d()]],
+        bins = mybins,
+        na.color = "#cccccc"
+      )
+    labels <- c(
+      paste0("< ", mybins_leg[2]),
+      paste0(mybins_leg[2], " - ", mybins_leg[3]),
+      paste0(mybins_leg[3], " - ", mybins_leg[4]),
+      paste0(mybins_leg[4], " - ", mybins_leg[5]),
+      paste0(mybins_leg[5], " + ")
+    )
+    
+    leafletProxy("map", data = current_map_spdf) |>
+      clearMarkers() |>
+      clearControls() |>
+      addLegend(
+        pal = mypalette,
+        values = current_map_spdf@data[[rateInput_d()]],
+        opacity = 0.9,
+        title = paste0(input$dataset_d, " Per 1000"),
+        position = "bottomleft",
+        labFormat = function(type, cuts, p) {
+          paste0(labels)
+        }
+      ) |>
+      setShapeStyle(
+        layerId = (if (input$health_bound_d == "Health Authorities")
+          ~ HA_Name
+          else
+            ~ CHSA_Name),
+        fillColor = mypalette(current_map_spdf@data[[rateInput_d()]]),
+        label = current_map_spdf@data$text
+      )
+    
+  })
+  
+  ## Linked highlighting when hovering on map
+  rv_shape <- reactiveVal(FALSE)
+  rv_location <- reactiveValues(id = NULL, lat = NULL, lng = NULL)
+  rv_location_move_old <- reactiveValues(lat = NULL, lng = NULL)
+  
+  # Track mouseover activity
+  observeEvent(input$map_shape_mouseover, {
+    rv_shape(TRUE)
+    event_info <- input$map_shape_mouseover
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    bar_data <- filter_df_yr_d()
+    ppl <-  plotlyProxy("disease_graph_line", session)
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    rv_location$id <- event_info$id
+    rv_location$lat <- event_info$lat
+    rv_location$lng <- event_info$lng
+    if ((event_info$id %in% input$region_d)) {
+      for (reg in my_traces()) {
         ppl |>
           plotlyProxyInvoke(method = "restyle",
                             list(line = list(
                               width = 0.5,
-                              color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
+                              color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]
                             )),
-                            as.integer(match(disease, region_tab_traces()) - 1))
+                            as.integer(match(reg, my_traces()) - 1))
       }
       ppl |>
         plotlyProxyInvoke(
           method = "restyle",
           "line",
           list(width = 3,
-               color = DISEASE_colors$Colors[match(event[["x"]], DISEASE_colors$DISEASE)]),
-          as.integer(match(event[["x"]], region_tab_traces()) - 1)
+               color = CHSA_colours$Colors[match(event_info$id, CHSA_colours$Regions)]),
+          as.integer(match(event_info$id, my_traces()) - 1)
         )
-      # And make the hovered bar opaque and others transparent
       ppb |>
         plotlyProxyInvoke(method = "restyle",
                           list(opacity = 0.2)) |>
         plotlyProxyInvoke(method = "restyle",
                           list(opacity = 1),
-                          as.integer(match(
-                            event[["x"]], input$region_tab_diseases_selected
-                          ) - 1))
+                          as.integer(match(event_info$id, my_traces()) - 1))
+      
+    }
+  })
+  
+  # Track mouseout activity
+  observeEvent(input$map_shape_mouseout, {
+    event_info <- input$map_shape_mouseover
+    event_info_old <- reactiveValuesToList(rv_location_move_old)
+    ppl <-  plotlyProxy("disease_graph_line", session)
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    
+    if (all(unlist(event_info[c('lat', 'lng')]) == unlist(event_info_old[c('lat', 'lng')]))) {
+      rv_shape(FALSE)
+      for (reg in my_traces()) {
+        ppl |> plotlyProxyInvoke(method = "restyle",
+                                 list(line = list(
+                                   width = 2,
+                                   color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]
+                                 )),
+                                 as.integer(match(reg, my_traces()) - 1))
+        
+      }
+      ppb |> plotlyProxyInvoke(method = "restyle", list(opacity = 1))
+      
+    } else{
+      rv_location_move_old$lat <- event_info$lat
+      rv_location_move_old$lng <- event_info$lng
+    }
+  })
+  
+  # Define graph traces
+  my_traces <- reactive({
+    sort(input$region_d)
+  })
+  
+  # Link highlighting when hovering on bar graph
+  observe({
+    req(filter_df_d())
+    event <-
+      event_data("plotly_hover", source = "disease_graph_bar")
+    error$lower <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    bar_data <- filter_df_yr_d()
+    ppl <- plotlyProxy("disease_graph_line", session)
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    lp <- leafletProxy("map", session)
+    if (is.null(event)) {
+      for (reg in my_traces()) {
+        ppl |> plotlyProxyInvoke(method = "restyle",
+                                 list(line = list(
+                                   width = 2,
+                                   color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]
+                                 )),
+                                 as.integer(match(reg, my_traces()) -
+                                              1))
+      }
+      ppb |> plotlyProxyInvoke(method = "restyle", list(opacity = 1))
+      lp |> clearGroup('selected')
+    } else{
+      for (reg in my_traces()) {
+        ppl |>
+          plotlyProxyInvoke(method = "restyle",
+                            list(line = list(
+                              width = 0.5,
+                              color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]
+                            )),
+                            as.integer(match(reg, my_traces()) - 1))
+      }
+      ppl |>
+        plotlyProxyInvoke(
+          method = "restyle",
+          "line",
+          list(width = 3,
+               color = CHSA_colours$Colors[match(event[["x"]], CHSA_colours$Regions)]),
+          as.integer(match(event[["x"]], my_traces()) - 1)
+        )
+      
+      ppb |>
+        plotlyProxyInvoke(method = "restyle",
+                          list(opacity = 0.2)) |>
+        plotlyProxyInvoke(method = "restyle",
+                          list(opacity = 1),
+                          as.integer(match(event[["x"]], input$region_d) - 1))
+      
+      lp |>
+        addPolygons(
+          data = subset(spdf_d(),
+                        (if (input$health_bound_d == "Health Authorities")
+                          HA_Name
+                         else
+                           CHSA_Name)
+                        == event[["x"]]),
+          stroke = TRUE,
+          weight = 2,
+          color = "black",
+          fill = NaN,
+          group = "selected"
+        )
+    }
+  })
+  
+  ## Linked highlighting when hovering on line graph
+  observe({
+    req(filter_df_d())
+    event <-
+      event_data("plotly_hover", source = "disease_graph_line")
+    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    bar_data <- filter_df_yr_d()
+    ppl <- plotlyProxy("disease_graph_line", session)
+    ppb <- plotlyProxy("disease_graph_bar", session)
+    lp <- leafletProxy("map", session)
+    if (is.null(event)) {
+      for (reg in my_traces()) {
+        ppl |> plotlyProxyInvoke(method = "restyle", list(line = list(
+          width = 2,
+          color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]
+        )),
+        as.integer(match(reg, my_traces()) - 1))
+        
+      }
+      ppb |>  plotlyProxyInvoke(method = "restyle", list(opacity = 1))
+      lp |> clearGroup('selected')
+    } else{
+      for (reg in my_traces()) {
+        ppl |>
+          plotlyProxyInvoke(method = "restyle",
+                            list(line = list(
+                              width = 0.5,
+                              color = CHSA_colours$Colors[match(reg, CHSA_colours$Regions)]
+                            )),
+                            as.integer(match(reg, my_traces()) - 1))
+      }
+      ppl |>
+        plotlyProxyInvoke(
+          method = "restyle",
+          "line",
+          list(width = 3,
+               color = CHSA_colours$Colors[match(event[["customdata"]], CHSA_colours$Regions)]),
+          as.integer(match(event[["customdata"]], my_traces()) - 1)
+        )
+      
+      ppb |>
+        plotlyProxyInvoke(method = "restyle",
+                          list(opacity = 0.2)) |>
+        plotlyProxyInvoke(method = "restyle",
+                          list(opacity = 1),
+                          as.integer(match(event[["customdata"]], my_traces()) - 1))
+      lp |>
+        addPolygons(
+          data = subset(spdf_d(),
+                        (if (input$health_bound_d == "Health Authorities")
+                          HA_Name
+                         else
+                           CHSA_Name)
+                        == event[["customdata"]]),
+          stroke = TRUE,
+          weight = 2,
+          color = "black",
+          fill = NaN,
+          group = "selected"
+        )
     }
   })
 
+  ################################
+  # By Region Tab Server Side Logic
+  ################################
+  
+  
+  observeEvent(input$navbarID, {
+    if (input$navbarID %in% c("By Region")) {
+      # Reset filters
+      observeEvent(input$region_tab_reset_button, {
+        reset("filters_r")
+      })
+      
+      # Show possible rate types based on the diseases selected.
+      # If any non relapsing-remitting disease is selected, then HSC rate will not
+      #   show to avoid error.
+      observeEvent(input$region_tab_diseases_selected,
+                   {
+                     updateSelectInput(
+                       session,
+                       "region_tab_rate_type_selected",
+                       label = "Select Rate Type",
+                       choices = if (setequal(
+                         intersect(input$region_tab_diseases_selected, HSC_DISEASES),
+                         input$region_tab_diseases_selected
+                       ))
+                         RATE_TYPE_CHOICES
+                       else
+                         c(
+                           "Crude Incidence Rate",
+                           "Age Standardized Incidence Rate",
+                           "Crude Life Prevalence",
+                           "Age Standardized Life Prevalence"
+                         ),
+                       # Ensure the current selection not be overrode
+                       selected = input$region_tab_rate_type_selected
+                     )
+                   })
+      
+      # Get dataset based on the rate type selected
+      region_tab_dataset_used <- reactive({
+        shiny::validate(need(input$region_tab_rate_type_selected, message = F))
+        if (!is.null(input$region_tab_rate_type_selected)) {
+          dataset_switch(input$region_tab_rate_type_selected)
+        }
+      })
+      
+      # Get the corresponding column name for the rate type selected
+      region_tab_rate_as_variable <- reactive({
+        shiny::validate(need(input$region_tab_rate_type_selected, message = F))
+        if (!is.null(input$region_tab_rate_type_selected)) {
+          rate_switch(input$region_tab_rate_type_selected)
+        }
+      })
+      
+      # Show health boundary choices based on geography selected
+      output$region_tab_region_selected <- renderUI({
+        selectInput(
+          "region_tab_region_selected",
+          label = "Select Health Boundary",
+          choices = health_bounds(input$region_tab_geography_selected),
+          multiple = FALSE,
+          selected = HA_CHOICES[1]
+        )
+      })
+      
+      # Get the filtered dataset based on user selection
+      region_tab_filtered_data <- reactive({
+        region_tab_dataset_used() |>
+          filter((
+            HEALTH_BOUND_NAME %in% input$region_tab_region_selected
+          ) &
+            (DISEASE %in% input$region_tab_diseases_selected) &
+            (
+              CLNT_GENDER_LABEL == substr(input$region_tab_sex_selected, 1, 1)
+            )
+          )
+      })
+      
+      #####################
+      # Line Chart Related Logic
+      
+      # Plot a line chart showing trends of diseases over time
+      # x is YEAR, y is the selected rate type, color is DISEASE
+      #####################
+      output$region_tab_line_chart <- renderPlotly({
+        data <- region_tab_filtered_data()
+        
+        data |>
+          plot_ly(
+            x = data$YEAR,
+            y = data[[region_tab_rate_as_variable()]],
+            type = "scatter",
+            mode = "lines",
+            source = "region_tab_line_chart",
+            line = list(width = 2),
+            color = ~ DISEASE,
+            customdata = ~ DISEASE,
+            showlegend = T,
+            colors = setNames(DISEASE_colors$Colors, DISEASE_colors$DISEASE),
+            hovertemplate = region_tab_hovertemplate_line
+          ) |>
+          layout(
+            yaxis = c(
+              list(range = list(
+                min(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 0.95,
+                max(region_tab_filtered_data()[[region_tab_rate_as_variable()]], na.rm = TRUE) * 1.05
+              )),
+              y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
+            ),
+            xaxis = x_axis_line_spec('Year'),
+            title = list(
+              text = paste0(
+                '<b>',
+                input$region_tab_rate_type_selected,
+                " Over Time </b>"
+              ),
+              y = 0.92,
+              font = list(size = 16)
+            ),
+            margin = list(t = 80, b = 50),
+            legend = list(title = list(text = 'Disease')),
+            shapes = list(vline(2001))
+          )  |>
+          event_register('plotly_hover')
+      })
+      
+      # Update the vertical line in the line graph with year input
+      observe({
+        invalidateLater(500)
+        p <- plotlyProxy("region_tab_line_chart", session)
+        p |>
+          plotlyProxyInvoke("relayout",
+                            list(shapes = list(
+                              vline(input$region_tab_year_selected)
+                            )))
+      })
+      
+      # Modify line chart's yaxis to start from 0 when the switch is on
+      observe({
+        invalidateLater(500)
+        p <- plotlyProxy("region_tab_line_chart", session)
+        p |>
+          plotlyProxyInvoke("relayout",
+                            list(yaxis = y_axis_spec(
+                              input$region_tab_rate_type_selected,
+                              ifelse(
+                                input$region_tab_line_y0switch,
+                                "tozero",
+                                "nonnegative"
+                              )
+                            )))
+      })
+      
+      # Change line chart to show smoothed time trends data
+      observe({
+        data <- region_tab_filtered_data()
+        p <- plotlyProxy("region_tab_line_chart", session)
+        
+        if (input$region_tab_smoothing_switch == TRUE) {
+          p |>
+            plotlyProxyInvoke("deleteTraces", as.list(seq(
+              0, length(input$region_tab_diseases_selected) -
+                1
+            )))
+          
+          for (disease in input$region_tab_diseases_selected) {
+            df <- data[which(data$DISEASE == disease),]
+            p |>
+              plotlyProxyInvoke(
+                "addTraces",
+                list(
+                  x = df$YEAR,
+                  y = df$y_fitted,
+                  customdata = df$DISEASE,
+                  type = "scatter",
+                  mode = "lines",
+                  name = disease,
+                  line = list(width = 2,
+                              color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
+                  hovertemplate = region_tab_hovertemplate_line
+                )
+              )
+          }
+          
+        } else {
+          p |>
+            plotlyProxyInvoke("deleteTraces", as.list(seq(
+              0, length(input$region_tab_diseases_selected) -
+                1
+            )))
+          
+          for (disease in input$region_tab_diseases_selected) {
+            df <- data[which(data$DISEASE == disease),]
+            p |>
+              plotlyProxyInvoke(
+                "addTraces",
+                list(
+                  x = df$YEAR,
+                  y = df[[region_tab_rate_as_variable()]],
+                  customdata = df$DISEASE,
+                  type = "scatter",
+                  mode = "lines",
+                  name = disease,
+                  line = list(width = 2,
+                              color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]),
+                  hovertemplate = region_tab_hovertemplate_line
+                )
+              )
+          }
+        }
+      })
+      
+      #####################
+      # Bar Chart Related Logic
+      
+      # Plot a bar chart comparing rates for diseases in a year
+      # x is DISEASE, y is the selected rate type, color is DISEASE
+      #####################
+      
+      # Define reactive error bounds
+      error <- reactiveValues(lower = NULL,
+                              upper = NULL)
+      
+      # First use dummy data to plot a basic chart
+      output$region_tab_bar_chart <- renderPlotly({
+        dummyData <- region_tab_dataset_used() |>
+          filter(
+            HEALTH_BOUND_NAME == "Fraser",
+            DISEASE %in% input$region_tab_diseases_selected,
+            CLNT_GENDER_LABEL == 'T',
+            YEAR == 2001
+          )
+        
+        error$lower <-
+          paste0(sub("\\_.*", "", region_tab_rate_as_variable()),
+                 "_LCL_95")
+        error$upper <-
+          paste0(sub("\\_.*", "", region_tab_rate_as_variable()),
+                 "_UCL_95")
+        
+        p <- plot_ly(source = "region_tab_bar_chart")
+        
+        for (disease in input$region_tab_diseases_selected) {
+          dummy_df <- dummyData[which(dummyData$DISEASE == disease), ]
+          p <- p |>
+            add_trace(
+              x = dummy_df$DISEASE,
+              y = dummy_df[[region_tab_rate_as_variable()]],
+              type = 'bar',
+              error_y = list(
+                type = "data",
+                symmetric = FALSE,
+                arrayminus = dummy_df[[region_tab_rate_as_variable()]] - dummy_df[[error$lower]],
+                array = dummy_df[[error$upper]] - dummy_df[[region_tab_rate_as_variable()]],
+                color = '#000000',
+                width = 10
+              ),
+              marker = list(color = DISEASE_colors$Colors[match(dummy_df$DISEASE, DISEASE_colors$DISEASE)]),
+              hovertemplate = paste(
+                '<br><b>Disease</b>: %{x}',
+                '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                '<br><b>95% Confidence Interval</b>: (',
+                format_round(dummy_df[[error$lower]]),
+                ',',
+                format_round(dummy_df[[error$upper]]),
+                ')',
+                '<extra></extra>'
+              )
+            )
+        }
+        p |>
+          layout(
+            yaxis = append(
+              list(range = list(
+                0, max(dummyData[[error$upper]], na.rm = TRUE) * 1.05
+              )),
+              y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
+            ),
+            xaxis = x_axis_bar_spec("Disease"),
+            title = list(
+              text = paste0(
+                "<b>Disease Distribution by ",
+                input$region_tab_rate_type_selected,
+                " in 2001",
+                "</b>"
+              ),
+              y = 0.92,
+              font = list(size = 16)
+            ),
+            barmode = "overlay",
+            margin = list(t = 80, b = 50),
+            showlegend = FALSE
+          ) |>
+          event_register("plotly_hover")
+      })
+      
+      
+      # Then use proxy to update bar graph when filter changes
+      observe({
+        invalidateLater(500)
+        bar_chart_data <- region_tab_filtered_data() |>
+          filter(YEAR == input$region_tab_year_selected)
+        error$lower <-
+          paste0(sub("\\_.*", "", region_tab_rate_as_variable()),
+                 "_LCL_95")
+        error$upper <-
+          paste0(sub("\\_.*", "", region_tab_rate_as_variable()),
+                 "_UCL_95")
+        
+        p <- plotlyProxy("region_tab_bar_chart", session)
+        
+        for (disease in seq_along(input$region_tab_diseases_selected)) {
+          filtered_df <-
+            bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]),]
+          p |>
+            plotlyProxyInvoke("restyle",
+                              "y",
+                              list(list(filtered_df[[region_tab_rate_as_variable()]])),
+                              as.integer(disease) - 1) |>
+            plotlyProxyInvoke(
+              "restyle",
+              list(
+                error_y = list(
+                  type = "data",
+                  symmetric = FALSE,
+                  arrayminus = list(filtered_df[[region_tab_rate_as_variable()]] - filtered_df[[error$lower]]),
+                  array = list(filtered_df[[error$upper]] - filtered_df[[region_tab_rate_as_variable()]]),
+                  color = '#000000',
+                  width = 10
+                ),
+                hovertemplate = paste(
+                  '<br><b>Disease</b>: %{x}',
+                  '<br><b>Year</b>: ',
+                  input$region_tab_year_selected,
+                  '<br><b>%{yaxis.title.text}</b>: %{y:.2f}',
+                  '<br><b>95% Confidence Interval</b>: (',
+                  format_round(filtered_df[[error$lower]]),
+                  ',',
+                  format_round(filtered_df[[error$upper]]),
+                  ')',
+                  '<extra></extra>'
+                )
+              ),
+              as.integer(disease) - 1
+            )
+        }
+        
+        p |> plotlyProxyInvoke("relayout",
+                               list(
+                                 autosize = F,
+                                 yaxis = append(
+                                   list(range = list(
+                                     0, max(region_tab_filtered_data()[[error$upper]], na.rm = TRUE) * 1.05
+                                   )),
+                                   y_axis_spec(input$region_tab_rate_type_selected, "nonnegative")
+                                 ),
+                                 xaxis = append(list(fixedrange = TRUE),
+                                                x_axis_bar_spec("Disease")),
+                                 title = list(
+                                   text = HTML(
+                                     paste0(
+                                       "<b>Disease Distribution by ",
+                                       input$region_tab_rate_type_selected,
+                                       " in ",
+                                       input$region_tab_year_selected,
+                                       "</b>"
+                                     )
+                                   ),
+                                   y = 0.92,
+                                   font = list(size = 16)
+                                 )
+                               ))
+        
+      })
+      
+      #####################
+      # Logic to Link Hover Activity on Charts
+      #####################
+      # Define graph traces by diseases selected
+      region_tab_traces <- reactive({
+        sort(input$region_tab_diseases_selected)
+      })
+      
+      # Track hovering activity sourced from the line chart and link highlighting effect
+      observe({
+        req(region_tab_filtered_data())
+        event <-
+          event_data("plotly_hover", source = "region_tab_line_chart")
+        ppl <-  plotlyProxy("region_tab_line_chart", session)
+        ppb <- plotlyProxy("region_tab_bar_chart", session)
+        
+        # If no event, keep things the same
+        if (is.null(event)) {
+          for (disease in region_tab_traces()) {
+            ppl |> plotlyProxyInvoke(method = "restyle",
+                                     list(line = list(
+                                       width = 2,
+                                       color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
+                                     )),
+                                     as.integer(match(disease, region_tab_traces()) -
+                                                  1))
+            
+          }
+          ppb |>  plotlyProxyInvoke(method = "restyle", list(opacity = 1))
+        } else {
+          # If a disease line has a hover activity
+          #  Then highlight that line and make other lines narrower
+          for (disease in region_tab_traces()) {
+            ppl |>
+              plotlyProxyInvoke(method = "restyle",
+                                list(line = list(
+                                  width = 0.5,
+                                  color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
+                                )),
+                                as.integer(match(disease, region_tab_traces()) - 1))
+          }
+          
+          ppl |>
+            plotlyProxyInvoke(method = "restyle",
+                              "line",
+                              list(width = 3,
+                                   list(
+                                     width = 3,
+                                     color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)]
+                                   )),
+                              as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
+          
+          # And make the bar of the highlighted disease opaque and others transparent
+          ppb |>
+            plotlyProxyInvoke(method = "restyle",
+                              list(opacity = 0.2)) |>
+            plotlyProxyInvoke(method = "restyle",
+                              list(opacity = 1),
+                              as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
+        }
+      })
+      
+      # Track hovering activity sourced from the bar chart and link highlighting effect
+      observe({
+        req(region_tab_filtered_data())
+        event <-
+          event_data("plotly_hover", source = "region_tab_bar_chart")
+        ppl <- plotlyProxy("region_tab_line_chart", session)
+        ppb <- plotlyProxy("region_tab_bar_chart", session)
+        
+        if (is.null(event)) {
+          for (disease in region_tab_traces()) {
+            ppl |> plotlyProxyInvoke(method = "restyle",
+                                     list(line = list(
+                                       width = 2,
+                                       color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
+                                     )),
+                                     as.integer(match(disease, region_tab_traces()) - 1))
+          }
+          ppb |> plotlyProxyInvoke(method = "restyle", list(opacity = 1))
+        } else{
+          # If a disease bar has a hover activity
+          #  Then highlight the corresponding line by keeping its width
+          #    and make other lines narrower
+          for (disease in region_tab_traces()) {
+            ppl |>
+              plotlyProxyInvoke(method = "restyle",
+                                list(line = list(
+                                  width = 0.5,
+                                  color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
+                                )),
+                                as.integer(match(disease, region_tab_traces()) - 1))
+          }
+          ppl |>
+            plotlyProxyInvoke(
+              method = "restyle",
+              "line",
+              list(width = 3,
+                   color = DISEASE_colors$Colors[match(event[["x"]], DISEASE_colors$DISEASE)]),
+              as.integer(match(event[["x"]], region_tab_traces()) - 1)
+            )
+          # And make the hovered bar opaque and others transparent
+          ppb |>
+            plotlyProxyInvoke(method = "restyle",
+                              list(opacity = 0.2)) |>
+            plotlyProxyInvoke(method = "restyle",
+                              list(opacity = 1),
+                              as.integer(match(
+                                event[["x"]], input$region_tab_diseases_selected
+                              ) - 1))
+        }
+      })
+      
     } # end observe navbarid
   }) # end observe navbarid
-
+  
   
   #####################
   # Show Top 4 Diseases by Incidence Rate in Most Recent Year
@@ -1513,176 +1723,248 @@ server <- function(input, output,session) {
       ) |>
       arrange(desc(STD_RATE_PER_1000)) |>
       select(DISEASE) |>
-      head(4) |> 
+      head(4) |>
       as.list()
   })
   
   output$region_tab_text1 <- renderText({
-    paste0("Top 4 Highest Incidence Rates in ", input$region_tab_region_selected,
-           " in ", most_recent_year)
+    paste0(
+      "Top 4 Highest Incidence Rates in ",
+      input$region_tab_region_selected,
+      " in ",
+      most_recent_year
+    )
   })
   
   output$region_tab_text2 <- renderText({
-    paste0("First Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[1], "</div>")
+    paste0(
+      "First Highest Rate",
+      "<div id=region_tab_stat>",
+      top_4_diseases()$DISEASE[1],
+      "</div>"
+    )
   })
   
   output$region_tab_text3 <- renderText({
-    paste0("Second Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[2], "</div>")
+    paste0(
+      "Second Highest Rate",
+      "<div id=region_tab_stat>",
+      top_4_diseases()$DISEASE[2],
+      "</div>"
+    )
   })
   
   output$region_tab_text4 <- renderText({
-    paste0("Third Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[3], "</div>")
+    paste0(
+      "Third Highest Rate",
+      "<div id=region_tab_stat>",
+      top_4_diseases()$DISEASE[3],
+      "</div>"
+    )
   })
   
   output$region_tab_text5 <- renderText({
-    paste0("Fourth Highest Rate", "<div id=region_tab_stat>", top_4_diseases()$DISEASE[4], "</div>")
+    paste0(
+      "Fourth Highest Rate",
+      "<div id=region_tab_stat>",
+      top_4_diseases()$DISEASE[4],
+      "</div>"
+    )
   })
-    
   
   ################################
   # Data Tab Server Side Logic
   ################################
-
+  
   observeEvent(input$navbarID, {
-    if(input$navbarID %in% c("Data")){
-
-
-  # Reset filters
-  observeEvent(input$reset_data, {
-    reset("filters_data")
-  })
-
-  # Select dataset based on user input
-  datasetInput_data <- reactive({
-    dataset_switch(input$dataset_data)
-  })
-
-  # Select rate based on user input
-  rateInput_data <- reactive({
-    rate_switch(input$dataset_data)
-  })
-
-  # Select geography based on user input
-  healthboundInput_data <- reactive ({
-    switch(input$health_bound_data,
-           "Health Authorities" = "HA",
-           "Community Health Service Areas" = "CHSA")
-  })
-
-  # Dynamic UI for region selection
-  observeEvent(input$health_bound_data,{
-    updateSelectInput(
-      session,
-      "region_data",
-      label = "Select Health Boundaries",
-      choices = append("All",health_bounds(input$health_bound_data)),
-      selected = "All"
-    )
-  })
-
-  # Dynamic UI for disease selection
-  observeEvent(input$dataset_data,{
-    updateSelectInput(
-      session,
-      "disease_data",
-      label = "Select Disease(s)",
-      choices = append("All", unique(datasetInput_data()$DISEASE)),
-      selected = "All"
-    )
-  })
-
-  # Filter data and reformat dataframe
-  filter_df_data <- reactive({
-    data <- datasetInput_data() |>
-      filter (
-        (GEOGRAPHY == healthboundInput_data()) &
-          (if ("All" %in% input$region_data) TRUE else (HEALTH_BOUND_NAME %in% input$region_data)) &
-          (if ("All" %in% input$disease_data)TRUE else (DISEASE %in% input$disease_data)) &
-          (YEAR %in% seq(from=min(input$year_range_data),to=max(input$year_range_data))) &
-          (CLNT_GENDER_LABEL == substr(input$gender_data,1,1)))|>
-      mutate(CRUDE_CI=paste0("(",CRUDE_LCL_95,",",CRUDE_UCL_95,")"),
-             STD_CI=paste0("(",STD_LCL_95,",",STD_UCL_95,")"),
-             YEAR = paste0(YEAR,"/",YEAR+1))|>
-      rename(SEX =CLNT_GENDER_LABEL,
-             HEALTH_BOUNDARY=HEALTH_BOUND_NAME,
-             FISCAL_YEAR = YEAR)|>
-      select(FISCAL_YEAR,DISEASE,SEX,GEOGRAPHY,HEALTH_BOUNDARY,NUMERATOR,DENOMINATOR,
-             CRUDE_RATE_PER_1000, CRUDE_CI,CRUDE_VARIANCE,STD_RATE_PER_1000,
-             STD_CI,STD_VARIANCE)
-
-    names(data)<-snakecase::to_title_case(names(data))
-
-    data|>
-      rename("Crude 95% CI" = "Crude Ci",
-             "Standardized 95% CI" = "Std Ci")
-
-  })
-
-  # Render download data button
-  output$download_data <- downloadHandler(
-    filename = function() {
-      paste("BC_Chronic_Disease_Data-", Sys.Date(), ".csv", sep="")
-    },
-    content = function(file) {
-      write.csv(filter_df_data(), file)
-    }
-  )
-
-  # Render data table
-  output$data_table <- renderDT(filter_df_data()|>
-                                  select(-"Crude Variance",-"Std Variance"),
-                                rownames= FALSE,
-                                options = list(
-                                  scrollX = TRUE,
-                                  scrollY = "520px",
-                                  autoWidth = TRUE,
-                                  columnDefs = list(list(width = '150px', targets = c(1)),
-                                                    list(className = 'dt-center', targets = "_all"),
-                                                    list(width = '100px', targets = c(7,9))
-                                                    )
-                                  ))
+    if (input$navbarID %in% c("Data")) {
+      # Reset filters
+      observeEvent(input$reset_data, {
+        reset("filters_data")
+      })
+      
+      # Select dataset based on user input
+      datasetInput_data <- reactive({
+        dataset_switch(input$dataset_data)
+      })
+      
+      # Select rate based on user input
+      rateInput_data <- reactive({
+        rate_switch(input$dataset_data)
+      })
+      
+      # Select geography based on user input
+      healthboundInput_data <- reactive ({
+        switch(
+          input$health_bound_data,
+          "Health Authorities" = "HA",
+          "Community Health Service Areas" = "CHSA"
+        )
+      })
+      
+      # Dynamic UI for region selection
+      observeEvent(input$health_bound_data, {
+        updateSelectInput(
+          session,
+          "region_data",
+          label = "Select Health Boundaries",
+          choices = append("All", health_bounds(input$health_bound_data)),
+          selected = "All"
+        )
+      })
+      
+      # Dynamic UI for disease selection
+      observeEvent(input$dataset_data, {
+        updateSelectInput(
+          session,
+          "disease_data",
+          label = "Select Disease(s)",
+          choices = append("All", unique(datasetInput_data()$DISEASE)),
+          selected = "All"
+        )
+      })
+      
+      # Filter data and reformat dataframe
+      filter_df_data <- reactive({
+        data <- datasetInput_data() |>
+          filter (
+            (GEOGRAPHY == healthboundInput_data()) &
+              (if ("All" %in% input$region_data)
+                TRUE
+               else
+                 (HEALTH_BOUND_NAME %in% input$region_data)
+              ) &
+              (
+                if ("All" %in% input$disease_data)
+                  TRUE
+                else
+                  (DISEASE %in% input$disease_data)
+              ) &
+              (
+                YEAR %in% seq(
+                  from   =   min(input$year_range_data),
+                  to   =   max(input$year_range_data)
+                )
+              ) &
+              (
+                CLNT_GENDER_LABEL == substr(input$gender_data, 1, 1)
+              )
+          )  |>
+          mutate(
+            CRUDE_CI  =  paste0("(", CRUDE_LCL_95, ",", CRUDE_UCL_95, ")"),
+            STD_CI  =  paste0("(", STD_LCL_95, ",", STD_UCL_95, ")"),
+            YEAR = paste0(YEAR, "/", YEAR  +  1)
+          )  |>
+          rename(
+            SEX =  CLNT_GENDER_LABEL,
+            HEALTH_BOUNDARY  =  HEALTH_BOUND_NAME,
+            FISCAL_YEAR = YEAR
+          ) |>
+          select(
+            FISCAL_YEAR,
+            DISEASE,
+            SEX,
+            GEOGRAPHY,
+            HEALTH_BOUNDARY,
+            NUMERATOR,
+            DENOMINATOR,
+            CRUDE_RATE_PER_1000,
+            CRUDE_CI,
+            CRUDE_VARIANCE,
+            STD_RATE_PER_1000,
+            STD_CI,
+            STD_VARIANCE
+          )
+        
+        names(data) <- snakecase::to_title_case(names(data))
+        
+        data |>
+          rename(
+            "Crude 95% CI" = "Crude Ci",
+            "Standardized 95% CI" = "Std Ci"
+          )
+        
+      })
+      
+      # Render download data button
+      output$download_data <- downloadHandler(
+        filename = function() {
+          paste("BC_Chronic_Disease_Data-", Sys.Date(), ".csv", sep = "")
+        },
+        content = function(file) {
+          write.csv(filter_df_data(), file)
+        }
+      )
+      
+      # Render data table
+      output$data_table <- renderDT(
+        filter_df_data() |>
+          select(-"Crude Variance", -"Std Variance"),
+        rownames = FALSE,
+        options = list(
+          scrollX = TRUE,
+          scrollY = "520px",
+          autoWidth = TRUE,
+          columnDefs = list(
+            list(width = '150px', targets = c(1)),
+            list(className = 'dt-center', targets = "_all"),
+            list(width = '100px', targets = c(7, 9))
+          )
+        )
+      )
     } # end observe navbarid
   }) # end observe navbarid
-
-
-    ################################
-    # Joinpoint Tab Server Side Logic
-    ################################
+  
+  
+  ################################
+  # Joinpoint Tab Server Side Logic
+  ################################
   observeEvent(input$navbarID, {
-    if(input$navbarID %in% c("Joinpoint Regression")){
-  
-  # Reset filters
-  observeEvent(input$reset_m, {
-    reset("filters_m")
-  })  
-    
-    # Get the filtered dataset based on user selection
-    trend<- reactive({
-      joinpoint_df %>% 
-        filter(RATE %in% input$rates_m) %>% 
-        filter(HEALTH_BOUNDARIES %in% input$chsa_m) %>% 
-        filter(DISEASE %in% input$disease_m) %>%
-        droplevels()
-    })
-        
-    output$jp_plot <- renderPlotly({
-      t <- trend()
-      p <-plot_ly(data=t, x=~YEAR,  y = ~join_obs, name = "Observed points",
-                  type = 'scatter', mode = 'markers')
-      p = add_lines(p, x=~YEAR, y=~join_fitted, name="Predicted trend") %>%
-        layout(
-          yaxis = list(title = ""),
-          xaxis = list(
-            title = "",
-            dtick = 1, 
-            tick0 = 2001, 
-            tickmode = "linear"
-          ))
+    if (input$navbarID %in% c("Joinpoint Regression")) {
+      # Reset filters
+      observeEvent(input$reset_m, {
+        reset("filters_m")
+      })
       
-    })
-    }})
+      # Get the filtered dataset based on user selection
+      trend <- reactive({
+        joinpoint_df %>%
+          filter(RATE %in% input$rates_m) %>%
+          filter(HEALTH_BOUNDARIES %in% input$chsa_m) %>%
+          filter(DISEASE %in% input$disease_m) %>%
+          droplevels()
+      })
+      
+      output$jp_plot <- renderPlotly({
+        t <- trend()
+        p <-
+          plot_ly(
+            data = t,
+            x =  ~ YEAR,
+            y = ~ join_obs,
+            name = "Observed points",
+            type = 'scatter',
+            mode = 'markers'
+          )
+        p = add_lines(p,
+                      x =  ~ YEAR,
+                      y =  ~ join_fitted,
+                      name = "Predicted trend") %>%
+          layout(
+            yaxis = list(title = ""),
+            xaxis = list(
+              title = "",
+              dtick = 1,
+              tick0 = 2001,
+              tickmode = "linear"
+            )
+          )
+        
+      })
+    }
+  })
   
-} # end server 
+} # end server
 
 ################################
 # Run App
