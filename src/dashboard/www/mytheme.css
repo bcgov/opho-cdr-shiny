@@ -1,18 +1,217 @@
-.navbar .navbar-nav {float: left; 
-                     #color: #003366; 
-                     font-size: 14px; 
-                     #background-color: #003366 ; } 
-.navbar .navbar-header {float: left;
-                        #color: #003366} 
-.navbar-default .navbar-brand { font-size: 38px; 
-                                #background-color: #003366 ;} 
+/* Color Constants*/
+:root {
+  --yellow: #fcba19;
+  --navy:#003366;
+  --white:#ffffff;
+  --mediumblue:#4c81af;
+}
+
+/* Navbar Styles */
+
+.navbar {margin-bottom: 0px;}
+.navbar-default {background-color:  var(--navy);
+                border-bottom-color: var(--yellow);
+                }
+                
+.navbar-fixed-top { border-bottom-width: 3px;}
+
+.navbar-default .navbar-brand, 
+.navbar-default .navbar-brand:hover  { font-size: 38px; 
+                                      color:var(--white) ;
+                                      vertical-align: middle;
+                                      font-weight: bold;
+                                      }
+.navbar-brand{ height: 60px;
+               padding: 0px;
+               padding-right: 25px;} 
+
+.navbar .navbar-nav{ font-size: 14px;
+                      height: 60px;
+                      font-weight: bold;}
+.navbar-nav>li>a {
+  line-height:2.2;
+}
+
+.navbar-default .navbar-nav>li>a{
+  color: var(--white) ;
+}
+
+.navbar-default .navbar-nav>.active>a, 
+.navbar-default .navbar-nav>.active>a:focus, 
+.navbar-default .navbar-nav>.active>a:hover {
+                color: var(--white);
+                background-color:var(--yellow);}
+                
+.dropdown-menu>.active>a, 
+.dropdown-menu>.active>a:focus, 
+.dropdown-menu>.active>a:hover{
+    background-color: var(--mediumblue);
+}  
+
+.navbar-default .navbar-nav>.open>a, 
+.navbar-default .navbar-nav>.open>a:focus, 
+.navbar-default .navbar-nav>.open>a:hover{
+    color:  var(--white);
+    background-color: var(--yellow);
+}
+
+.navbar-default .navbar-nav>li>a:focus, 
+.navbar-default .navbar-nav>li>a:hover {
+  color:  var(--yellow);
+}
+
+#logo{
+    max-height: 60px;
+    width: auto;
+    margin-top: 0px;
+}
+
+/* Data Dict Styles */
+
+#datadict th {
+  padding: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  background-color: var(--yellow);
+}
+
+#datadict td,#datadict tr{
+  padding: 5px;
+}
 
 
-.navbar-static-top {background-color:  #003366  ;}
-.navbar-default .navbar-nav>.active>a {background-color:  #003366;}
+/* Disease Tab Styles */
 
+#disease_graph_line, #region_bar_line_chart{
+  padding-bottom: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#disease_graph_bar, #region_bar_bar_chart{
+  margin-bottom:5px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#text_d1,#text_d2,#text_d3,#text_d4{
+  background-color:var(--white) ;
+  text-align: left;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  height: 100px;
+  font-size: 12px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#region_tab_text1{
+  background-color:var(--white) ;
+  text-align: left;
+  margin-left: 8px;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  height: 100px;
+  font-size: 16px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#region_tab_text2,#region_tab_text3,#region_tab_text4,#region_tab_text5{
+  background-color:var(--white) ;
+  text-align: left;
+  margin-left: 8px;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  height: 140px;
+  font-size: 14px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 6px 0 rgba(0, 0, 0, 0.19);
+}
+
+#stat{
+  color:var(--navy);
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 8px;
+  text-align: center;
+  line-height: 1;
+}
+
+#region_tab_stat{
+  color:var(--navy);
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 10px;
+  text-align: center;
+  line-height: 1;
+}
+
+.col-sm-3{
+  padding-bottom: 15px;
+}
+
+.label-default {
+    background-color: var(--yellow);
+}
+
+.form-group {
+    margin-bottom: 5px;
+    margin-top: 15px;
+}
+
+.form-group .material-switch {
+  margin-bottom: 2px;
+  margin-top: 5px;
+  
+}
+
+.slider-animate-button { 
+  font-size: 15pt !important;
+  }
+  
+.slider-animate-container{
+  margin-top: 3px;
+}
 
 #map {
     background: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
+/* Body and Filter Sidebar Styles */
+
+#body {
+  padding-top: 85px;
+}
+
+#filters_d, #filters_r, #filters_m, #filters_data, #filters_model{
+  background-color: #FFFAEB;
+  border-radius: 15px;
+  border: 5px solid var(--yellow);
+}
+
+hr {
+    margin-top: 10px;
+    border-top: 1px solid #000000;
+}
+
+.irs-grid-text{
+  transform: rotate(45deg) translate(3px);
+}
+
+/* Data Tab Styles */
+#download_data{
+  background-color: var(--yellow);
+  padding:12px;
+}
+
+#data_table{
+  background-color:var(--white);
+  padding-top:10px;
+  padding-left:10px;
+  padding-right: 10px;
+}
+
+                    

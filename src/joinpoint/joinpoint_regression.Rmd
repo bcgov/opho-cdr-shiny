@@ -1,0 +1,378 @@
+---
+title: 'DRAFT: BC Chronic Diseases trends: A joinpoint regression analysis'
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: 'Mahmoodur Rahman'
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+bibliography: joinpoint_ref.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+# Calling the libraries:
+
+```{r libraries}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(segmented)
+library(broom)
+library(tidyr)
+library(modelr)
+library(purrr)
+library(fst)
+```
+
+# Background / Methodology / Literature review / Rationale: (Will write rationale of this approach)
+
+List of papers:
+
+ - segmented: an R Package to Fit Regression Models with Broken-Line Relationships. (@muggeo2008segmented)
+ - Estimating regression models with unknown break-points. (@muggeo2003estimating)
+ - Global increasing incidence of young-onset colorectal cancer across 5 continents: a joinpoint regression analysis of 1,922,167 cases (@lui2019global)
+ - Spatial clusters and temporal trends of malignant melanoma mortality in Ecuador. (@nunez2020spatial)
+ - Worldwide suicide mortality trends by firearm (1990–2019): A joinpoint regression analysis (@ilic2022worldwide)
+ 
+# Data Pre-processing:
+
+## Loading data :
+
+ - Adding a column to represent if the rows have Null, Zero and Missing values
+
+```{r Load Data}
+CHSA_df <- read_csv("/Users/mahmood/UBCMDS/591_capstone/master_df.csv") %>%
+  mutate( RATE = as.factor(RATE)) %>% 
+  mutate( DISEASE = as.factor(DISEASE)) %>%
+  mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) %>%
+  mutate(anyTRUE = !if_any(everything(), ~. %in% c(NA,"",0)))
+
+```
+## Data wrangling:
+
+ - To exclude Null/NA values and Diseases with Zero values
+
+```{r}
+
+main_CHSA_df <- CHSA_df %>%
+  dplyr::select(-c(STD_UCL_95, STD_LCL_95)) %>%
+  mutate(anyTRUE = ifelse((
+    RATE == 'INCIDENCE' & (
+      (DISEASE == 'JUVENILE ARTHRITIS') |
+        (
+          HEALTH_BOUNDARIES == 'Downtown Victoria/Vic West' &
+            DISEASE == 'EPILEPSY'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Snow Country' &
+            DISEASE == 'HAEMORR STROKE'
+        ) |
+        (HEALTH_BOUNDARIES == 'Oak Bay' &
+           DISEASE == 'EPILEPSY') |
+        (
+          HEALTH_BOUNDARIES == 'Vanderhoof Rural' &
+            DISEASE == 'HAEMORR STROKE'
+        ) |
+        (HEALTH_BOUNDARIES == 'Panorama' &
+           DISEASE == 'HOSP STROKE') |
+        (HEALTH_BOUNDARIES == 'Grand Forks' &
+           DISEASE == 'HOSP TIA') |
+        (
+          HEALTH_BOUNDARIES == 'Agassiz/Harrison' &
+            DISEASE == 'HOSP TIA'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Burns Lake South' &
+            DISEASE == 'HOSP TIA'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'West Cariboo' &
+            DISEASE == 'PARKINSONISM'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Agassiz/Harrison' &
+            DISEASE == 'RHEUMATOID ARTHRITIS'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Burnaby Southwest' &
+            DISEASE == 'RHEUMATOID ARTHRITIS'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Panorama' &
+            DISEASE == 'OSTEOARTHRITIS'
+        ) |
+        (HEALTH_BOUNDARIES == 'Snow Country' &
+           DISEASE == 'MS') |
+        (
+          HEALTH_BOUNDARIES == 'Snow Country' &
+            DISEASE == 'PARKINSONISM'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Snow Country' &
+            DISEASE == 'SCHIZOPHRENIA'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Burns Lake South' &
+            DISEASE == 'PARKINSONISM'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Vanderhoof Rural' &
+            DISEASE == 'PARKINSONISM'
+        ) |
+        (HEALTH_BOUNDARIES == "Hudson's Hope" &
+           DISEASE == 'MS') |
+        (
+          HEALTH_BOUNDARIES == "Tumbler Ridge" &
+            DISEASE == 'PARKINSONISM'
+        ) |
+        (
+          HEALTH_BOUNDARIES == "Fort Nelson Population Centre" &
+            DISEASE == 'MS'
+        ) |
+        (
+          HEALTH_BOUNDARIES == "Fernie" &
+            DISEASE == 'ALZHEIMER_DEMENTIA'
+        )
+    )
+  ) |
+    ((
+      RATE == 'HSC' & (HEALTH_BOUNDARIES == 'Castlegar' &
+                         DISEASE == 'HOSP TIA EPI') |
+        (
+          HEALTH_BOUNDARIES == 'Enderby' &
+            DISEASE == 'SCHIZOPHRENIA EPI'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'North Thompson' &
+            DISEASE == 'HOSP STROKE EPI'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Brookswood/Murrayville' &
+            DISEASE == 'HAEMORR STROKE EPI'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Snow Country' &
+            DISEASE == 'HAEMORR STROKE EPI'
+        ) |
+        (
+          HEALTH_BOUNDARIES == 'Vanderhoof Rural' &
+            DISEASE == 'HAEMORR STROKE EPI'
+        )
+    )) |
+    ((
+      RATE == 'LIFE_PREV' & (
+        HEALTH_BOUNDARIES == 'West Cariboo' &
+          DISEASE == 'JUVENILE ARTHRITIS'
+      ) |
+        (
+          HEALTH_BOUNDARIES == 'Fort Nelson Population Centre' &
+            DISEASE == 'JUVENILE ARTHRITIS'
+        )
+    )), FALSE, anyTRUE))
+
+```
+
+
+# Exploratory data analysis
+
+## Plotting of Rate against Time on sample dataframe: 
+
+The following graph plots Age-standardized Incidence Rates of Chronic Diseases in Kimberley CHSA in from 2001 to 2020 (Will label the graph)
+
+```{r eda, fig.width=14, fig.height=12}
+# sample data
+
+main_CHSA_df %>%
+  filter(RATE == "INCIDENCE" & HEALTH_BOUNDARIES == "Kimberley") %>%
+  ggplot(aes(x=YEAR, y=STD_RATE_PER_1000)) +
+  geom_line() +
+  facet_wrap(~DISEASE) +
+  labs(x = "Years", y = "Age standardized Incidence Rate (per 1000)") +
+  ggtitle("Age-standardized Incidence Rates by Diseases in Kimberley (2001 to 2020")
+
+```
+
+### Observations: 
+
+ - "Breakpoints" can be seen. Not smooth
+ - Each "Piece" is considered a linear relation between Rates and Time (Year)
+ 
+## Summery sattistics of rates:
+
+```{r rates summary}
+
+summary(main_CHSA_df$STD_RATE_PER_1000)
+
+```
+
+### Observations:
+
+ - None of the three rates, namely, HSC Prevalence, Age-Standardized Incidence Rate, and  Age-Standardized Life Prevalence have any negative value
+
+# Building the Model on sample data:
+
+## Specifics :
+
+ - Model : Segmented regression / Joinpoint regression / Piecewise regression
+ - Response (y): Age-Standardized Incidence Rate
+ - Predictor : Year
+ - `segmented.lm` is used
+ - Filtering ALZHEIMER_DEMENTIA and 3213 Fairview CHSA
+ 
+```{r linear regression}
+
+sample_df <- main_CHSA_df %>%
+  filter(RATE == "INCIDENCE"&
+    HEALTH_BOUNDARIES == "Fairview" &
+           DISEASE == "ALZHEIMER DEMENTIA")
+
+lm_model <- lm(log(STD_RATE_PER_1000)~YEAR, data = sample_df)
+seg_obj<-segmented(lm_model,seg.Z=~YEAR)
+
+```
+
+
+## Model daignostics:
+
+### Regression coefficients:
+
+```{r}
+print(summary(seg_obj))
+```
+#### Observations: 
+
+ - Breakpoint is in Year 2009
+
+### Average Annual Percent (AAPC) change:
+
+To summarize piecewise linear relationships in segmented regression models.
+```{r aapc}
+print(aapc(seg_obj, wrong.se = FALSE))
+
+```
+#### Observations:
+
+ - Positive AAPC refers to an increasing trend
+
+## Plotting:
+
+```{r}
+plot(seg_obj, 
+     conf.level=.95, 
+     is=TRUE, isV=FALSE,
+     col=1, shade = TRUE, 
+     res=TRUE, 
+     res.col=1, 
+     pch=19,
+     main = "Predicted Age-standardized Incidence Rates of ALZHEIMER_DEMENTIA in Fairview CHSA (2001 to 2020)",
+     xlab = "Time in Years",
+     ylab = "log(Age-standardized Incidence Rate")
+
+```
+
+#### Observations:
+
+ - Epidemiological emphasis: Possible causes can be explored looking at the "Breakpoint" of Year 2009. 
+
+
+# Fitting the Model on data frame: 
+
+### Model fitting:
+
+```{r fitting incidence}
+
+nested_df <- main_CHSA_df %>%
+  filter(anyTRUE==TRUE)%>%
+  group_by(RATE, HEALTH_BOUNDARIES, DISEASE) %>%
+  arrange(RATE, HEALTH_BOUNDARIES, DISEASE, YEAR) %>% 
+  nest() %>%
+  mutate(fit = map(data, ~segmented(lm(log(STD_RATE_PER_1000)~ YEAR,
+               na.action= na.exclude,
+               data=.), seg.Z = ~YEAR)),
+         results = map(fit, augment))%>%
+  unnest(results)
+
+```
+
+### Display of results:
+
+```{r }
+
+view_nested_df <- nested_df %>%
+  dplyr::select(c(RATE,  
+                DISEASE,
+                HEALTH_BOUNDARIES,
+                YEAR,
+                `log(STD_RATE_PER_1000)`,
+                psi1.YEAR,
+                .fitted))  
+head(view_nested_df)
+
+```
+
+### Saving data: 
+
+```{r }
+
+temp_df <- view_nested_df %>%
+  mutate(join_fitted = exp(.fitted)) %>%
+  dplyr::select(c(RATE,
+                  DISEASE,
+                  HEALTH_BOUNDARIES,
+                  YEAR,
+                  join_fitted))
+
+final_df <- main_CHSA_df %>%
+  full_join(temp_df, by = c("RATE", 
+                            "DISEASE", 
+                            "HEALTH_BOUNDARIES", 
+                            "YEAR")) %>%
+  rename(join_obs = STD_RATE_PER_1000) %>%
+  mutate(
+    RATE = recode_factor(
+      RATE,
+      'HSC' = "Active Healthcare Contact (HSC) Prevalence",
+      'INCIDENCE' = "Incidence Rate",
+      'LIFE_PREV' = "Lifetime Prevalence"
+    ),
+  )%>%
+  dplyr::select(c(RATE,
+                DISEASE,
+                HEALTH_BOUNDARIES,
+                YEAR,
+                join_obs,
+                join_fitted))
+
+
+write.csv(final_df,"/Users/mahmood/UBCMDS/591_capstone/joinpoint_df.csv", row.names = FALSE)
+
+write_fst(final_df, "/Users/mahmood/UBCMDS/591_capstone/joinfast.fst")
+```
+
+
+
+```{r}
+# 
+# # Split dataframe by DISEASE
+# incidence_df_list <- split(final_incidence_df, list(final_incidence_df$DISEASE))
+# 
+# # Write out separate CSV for each DISEASE
+# for (DISEASE in names(incidence_df_list)) {
+#     write.csv(incidence_df_list[[DISEASE]], paste0("IncidenceRate/",DISEASE, ".csv"), row.names = FALSE)
+# }
+```
+
+
+# References
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

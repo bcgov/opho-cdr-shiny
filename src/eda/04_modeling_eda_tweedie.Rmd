@@ -1,0 +1,224 @@
+---
+title: 'BC Chronic Disease: Temporal Modeling with INLA (Tweedie)'
+date: "June 1, 2022"
+author: 'Jennifer Hoang'
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+---
+
+```{r message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(INLA)
+library(here)
+```
+
+```{r Load Data, message=FALSE}
+path <- here("data", "processed")
+
+inc_rate_df <- read_csv(here(path, "incidence_rate_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+hsc_prev_df <- read_csv(here(path, "hsc_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+life_prev_df <- read_csv(here(path, "life_prevalence_combined.csv"), col_types = cols(CLNT_GENDER_LABEL = col_factor()))
+
+x_year <- unique(inc_rate_df$YEAR)
+```
+
+## Tweedie Likelihood for Semi-continuous Data
+
+We will try a Tweedie likelihood for the response variable to accommodate 0 values in the continuous response variable. 
+The Tweedie distribution family has 3 parameters, including the mean, variance, and index parameter (p), 
+and it has been used in other healthcare contexts, such as utilization costs [Kurz 2017](https://doi.org/10.1186/s12874-017-0445-y).
+
+When 1 \< p \< 2, the distribution is a compound Poisson-gamma mixture model, which is continuous with a non-negative mass at 0 (<https://www.rdocumentation.org/packages/statmod/versions/1.4.33/topics/tweedie>). 
+When p = 1, the distribution is equivalent to a Poisson distribution. 
+When p = 2, the distribution is equivalent to a gamma distribution.
+
+However, the Tweedie distribution implementation in INLA is currently experimental and subject to changes.
+Due to the experimental nature and some issues with fitting the model on the data below,
+the models generated with this distribution may require more careful review.
+
+```{r Functions to Fit and Plot Models}
+#' Fit a random walk 1 model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable with INLA. Assumes Tweedie likelihood.
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
+fit_inla_rw1 <- function(data) {
+  model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw1"),
+    data = data,
+    family = "tweedie",
+    control.compute = list(dic = TRUE, waic = TRUE)
+  )
+
+  model_results <- tibble(
+    DISEASE = data$DISEASE,
+    HEALTH_BOUNDARIES = data$HEALTH_BOUNDARIES, 
+    x = x_year,
+    y_fitted = model$summary.fitted$mean,
+    ci_95_ll = model$summary.fitted$`0.025quant`,
+    ci_95_ul = model$summary.fitted$`0.975quant`,
+    dic = model$dic$dic,
+    waic = model$waic$waic,
+    model = "rw1"
+  )
+  
+  model_results
+}
+
+#' Fit a random walk 2 model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable with INLA. Assumes Tweedie likelihood.
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
+fit_inla_rw2 <- function(data) {
+  model <- inla(STD_RATE_PER_1000 ~ 1 + f(YEAR, model = "rw2"),
+    data = data,
+    family = "tweedie",
+    control.compute = list(dic = TRUE, waic = TRUE)
+  )
+
+  model_results <- tibble(
+    DISEASE = data$DISEASE,
+    HEALTH_BOUNDARIES = data$HEALTH_BOUNDARIES, 
+    x = x_year,
+    y_fitted = model$summary.fitted$mean,
+    ci_95_ll = model$summary.fitted$`0.025quant`,
+    ci_95_ul = model$summary.fitted$`0.975quant`,
+    dic = model$dic$dic,
+    waic = model$waic$waic,
+    model = "rw2"
+  )
+  
+  model_results
+}
+
+#' Fit a loess model with STD_RATE_PER_1000 as response variable and 
+#' YEAR as explanatory variable. Confidence intervals generated
+#' using t-distribution approximation
+#'
+#' @param data data frame containing original data
+#' @return data frame with model results
+fit_loess <- function(data) {
+  model <- loess(STD_RATE_PER_1000 ~ YEAR, data = data)
+  model_predict <- predict(model, data, se = TRUE)
+
+  t <- qt(p = 0.975, df = model_predict$df)
+
+  model_results <- tibble(
+    DISEASE = data$DISEASE[1],
+    HEALTH_BOUNDARIES = data$HEALTH_BOUNDARIES[1],
+    x = x_year,
+    y_fitted = model_predict$fit,
+    ci_95_ll = model_predict$fit - t * model_predict$se.fit,
+    ci_95_ul = model_predict$fit + t * model_predict$se.fit,    
+    dic = NA,
+    waic = NA,
+    model = "loess",
+  )
+  
+  model_results
+}
+
+#' Generate line plot to compare models and confidence intervals
+#'
+#' @param data data frame containing original data
+#' @param model_df data frame containing model results
+#' @param disease character corresponding to entry in DISEASE column
+#' @param chsa character corresponding to entry in HEALTH_BOUNDARIES column
+#' @param rate_label character (label for Y axis)
+#' @return ggplot object
+plot_models <- function(data, model_df, disease, chsa, rate_label) {
+  cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  
+  ggplot(aes(x = YEAR, y = STD_RATE_PER_1000), data = data) +
+    geom_point() +
+    geom_ribbon(
+      aes(x = x, y = y_fitted, ymin = ci_95_ll, ymax = ci_95_ul, fill = model), 
+      alpha = 0.2, data = model_df
+    ) +
+    geom_line(aes(x = x, y = y_fitted, color = model), data = model_df, linetype = 2) +
+    labs(
+      x = "Year", y = rate_label,
+      title = paste(disease, "in", chsa)
+    ) +
+    scale_fill_manual(values=cbPalette) +
+    scale_colour_manual(values=cbPalette)
+}
+```
+
+```{r Compare 3 Models for 1 Outcome, fig.show="hold", out.width="25%"}
+#' Generate line plot to compare loess, random walk 1, and random walk 2 models
+#' Only fits data without 0 values due to limitations with Gamma likelihood.
+#'
+#' @param data data frame
+#' @param chsa character corresponding to entry in HEALTH_BOUNDARIES column
+#' @param rate_label character (label for Y axis)
+#' @return ggplot object
+compare_models <- function(data, chsa, rate_label) {
+  diseases <- unique(data$DISEASE)
+  all_model_df <- tibble()
+  plot_df <- tibble()
+
+  for (d in diseases) {
+    disease_data <- data |>
+      filter(DISEASE == d & HEALTH_BOUNDARIES == chsa)
+
+    if (any(disease_data$STD_RATE_PER_1000 == 0)) {
+      tryCatch(
+        {plot_df <- rbind(fit_inla_rw1(disease_data), fit_inla_rw2(disease_data), fit_loess(disease_data))
+        
+        p <- plot_models(disease_data, plot_df, d, chsa, rate_label)
+        print(p)
+        },
+        error = function(e) {
+          print(paste("Error with", d, chsa))
+        }
+      )
+    }
+    all_model_df <- rbind(all_model_df, plot_df)
+  }
+  all_model_df
+}
+```
+
+### Standardized HSC Prevalence in Fernie
+
+```{r fig.show="hold", out.width="50%"}
+hsc_fernie <- compare_models(hsc_prev_df, "1110 Fernie", "Age-Std HSC Prevalence Rate")
+```
+
+```{r Wrangle Model Criteria}
+wrangle_model_results <- function(data) {
+  data |>
+  select(DISEASE, HEALTH_BOUNDARIES, model, dic, waic) |>
+  filter(model != "loess") |>
+  unique() |>
+  pivot_wider(names_from = model,
+              values_from = c(dic, waic)) |>
+  mutate(best_model_dic = ifelse(dic_rw1 < dic_rw2, "rw1", "rw2"),
+         best_model_waic = ifelse(waic_rw1 < waic_rw2, "rw1", "rw2")) |>
+  mutate_if(is.numeric, round, 2) 
+}
+
+wrangle_model_results(hsc_fernie)
+```
+
+### Age-Standardized Incidence Rate in Fernie
+
+```{r fig.show="hold", out.width="50%"}
+inc_fernie <- compare_models(inc_rate_df, "1110 Fernie", "Age-Std Incidence Rate")
+
+wrangle_model_results(inc_fernie)
+```
+
+### Age-Standardized Incidence Rate in Vanderhoof Rural
+
+There are many zero values in this CHSA, so we will investigate how the model performs here.
+
+```{r fig.show="hold", out.width="50%"}
+inc_vanderhoof <- compare_models(inc_rate_df, "5232 Vanderhoof Rural", "Age-Std Incidence Rate")
+
+wrangle_model_results(inc_vanderhoof)
+```
