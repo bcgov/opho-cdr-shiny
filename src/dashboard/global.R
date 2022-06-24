@@ -6,7 +6,6 @@
 # Load in helper  functions
 source('helpers.R', local = T)
 
-
 ################################
 # Read geographic data from files and simplify polygons
 ################################
@@ -31,7 +30,6 @@ ha_spdf <- readOGR(
   verbose = FALSE
 ) |>
   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
 
 # Simplify Spatial Polygons for faster rendering
 regions_df <- ha_spdf@data
@@ -170,9 +168,6 @@ joinpoint_df = tmp_fst[cols_fst] %>% setDT()
 join_rates <- sort(unique(levels(as.factor(joinpoint_df$RATE))))
 join_chsa <- sort(unique(levels(as.factor(joinpoint_df$HEALTH_BOUNDARIES))))
 join_disease <- sort(unique(levels(as.factor(joinpoint_df$DISEASE))))
-
-
-
 
 
 # Define dataframe of HA colours

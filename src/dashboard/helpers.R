@@ -7,7 +7,6 @@ wrangle_df_for_merge <- function(df){
     )|>
     select(-FISC_YR_LABEL) 
 }
-# wrangle_df_for_merge <- memoise(wrangle_df_for_merge)
 
 # Function to merge raw data with modeled data
 merge_df <- function(df,new_df_model){
@@ -17,8 +16,7 @@ merge_df <- function(df,new_df_model){
     select(-y_fitted.x, -y_fitted.y)
   
 }
-# merge_df <- memoise(merge_df)
-  
+
 # Clean the data frames using a function
 
 # This function wrangles a data frame based on the following steps:
@@ -41,7 +39,6 @@ wrangle_data_frame <- function(df) {
     distinct()
 }
 
-# wrangle_data_frame <- memoise(wrangle_data_frame)
 
 #helper function for choropleth animation
 setShapeStyle <- function( map, data = getMapData(map), layerId,
@@ -74,7 +71,6 @@ setShapeStyle <- function( map, data = getMapData(map), layerId,
   leaflet::invokeMethod(map, data, "setStyle", "shape", layerId, style);
 }
 
-# setShapeStyle <- memoise(setShapeStyle)
 
 #helper function in JS for choropleth animation
 leafletjs <-  tags$head(
@@ -139,14 +135,10 @@ vline <- function(x = 0, color = "gray40") {
   )
 }
 
-# vline <- memoise(vline)
-
 # To format and round all values to 2 decimals
 format_round <- function(x, dec = 2){
   format(round(x,digits = dec),nsmall = dec)
 }
-
-# format_round <- memoise(format_round)
 
 # Dynamic Health Boundaries selection
 health_bounds <- function(input){
@@ -158,8 +150,6 @@ health_bounds <- function(input){
   )
 }
 
-# health_bounds <- memoise(health_bounds)
-
 # Fiscal year tooltip
  fisc_year_tt <- function(id){
    bsTooltip(id = id, 
@@ -167,8 +157,6 @@ health_bounds <- function(input){
              placement = "right"
    )
  }
- 
- # fisc_year_tt <- memoise(fisc_year_tt)
  
  # Sex radio buttons template
  sex_radio_buttons <- function(id){
@@ -179,8 +167,6 @@ health_bounds <- function(input){
                 inline = TRUE)
  }
  
- # sex_radio_buttons <- memoise(sex_radio_buttons)
- 
  # Geography radio buttons template
  geography_radio_buttons <- function(id){
    radioButtons(id,
@@ -188,8 +174,6 @@ health_bounds <- function(input){
                 choices = GEOGRAPHY_CHOICES,
                 selected=GEOGRAPHY_CHOICES[1])
  }
- 
- # geography_radio_buttons <- memoise(geography_radio_buttons)
  
  # Year slider input template
  year_slider <- function(id, year_info_id, anim = TRUE) {
@@ -205,9 +189,9 @@ health_bounds <- function(input){
              style = "color:#0072B2;"
            )
          ),
-         min = 2001,
-         max = 2020,
-         value = 2001,
+         min = min(inc_rate_df$YEAR),
+         max = max(inc_rate_df$YEAR),
+         value = min(inc_rate_df$YEAR),
          sep = "",
          ticks = TRUE,
          animate = animationOptions(interval = 1500)
@@ -224,15 +208,13 @@ health_bounds <- function(input){
            style = "color:#0072B2;"
          )
        ),
-       min = 2001,
-       max = 2020,
-       value = c(2001, 2020),
+       min = min(inc_rate_df$YEAR),
+       max = max(inc_rate_df$YEAR),
+       value = c(min(inc_rate_df$YEAR),max(inc_rate_df$YEAR)),
        sep = ""
      )
    }
  }
- 
- # year_slider <- memoise(year_slider)
  
  # Rate type dropdown template
  rate_type_input <- function(id){
@@ -242,8 +224,6 @@ health_bounds <- function(input){
      choices = RATE_TYPE_CHOICES
    )
  }
- 
- # rate_type_input <- memoise(rate_type_input)
  
  # Dataset switch function
  dataset_switch <- function (input){
@@ -256,16 +236,12 @@ health_bounds <- function(input){
           "Age Standardized HSC Prevalence" = hsc_prev_df)
  }
  
- # dataset_switch <- memoise(dataset_switch)
- 
  # Rate input switch function
  rate_switch <- function(input){
    ifelse(startsWith(input, "Age"),
           "STD_RATE_PER_1000",
           "CRUDE_RATE_PER_1000")
  }
- 
- # rate_switch <- memoise(rate_switch)
  
  # Toggle template
  material_switch <- function(id, lab){
@@ -276,8 +252,6 @@ health_bounds <- function(input){
      inline= TRUE
    )
  }
- 
- # material_switch<- memoise(material_switch)
  
  # Hover template for line chart 
  hovertemplate_line <- paste0('<b>Health Region</b>: %{fullData.name}',
@@ -304,8 +278,6 @@ health_bounds <- function(input){
         rangemode = range_mode)
  }
  
- # y_axis_spec <- memoise(y_axis_spec)
- 
  # Bar Graph x-axis options template
  x_axis_bar_spec <- function(title,so=0 ){
    list(title = list(text = title, standoff = so),
@@ -314,8 +286,6 @@ health_bounds <- function(input){
         showline= T, linewidth=1, linecolor='black')
  }
  
- # x_axis_bar_spec <- memoise(x_axis_bar_spec)
- 
  # Line Graph x-axis options template
  x_axis_line_spec <- function(title,so=10 ){
    list(title = list(text = title, standoff = 10),
@@ -323,4 +293,3 @@ health_bounds <- function(input){
         showline= T, linewidth=1, linecolor='black')
  }
  
- # x_axis_line_spec <- memoise(x_axis_line_spec)
