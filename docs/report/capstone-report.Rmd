@@ -21,7 +21,7 @@ knitr::opts_chunk$set(fig.pos = 'H')
 
 # Executive Summary
 
-The BC Chronic Disease Registry (BCCDR) is a data product that captures
+The BC Chronic Disease Registry (BC CDR) is a data product that captures
 information about the rates of new and persistent cases of 25 different
 chronic diseases across the Province of British Columbia. Crude and
 age-standardized rates of disease are recorded for different health
@@ -38,7 +38,7 @@ description of our final data product.
 
 # Introduction
 
-Millions of people in BC live with a chronic disease, so it's important
+Millions of people in BC live with a chronic disease, so it is important
 to understand and interpret the distribution of diseases throughout the
 province for a variety of reasons. We may want to know how to best
 allocate healthcare resources, or to identify if a specific region is
@@ -46,14 +46,15 @@ experiencing rapid growth of a disease. The dashboard is a tool that
 will allow healthcare professionals and eventually the general public to
 access the disease information and answer these questions.
 
-The BC CDR captures 3 different types of rates that we will be
-incorporating into our dashboard. Incidence Rate is the rate at which
-new cases occur in a specified population during a specified time
+The BC CDR captures three different types of rates that we will be
+incorporating into our dashboard: incidence rate, lifetime prevalence rate,
+and active healthcare contact prevalence rate. Incidence Rate is the rate 
+at which new cases occur in a specified population during a specified time
 period; Lifetime Prevalence is the proportion of individuals who have
 had the condition for at least part of their lives, and Active
 Healthcare Contact Prevalence are the cases for which a patient seeks
-healthcare services for relapsing - remitting conditions. Each of these
-3 rates are available as Crude or Age Standardized rates. Age
+healthcare services for relapsing-remitting conditions. Each of these
+three rates are available as Crude or Age Standardized rates. Age
 Standardized rates are adjusted to the standard population, and are
 calculated as if all regions shared the same age structure, that of the
 2011 Canadian Census. Crude rates are not adjusted to the standard
@@ -61,7 +62,7 @@ population, and represent the number of cases in a specific geographic
 region divided by the population at risk in that region. For each
 disease rate metric, the data is stratified by year, sex and by region
 at various tiers. In this project we focus on the least and the most
-granular health boundaries, which are the 5 Health Authorities (HA) and
+granular health boundaries, which are the five Health Authorities (HA) and
 the 195 Community Health Service Areas (CHSA).
 
 ## Dashboard
@@ -318,9 +319,8 @@ a server.
 
 In total, 11 956 temporal models were generated at the CHSA level and made available
 to explore within an R Shiny document. 
-An R Shiny document was selected to visualize the models due to the large number of models,
-which made it challenging to display at an individual level within other formats, 
-such as a PDF report.
+An R Shiny document was selected for visualization due to the large number of models,
+which made it challenging to display at an individual level in other report formats.
 The R Shiny document visualizes the original observations, 95% confidence intervals, 
 as well as the selected model (Bayesian or LOESS) as shown in Figure  \@ref(fig:temporal-shiny). 
 This data product allows data scientists and epidemiologists on the team
