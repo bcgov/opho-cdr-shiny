@@ -231,6 +231,10 @@ segmented lines.
 
 # Data Product and Results
 
+The design choices and intended use of the dashboard data product, integrating 
+the results from both temporal modelling and joinpoint regression,
+is described in this section.
+
 ## Dashboard
 
 The dashboard allows the flexibility for the user to explore and
@@ -334,7 +338,7 @@ knitr::include_graphics("images/temporal_shiny.png")
 The Joinpoint Regression tab of our R Shiny app plots the fitted
 estimates from the model and also the original data point over a period
 of 2001 to 2020. There are filters for choosing the Standardized Rate
-(Response), the Diease, and the CHSA. Toggling these selections, the
+(Response), the Disease, and the CHSA. Toggling these selections, the
 user can visualize the breakpoints, and also how it reflects the
 original distribution. The following figure shows the
 dash board showing the estimated Age-standardized Incidence Rate of
