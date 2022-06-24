@@ -329,7 +329,7 @@ compared to the final dashboard product, which is targeted towards a wider audie
 For the general audience, the smoothened time trend models were integrated 
 into the dashboard using a toggle switch, as described in the Dashboard section above.
 
-```{r temporal-shiny, echo=FALSE, fig.cap="Fitted temporal models displayed in an R Shiny document. The R Shiny document allows users to explore the 11 956 temporal models relative to the original observations and confidence intervals.", out.width = '100%'}
+```{r temporal-shiny, echo=FALSE, fig.cap="Fitted temporal models displayed in an R Shiny document. The document allows users to explore the 11 956 fitted models (black lines) from the three rate types relative to the original observations (black points) and 95 percent confidence intervals (blue bands). Grey bands indicate the 95 precent credible intervals when the selected model is Bayesian RW1/RW2 or the 95 percent confidence intervals when the selected model is LOESS.", out.width = '100%'}
 knitr::include_graphics("images/temporal_shiny.png")
 ```
 
