@@ -34,7 +34,7 @@ results/model/LifePrevalence : src/model/01_analysis.R
 
 # Generate joinpoint regression results and create data to feed R Shiny app
 results/model/joinpoint_for_shiny_df.fst results/model/joinpoint_results.csv: src/joinpoint/joinpoint_results.R
-	Rscript src/joinpoint/joinpoint_results.R --input="data/Data_T_CHSA/" --output="results/model/HSCPrevalence"
+	Rscript src/joinpoint/joinpoint_results.R --input="data/processed" --output="results/model"
 
 
 # Generate model overview report
@@ -49,8 +49,8 @@ src/eda/05_modeling_eda_gamma_2.html : src/eda/05_modeling_eda_gamma_2.Rmd data/
 	Rscript -e "rmarkdown::render('src/eda/05_modeling_eda_gamma_2.Rmd', output_format = 'html_document')"
 
 # Develop method paper of Joinpoint Regression
-src/joinpoint/joinpoint_method.html : data/processed/joinpoint_df.csv src/joinpoint/joinpoint_method.rmd 
-	Rscript -e "rmarkdown::render('src/joinpoint/joinpoint_method.rmd', output_format = 'html_document')"
+src/joinpoint/joinpoint_method.html : src/joinpoint/joinpoint_method.Rmd data/processed/joinpoint_df.csv  
+	Rscript -e "rmarkdown::render('src/joinpoint/joinpoint_method.Rmd', output_format = 'html_document')"
 
 clean:
 	rm -rf data/processed
