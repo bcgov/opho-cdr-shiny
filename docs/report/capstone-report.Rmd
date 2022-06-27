@@ -47,23 +47,23 @@ will allow healthcare professionals and eventually the general public to
 access the disease information and answer these questions.
 
 The BC CDR captures three different types of rates that we will be
-incorporating into our dashboard: incidence rate, lifetime prevalence rate,
-and active healthcare contact prevalence rate. Incidence Rate is the rate 
-at which new cases occur in a specified population during a specified time
-period; Lifetime Prevalence is the proportion of individuals who have
-had the condition for at least part of their lives, and Active
-Healthcare Contact Prevalence are the cases for which a patient seeks
-healthcare services for relapsing-remitting conditions. Each of these
-three rates are available as crude or age-standardized rates. 
-Age-standardized rates are adjusted to the standard population, and are
-calculated as if all regions shared the same age structure, that of the
-2011 Canadian Census. Crude rates are not adjusted to the standard
-population, and represent the number of cases in a specific geographic
-region divided by the population at risk in that region. For each
-disease rate metric, the data is stratified by year, sex and by region
-at various tiers. In this project we focus on the least and the most
-granular health boundaries, which are the five Health Authorities (HA) and
-the 195 Community Health Service Areas (CHSA).
+incorporating into our dashboard: incidence rate, lifetime prevalence
+rate, and active healthcare contact prevalence rate. Incidence Rate is
+the rate at which new cases occur in a specified population during a
+specified time period; Lifetime Prevalence is the proportion of
+individuals who have had the condition for at least part of their lives,
+and Active Healthcare Contact Prevalence are the cases for which a
+patient seeks healthcare services for relapsing-remitting conditions.
+Each of these three rates are available as crude or age-standardized
+rates. Age-standardized rates are adjusted to the standard population,
+and are calculated as if all regions shared the same age structure, that
+of the 2011 Canadian Census. Crude rates are not adjusted to the
+standard population, and represent the number of cases in a specific
+geographic region divided by the population at risk in that region. For
+each disease rate metric, the data is stratified by year, sex and by
+region at various tiers. In this project we focus on the least and the
+most granular health boundaries, which are the five Health Authorities
+(HA) and the 195 Community Health Service Areas (CHSA).
 
 ## Dashboard
 
@@ -98,12 +98,12 @@ relationships between the response and explanatory variable are
 piece-wise linear, namely represented by two or more straight lines
 connected at unknown values: these values are usually referred as
 breakpoints, change-points or even join-points. Here the response
-variable are different standardized chronic disease rates, and Time in
+variable are different standardized chronic disease rates, and time in
 years (2001 to 2020) being the explanatory variable. Broken-line
 relationships are common in many fields, including epidemiology,
 occupational medicine, toxicology, and ecology, where sometimes it is of
 interest to assess threshold value where the effect of the co-variate
-(Time in years) changes [@ulm1991statistical; @betts2007thresholds]. In
+(time in years) changes [@ulm1991statistical; @betts2007thresholds]. In
 other words, this model is used here to estimate abrupt changes in rates
 in particular points in time, rather than smoothing it. The idea is to
 aid epidemiologists in drawing inferences by estimating these
@@ -112,8 +112,8 @@ change-points.
 # Data Science Techniques
 
 Several different data science tools and techniques were used throughout
-the project to accomplish the project deliverable and are described in this
-section.
+the project to accomplish the project deliverable and are described in
+this section.
 
 ## Dashboard
 
@@ -230,9 +230,9 @@ segmented lines.
 
 # Data Product and Results
 
-The design and intended use of the final dashboard data product, integrating 
-the results from both temporal modelling and joinpoint regression,
-is described in this section.
+The design and intended use of the final dashboard data product,
+integrating the results from both temporal modelling and joinpoint
+regression, is described in this section.
 
 ## Dashboard
 
@@ -256,14 +256,15 @@ knitr::include_graphics("images/info_tab.png")
 
 On the By Disease tab, a user can select a single disease and rate type
 of interest, multiple health boundaries within a single health boundary
-type, and a single sex and year. The dashboard subsequently displays four summary statistics
-about the chosen disease, a choropleth map showing the disease rate over the
-selected health boundary type, along with a bar chart
-showing the rate and confidence intervals of the disease rate for the
-selected health boundaries, and a line chart showing the change in
-the disease rate of the selected health boundaries over time. Additional
-information is displayed upon hover on any of the plots. The layout of
-the By Disease tab is shown below in Figure \@ref(fig:disease-tab).
+type, and a single sex and year. The dashboard subsequently displays
+four summary statistics about the chosen disease, a choropleth map
+showing the disease rate over the selected health boundary type, along
+with a bar chart showing the rate and confidence intervals of the
+disease rate for the selected health boundaries, and a line chart
+showing the change in the disease rate of the selected health boundaries
+over time. Additional information is displayed upon hover on any of the
+plots. The layout of the By Disease tab is shown below in Figure
+\@ref(fig:disease-tab).
 
 ```{r disease-tab, echo=FALSE, fig.cap="Layout of the `By Disease` tab of the dashboard, showing summary statistics, map, and two graphs.", out.width = '100%'}
 knitr::include_graphics("images/disease_tab.png")
@@ -315,17 +316,19 @@ a server.
 
 ## Temporal Modelling
 
-In total, 11 956 temporal models were generated at the CHSA level and made available
-to explore within an R Shiny document. 
-An R Shiny document was selected for visualization due to the large number of models,
-which made it challenging to display at an individual level in other static report formats.
-The R Shiny document visualizes the original observations, 95% confidence intervals, 
-as well as the selected model (Bayesian or LOESS) as shown in Figure  \@ref(fig:temporal-shiny). 
-This data product allows data scientists and epidemiologists
-to visually inspect and assess the fit of the selected models at a more in-depth level 
-compared to the final dashboard product, which is targeted towards a wider audience.
-For the general audience, the smoothened time trend models were integrated 
-into the dashboard using a toggle switch, as described in the Dashboard section above.
+In total, 11 956 temporal models were generated at the CHSA level and
+made available to explore within an R Shiny document. An R Shiny
+document was selected for visualization due to the large number of
+models, which made it challenging to display at an individual level in
+other static report formats. The R Shiny document visualizes the
+original observations, 95% confidence intervals, as well as the selected
+model (Bayesian or LOESS) as shown in Figure \@ref(fig:temporal-shiny).
+This data product allows data scientists and epidemiologists to visually
+inspect and assess the fit of the selected models at a more in-depth
+level compared to the final dashboard product, which is targeted towards
+a wider audience. For the general audience, the smoothened time trend
+models were integrated into the dashboard using a toggle switch, as
+described in the Dashboard section above.
 
 ```{r temporal-shiny, echo=FALSE, fig.cap="Fitted temporal models displayed in an R Shiny document. The document allows users to explore the 11 956 fitted models (black lines) from the three rate types relative to the original observations (black points) and 95 percent confidence intervals (blue bands). Grey bands indicate the 95 precent credible intervals when the selected model is Bayesian Random Walk 1 (RW1) or Random Walk 2 (RW2), or the 95 percent confidence intervals when the selected model is local polynomial regression (LOESS).", out.width = '100%'}
 knitr::include_graphics("images/temporal_shiny.png")
@@ -338,8 +341,8 @@ estimates from the model and also the original data point over a period
 of 2001 to 2020. There are filters for choosing the Standardized Rate
 (Response), the Disease, and the CHSA. Toggling these selections, the
 user can visualize the breakpoints, and also how it reflects the
-original distribution. The following figure shows the
-dash board showing the estimated Age-standardized Incidence Rate of
+original distribution. In the following Figure \@ref(fig:jp-shiny), the
+dash board is showing the estimated Age-standardized Incidence Rate of
 Asthma in Kimberley CHSA for the period of 2001 to 2020.
 
 ```{r jp-shiny, echo=FALSE, fig.cap="Layout of the `Jointpoint Regression` tab of the dashboard", out.width = '100%'}
