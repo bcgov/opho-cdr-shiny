@@ -100,7 +100,7 @@ below.
     │   └──  ...                                 
     └── ...
 
-1.  Run the following command using the command line/terminal from the
+3.  Run the following command using the command line/terminal from the
     root directory of the project:
 
 <!-- -->
