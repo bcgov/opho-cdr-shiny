@@ -1,20 +1,31 @@
-# BC Chronic Disease Bayesian Temporal Smoothing Analysis Pipeline
-# Date: 2022-05-31
+# BC Chronic Disease Bayesian Temporal Smoothing Analysis and Joinpoint Analysis Pipeline 
+# Date: 2022-06-26
 
 all: src/eda/01_modeling_eda_loess.html src/eda/02_modeling_eda_inla.html src/eda/03_model_overview.html\
-	results/model/HSCPrevalence results/model/IncidenceRate results/model/LifePrevalence 
+	results/model results/model/HSCPrevalence results/model/IncidenceRate results/model/LifePrevalence\
+	src/joinpoint/joinpoint_method.html
 
-# Pre-process data for EDA
+# Pre-process data for EDA (Temporal Smoothing Analysis)
 data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv : src/eda/00_eda_preprocess.R
 	Rscript src/eda/00_eda_preprocess.R --input="data/Data_T_CHSA" --out_dir="data/processed"
 
-# Generate EDA reports
+# Pre-process data for Joinpoint Regression
+ data/processed/joinpoint_df.csv : src/joinpoint/joinpoint_wrangling.R
+	Rscript src/joinpoint/joinpoint_wrangling.R --input="data/Data_T_CHSA" --out_dir="data/processed"
+
+# Generate EDA reports (Temporal Smoothing Analysis)
 src/eda/01_modeling_eda_loess.html : src/eda/01_modeling_eda_loess.Rmd data/processed/incidence_rate_combined.csv
 	Rscript -e "rmarkdown::render('src/eda/01_modeling_eda_loess.Rmd', output_format = 'html_document')"
 		
 src/eda/02_modeling_eda_inla.html : src/eda/02_modeling_eda_inla.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
 	Rscript -e "rmarkdown::render('src/eda/02_modeling_eda_inla.Rmd', output_format = 'html_document')"
-		
+
+# Develop method paper of Joinpoint Regression
+	
+src/joinpoint/joinpoint_method.html : data/processed/joinpoint_df.csv src/joinpoint/joinpoint_method.rmd 
+	Rscript -e "rmarkdown::render('src/joinpoint/joinpoint_method.rmd', output_format = 'html_document')"
+
+	
 # Fit model
 results/model/HSCPrevalence : src/model/01_analysis.R
 	Rscript src/model/01_analysis.R --input="data/Data_T_CHSA/HSCPrevalence" --output="results/model/HSCPrevalence"
@@ -24,6 +35,12 @@ results/model/IncidenceRate : src/model/01_analysis.R
 	
 results/model/LifePrevalence : src/model/01_analysis.R
 	Rscript src/model/01_analysis.R --input="data/Data_T_CHSA/LifePrevalence" --output="results/model/LifePrevalence"
+
+
+# Generate joinpoint regression results and create data to feed R Shiny app
+results/model/joinpoint_for_shiny_df.fst results/model/joinpoint_resukts.csv: src/joinpoint/joinpoint_results.R
+	Rscript src/joinpoint/joinpoint_results.R --input="data/Data_T_CHSA/" --output="results/model/HSCPrevalence"
+
 
 # Generate model overview report
 src/eda/03_model_overview.html : src/eda/03_model_overview.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
@@ -42,3 +59,4 @@ clean:
 	rm -rf results
 	rm -rf src/eda/03_model_overview.html
 	rm -rf src/eda/04_modeling_eda_tweedie.html src/eda/05_modeling_eda_gamma_2.html
+	rm -rf src/joinpoint/joinpoint_method.html
