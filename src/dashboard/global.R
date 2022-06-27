@@ -153,7 +153,7 @@ data= reactiveVal(NULL)
 tmp_all = reactiveValues(fst = NULL, 
                          cols_fst = NULL)
 
-tmp_fst = fst("data/joinpoint/joinfast.fst")
+tmp_fst = fst("data/model/joinpoint_for_shiny_df.fst")
 
 cols_fst = c("RATE", 
              "DISEASE", 
