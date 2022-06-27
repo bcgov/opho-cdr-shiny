@@ -49,7 +49,7 @@ Rscript -e "rmarkdown::render('docs/report/capstone-report.Rmd')"
 Our data product is currently available for internal use only. Please contact the CDR Working Group to request access to the data. 
 To re-run the analysis and run the dashboard, please ensure that R (version 4.2.0) and RStudio are installed, then follow the respective instructions below.
 
-#### Temporal Modelling
+#### Modelling
 
 1. Clone this Github repository.
 2. Create a folder named "data" in the root directory of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
@@ -66,11 +66,15 @@ To re-run the analysis and run the dashboard, please ensure that R (version 4.2.
     ```
     rmarkdown::run('src/model/02_visualize.Rmd')
     ```
+6. To view the Joinpoint Regression results, check that results have been output to "results/model". 
+  To veiw the method paper, run the following command in the R console:
+    ```
+    rmarkdown::run('src/joinpoint/joinpoint_method.rmd')
 
 #### Dashboard
 
 1. Clone this Github repository
-2. Create a `data/` directory within the `src/dashboard/` director, and save the original and modeled data inside in folders named "raw" and "model" respectively. The data inside the `raw` folder should be saved from the "Data_MFT_HA_CHSA" dataset, and the data inside the `model` folder should be saved from running the Models (Both Temporal and Joinpoint Rgeression) above. The folder structure should look as follows:
+2. Create a `data/` directory within the `src/dashboard/` director, and save the original and modeled data inside in folders named "raw" and "model" respectively. The data inside the `raw` folder should be saved from the "Data_MFT_HA_CHSA" dataset, and the data inside the `model` folder should be saved from running the Models (Both Temporal and Joinpoint Regression) above. The folder structure should look as follows:
 
 ```
 .

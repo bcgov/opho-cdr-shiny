@@ -36,7 +36,7 @@ the analysis and run the dashboard, please ensure that R (version 4.2.0)
 and RStudio are installed, then follow the respective instructions
 below.
 
-#### Temporal Modelling
+#### Modelling
 
 1.  Clone this Github repository.
 2.  Create a folder named “data” in the root directory of the
@@ -51,6 +51,10 @@ below.
     that results have been output to “results/model”. Run the following
     command in the R console:
     `rmarkdown::run('src/model/02_visualize.Rmd')`
+6.  To view the Joinpoint Regression results, check that results have
+    been output to “results/model”. To veiw the method paper, run the
+    following command in the R console: \`\`\`
+    rmarkdown::run(‘src/joinpoint/joinpoint_method.rmd’)
 
 #### Dashboard
 
@@ -60,7 +64,7 @@ below.
     “model” respectively. The data inside the `raw` folder should be
     saved from the “Data_MFT_HA_CHSA” dataset, and the data inside the
     `model` folder should be saved from running the Models (Both
-    Temporal and Joinpoint Rgeression) above. The folder structure
+    Temporal and Joinpoint Regression) above. The folder structure
     should look as follows:
 
 <!-- -->
@@ -100,7 +104,7 @@ below.
     │   └──  ...                                 
     └── ...
 
-3.  Run the following command using the command line/terminal from the
+1.  Run the following command using the command line/terminal from the
     root directory of the project:
 
 <!-- -->
