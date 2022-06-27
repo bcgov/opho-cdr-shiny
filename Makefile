@@ -38,7 +38,7 @@ results/model/LifePrevalence : src/model/01_analysis.R
 
 
 # Generate joinpoint regression results and create data to feed R Shiny app
-results/model/joinpoint_for_shiny_df.fst results/model/joinpoint_resukts.csv: src/joinpoint/joinpoint_results.R
+results/model/joinpoint_for_shiny_df.fst results/model/joinpoint_results.csv: src/joinpoint/joinpoint_results.R
 	Rscript src/joinpoint/joinpoint_results.R --input="data/Data_T_CHSA/" --output="results/model/HSCPrevalence"
 
 

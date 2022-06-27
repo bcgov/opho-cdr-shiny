@@ -65,8 +65,8 @@ main <- function(opt) {
                   STD_LCL_95)
 
   # Write Data
-  if (!dir.exists(here(opt$out_dir))) {
-    dir.create(here(opt$out_dir), recursive = TRUE)
+  if (!file.exists(here(opt$out_dir))) {
+    file.create(here(opt$out_dir), recursive = TRUE)
   }
   write_csv(joinpoint_df,
             here(opt$out_dir, "joinpoint_df.csv"))
