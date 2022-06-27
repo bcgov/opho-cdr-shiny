@@ -20,11 +20,6 @@ src/eda/01_modeling_eda_loess.html : src/eda/01_modeling_eda_loess.Rmd data/proc
 src/eda/02_modeling_eda_inla.html : src/eda/02_modeling_eda_inla.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
 	Rscript -e "rmarkdown::render('src/eda/02_modeling_eda_inla.Rmd', output_format = 'html_document')"
 
-# Develop method paper of Joinpoint Regression
-	
-src/joinpoint/joinpoint_method.html : data/processed/joinpoint_df.csv src/joinpoint/joinpoint_method.rmd 
-	Rscript -e "rmarkdown::render('src/joinpoint/joinpoint_method.rmd', output_format = 'html_document')"
-
 	
 # Fit model
 results/model/HSCPrevalence : src/model/01_analysis.R
@@ -52,6 +47,10 @@ src/eda/04_modeling_eda_tweedie.html : src/eda/04_modeling_eda_tweedie.Rmd data/
 	
 src/eda/05_modeling_eda_gamma_2.html : src/eda/05_modeling_eda_gamma_2.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
 	Rscript -e "rmarkdown::render('src/eda/05_modeling_eda_gamma_2.Rmd', output_format = 'html_document')"
+
+# Develop method paper of Joinpoint Regression
+src/joinpoint/joinpoint_method.html : data/processed/joinpoint_df.csv src/joinpoint/joinpoint_method.rmd 
+	Rscript -e "rmarkdown::render('src/joinpoint/joinpoint_method.rmd', output_format = 'html_document')"
 
 clean:
 	rm -rf data/processed
