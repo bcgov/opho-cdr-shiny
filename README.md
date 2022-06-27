@@ -26,79 +26,86 @@ To render our report locally, clone this GitHub repository, install R
 and the required dependencies, and run the following command at the
 command line/terminal from the root directory:
 
-```
-Rscript -e "rmarkdown::render('docs/report/capstone-report.Rmd')"
-```
+    Rscript -e "rmarkdown::render('docs/report/capstone-report.Rmd')"
 
 ### Usage
 
-Our data product is currently available for internal use only. Please contact the CDR Working Group to request access to the data. 
-To re-run the analysis and run the dashboard, please ensure that R (version 4.2.0) and RStudio are installed, then follow the respective instructions below.
+Our data product is currently available for internal use only. Please
+contact the CDR Working Group to request access to the data. To re-run
+the analysis and run the dashboard, please ensure that R (version 4.2.0)
+and RStudio are installed, then follow the respective instructions
+below.
 
 #### Temporal Modelling
 
-1. Clone this Github repository.
-2. Create a folder named "data" in the root directory of the repository. Download and save the "Data_T_CHSA" inside this "data" folder. 
-3. Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the following command in the R console to install the package dependencies or manually as listed below:
-    ```
-    renv::restore()
-    ```
-4. Run the following command using the command line/terminal from the root directory of the project:
-    ```
-    make all
-    ```
-5. To view the temporal model visualizations in a Shiny document, check that results have been output to "results/model". 
-    Run the following command in the R console:
-    ```
-    rmarkdown::run('src/model/02_visualize.Rmd')
-    ```
+1.  Clone this Github repository.
+2.  Create a folder named “data” in the root directory of the
+    repository. Download and save the “Data_T\_CHSA” inside this “data”
+    folder.
+3.  Open the `opho-cdr-shiny.Rproject` file in RStudio. Run the
+    following command in the R console to install the package
+    dependencies or manually as listed below: `renv::restore()`
+4.  Run the following command using the command line/terminal from the
+    root directory of the project: `make all`
+5.  To view the temporal model visualizations in a Shiny document, check
+    that results have been output to “results/model”. Run the following
+    command in the R console:
+    `rmarkdown::run('src/model/02_visualize.Rmd')`
 
 #### Dashboard
 
-1. Clone this Github repository
-2. Create a `data/` directory within the `src/dashboard/` director, and save the original and modeled data inside in folders named "raw" and "model" respectively. The data inside the `raw` folder should be saved from the "Data_MFT_HA_CHSA" dataset, and the data inside the `model` folder should be saved from running the Temporal Modelling above. The folder structure should look as follows:
+1.  Clone this Github repository
+2.  Create a `data/` directory within the `src/dashboard/` director, and
+    save the original and modeled data inside in folders named “raw” and
+    “model” respectively. The data inside the `raw` folder should be
+    saved from the “Data_MFT_HA_CHSA” dataset, and the data inside the
+    `model` folder should be saved from running the Models (Both
+    Temporal and Joinpoint Rgeression) above. The folder structure
+    should look as follows:
 
-```
-.
-├── ...
-├── src                                  
-│   ├── dashboard                         
-|   │   ├── data                              
-|   │   |   ├── model                         # Modeled Data from Temporal Modelling
-|   │   |   |   ├── HSCPrevalence 
-|   │   |   |   |   ├── AMI_EPI.csv 
-|   │   |   |   |   ├── ASTHMA_EPI.csv 
-|   │   |   |   |   └── ...
-|   │   |   |   ├── IncidenceRate 
-|   │   |   |   |   ├── ALZHEIMER_DEMENTIA.csv 
-|   │   |   |   |   ├── AMI.csv 
-|   │   |   |   |   └── ...
-|   │   |   |   └── LifePrevalence 
-|   │   |   |       ├── ALZHEIMER_DEMENTIA.csv 
-|   │   |   |       ├── AMI.csv 
-|   │   |   |       └── ...
-|   │   |   └── raw                            # Original Data from "Data_MFT_HA_CHSA'
-|   │   |       ├── HSCPrevalence 
-|   │   |       |   ├── AMI_EPI.csv 
-|   │   |       |   ├── ASTHMA_EPI.csv 
-|   │   |       |   └── ...
-|   │   |       ├── IncidenceRate 
-|   │   |       |   ├── ALZHEIMER_DEMENTIA.csv 
-|   │   |       |   ├── AMI.csv 
-|   │   |       |   └── ...
-|   │   |       └── LifePrevalence 
-|   │   |           ├── ALZHEIMER_DEMENTIA.csv 
-|   │   |           ├── AMI.csv 
-|   │   |           └── ... 
-│   |   └── ...  
-│   └──  ...                                 
-└── ...
-```
+<!-- -->
 
-3. Run the following command using the command line/terminal from the root directory of the project:
-```
-shiny::runApp('src/dashboard')
-```
+    .
+    ├── ...
+    ├── src                                  
+    │   ├── dashboard                         
+    |   │   ├── data                              
+    |   │   |   ├── model                         # Modeled Data from Temporal Modelling
+    |   │   |   |   ├── HSCPrevalence 
+    |   │   |   |   |   ├── AMI_EPI.csv 
+    |   │   |   |   |   ├── ASTHMA_EPI.csv 
+    |   │   |   |   |   └── ...
+    |   │   |   |   ├── IncidenceRate 
+    |   │   |   |   |   ├── ALZHEIMER_DEMENTIA.csv 
+    |   │   |   |   |   ├── AMI.csv 
+    |   │   |   |   |   └── ...
+    |   │   |   |   └── LifePrevalence 
+    |   │   |   |       ├── ALZHEIMER_DEMENTIA.csv 
+    |   │   |   |       ├── AMI.csv 
+    |   │   |   |       └── ...
+    |   │   |   └── raw                            # Original Data from "Data_MFT_HA_CHSA'
+    |   │   |       ├── HSCPrevalence 
+    |   │   |       |   ├── AMI_EPI.csv 
+    |   │   |       |   ├── ASTHMA_EPI.csv 
+    |   │   |       |   └── ...
+    |   │   |       ├── IncidenceRate 
+    |   │   |       |   ├── ALZHEIMER_DEMENTIA.csv 
+    |   │   |       |   ├── AMI.csv 
+    |   │   |       |   └── ...
+    |   │   |       └── LifePrevalence 
+    |   │   |           ├── ALZHEIMER_DEMENTIA.csv 
+    |   │   |           ├── AMI.csv 
+    |   │   |           └── ... 
+    │   |   └── ...  
+    │   └──  ...                                 
+    └── ...
+
+1.  Run the following command using the command line/terminal from the
+    root directory of the project:
+
+<!-- -->
+
+    shiny::runApp('src/dashboard')
 
 ### Dependencies
 
@@ -123,6 +130,11 @@ shiny::runApp('src/dashboard')
     -   DT=0.23
     -   shinyBS=0.61.1
     -   fANCOVA=0.6-1
+    -   segmented=1.6-0
+    -   broom=0.8.0
+    -   modelr=0.1.8
+    -   purrr=0.3.4
+    -   fst=0.9.8
 
 -   GNU make 3.81
 
@@ -144,18 +156,19 @@ to abide by its terms.
 
 ### License
 
-```
-Copyright 2022 Province of British Columbia
+    Copyright 2022 Province of British Columbia
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License.
-```
----
-*This project was created using the [bcgovr](https://github.com/bcgov/bcgovr) package.* 
+    Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and limitations under the License.
+
+------------------------------------------------------------------------
+
+*This project was created using the
+[bcgovr](https://github.com/bcgov/bcgovr) package.*
