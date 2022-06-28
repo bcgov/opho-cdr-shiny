@@ -1,4 +1,8 @@
 ################################
+# This file contains all the ui and server logic for the app
+################################  
+
+################################
 # Load packages
 # ################################
 suppressPackageStartupMessages({
@@ -22,7 +26,7 @@ suppressPackageStartupMessages({
 ################################
 # Source helper functions and templates
 #
-# Define and load all the global variables, including the data frames and shape files
+#Load all the global variables, including the data frames and shape files
 ################################
 source('info.R', local = T)
 source('helpers.R', local = T)
@@ -158,7 +162,7 @@ ui <- fluidPage(
                    )
                  )
                )
-             )), 
+             )),
     
     ################################
     # "By Region" Tab UI Side Logic
@@ -270,36 +274,38 @@ ui <- fluidPage(
     #############
     # Joinpoint TAB
     #############
-    tabPanel("Joinpoint Regression",
-             sidebarLayout(
-               sidebarPanel(
-                 id = "filters_m",
-                 width = 3,
-                 h2("Data Selection"),
-                 hr(),
-                 selectInput(
-                   "rates_m",
-                   label = "Select Rate",
-                   choices = join_rates,
-                   selected = "Incidence Rate"
-                 ),
-                 selectInput(
-                   "chsa_m",
-                   label = "Select CHSA",
-                   choices = join_chsa,
-                   selected = "Panorama"
-                 ),
-                 selectInput(
-                   "disease_m",
-                   label = "Select Disease",
-                   choices = join_disease,
-                   selected = "ASTHMA"
-                 ),
-                 br(),
-                 actionButton("reset_m", "Reset")
-               ),
-               mainPanel(plotlyOutput('jp_plot'))
-             )),
+    tabPanel(
+      "Joinpoint Regression",
+      sidebarLayout(
+        sidebarPanel(
+          id = "filters_m",
+          width = 3,
+          h2("Data Selection"),
+          hr(),
+          selectInput(
+            "rates_m",
+            label = "Select Rate",
+            choices = join_rates,
+            selected = "Incidence Rate"
+          ),
+          selectInput(
+            "chsa_m",
+            label = "Select CHSA",
+            choices = join_chsa,
+            selected = "Panorama"
+          ),
+          selectInput(
+            "disease_m",
+            label = "Select Disease",
+            choices = join_disease,
+            selected = "ASTHMA"
+          ),
+          br(),
+          actionButton("reset_m", "Reset")
+        ),
+        mainPanel(plotlyOutput('jp_plot'))
+      )
+    ),
   )
 )
 
@@ -331,8 +337,8 @@ server <- function(input, output, session) {
           
         })
       })
-    } # end observe navbarid
-  }) # end observe navbarid
+    } 
+  }) 
   
   ################################
   # By Disease Tab Server Side Logic
@@ -417,11 +423,13 @@ server <- function(input, output, session) {
   
   # Map geography selection based on user input
   spdf_d <- reactive ({
-    shiny::validate(need(input$health_bound_d, message=F))
-    if(!is.null(input$health_bound_d)){
-    switch(input$health_bound_d,
-           "Health Authorities" = ha_spdf,
-           "Community Health Service Areas" = chsa_spdf)
+    shiny::validate(need(input$health_bound_d, message = F))
+    if (!is.null(input$health_bound_d)) {
+      switch(
+        input$health_bound_d,
+        "Health Authorities" = ha_spdf,
+        "Community Health Service Areas" = chsa_spdf
+      )
     }
   })
   
@@ -531,8 +539,10 @@ server <- function(input, output, session) {
         YEAR == 2001
       )
     
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    error$lower <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
     
     p <- plot_ly(source = "disease_graph_bar")
     for (reg in input$region_d) {
@@ -597,8 +607,10 @@ server <- function(input, output, session) {
       filter(YEAR == input$year_d,
              HEALTH_BOUND_NAME %in% input$region_d)
     
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    error$lower <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
     
     p <- plotlyProxy("disease_graph_bar", session)
     
@@ -643,8 +655,10 @@ server <- function(input, output, session) {
                                 ) * 1.05)),
                                 y_axis_spec(input$dataset_d, "nonnegative")
                               ),
-                              xaxis = append(list(fixedrange = TRUE),
-                                             x_axis_bar_spec('Health Region', 5)),
+                              xaxis = append(
+                                list(fixedrange = TRUE),
+                                x_axis_bar_spec('Health Region', 5)
+                              ),
                               title = list(
                                 text = HTML(
                                   paste0(
@@ -744,8 +758,10 @@ server <- function(input, output, session) {
     p <- plotlyProxy("disease_graph_line", session)
     if (input$modeldata_d_switch == TRUE) {
       p |>
-        plotlyProxyInvoke("deleteTraces", as.list(seq(0, length(input$region_d) -
-                                                        1)))
+        plotlyProxyInvoke("deleteTraces", as.list(seq(0, length(
+          input$region_d
+        ) -
+          1)))
       for (reg in input$region_d) {
         df <- data |>
           filter(HEALTH_BOUND_NAME == reg)
@@ -768,8 +784,10 @@ server <- function(input, output, session) {
       
     } else{
       p |>
-        plotlyProxyInvoke("deleteTraces", as.list(seq(0, length(input$region_d) -
-                                                        1)))
+        plotlyProxyInvoke("deleteTraces", as.list(seq(0, length(
+          input$region_d
+        ) -
+          1)))
       for (reg in input$region_d) {
         df <- data |>
           filter(HEALTH_BOUND_NAME == reg)
@@ -796,16 +814,20 @@ server <- function(input, output, session) {
   output$map <- renderLeaflet({
     #select dummy data
     dummyData_inc <- datasetInput_d() |>
-      filter(CLNT_GENDER_LABEL == 'T',
-             GEOGRAPHY == "HA",
-             DISEASE == "Acute Myocardial Infarction")
+      filter(
+        CLNT_GENDER_LABEL == 'T',
+        GEOGRAPHY == "HA",
+        DISEASE == "Acute Myocardial Infarction"
+      )
     dummyData <- dummyData_inc |>
       filter(YEAR == 2001)
     
     dummy_spdf <- data.table::copy(spdf_d())
     
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    error$lower <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
     
     if (input$health_bound_d == "Health Authorities") {
       dummy_spdf@data <- spdf_d()@data |>
@@ -897,8 +919,10 @@ server <- function(input, output, session) {
   #Update map with filter changes
   observe({
     year_filtered_map_df <- filter_df_yr_d()
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    error$lower <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
     current_map_spdf <- data.table::copy(spdf_d())
     if (input$health_bound_d == "Health Authorities") {
       current_map_spdf@data <- spdf_d()@data |>
@@ -1018,8 +1042,10 @@ server <- function(input, output, session) {
   observeEvent(input$map_shape_mouseover, {
     rv_shape(TRUE)
     event_info <- input$map_shape_mouseover
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    error$lower <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
     bar_data <- filter_df_yr_d()
     ppl <-  plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
@@ -1158,8 +1184,10 @@ server <- function(input, output, session) {
     req(filter_df_d())
     event <-
       event_data("plotly_hover", source = "disease_graph_line")
-    error$lower <- paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
-    error$upper <- paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
+    error$lower <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_LCL_95")
+    error$upper <-
+      paste0(sub("\\_.*", "", rateInput_d()), "_UCL_95")
     bar_data <- filter_df_yr_d()
     ppl <- plotlyProxy("disease_graph_line", session)
     ppb <- plotlyProxy("disease_graph_bar", session)
@@ -1216,7 +1244,7 @@ server <- function(input, output, session) {
         )
     }
   })
-
+  
   ################################
   # By Region Tab Server Side Logic
   ################################
@@ -1360,14 +1388,16 @@ server <- function(input, output, session) {
         p <- plotlyProxy("region_tab_line_chart", session)
         p |>
           plotlyProxyInvoke("relayout",
-                            list(yaxis = y_axis_spec(
-                              input$region_tab_rate_type_selected,
-                              ifelse(
-                                input$region_tab_line_y0switch,
-                                "tozero",
-                                "nonnegative"
+                            list(
+                              yaxis = y_axis_spec(
+                                input$region_tab_rate_type_selected,
+                                ifelse(
+                                  input$region_tab_line_y0switch,
+                                  "tozero",
+                                  "nonnegative"
+                                )
                               )
-                            )))
+                            ))
       })
       
       # Change line chart to show smoothed time trends data
@@ -1383,7 +1413,7 @@ server <- function(input, output, session) {
             )))
           
           for (disease in input$region_tab_diseases_selected) {
-            df <- data[which(data$DISEASE == disease),]
+            df <- data[which(data$DISEASE == disease), ]
             p |>
               plotlyProxyInvoke(
                 "addTraces",
@@ -1409,7 +1439,7 @@ server <- function(input, output, session) {
             )))
           
           for (disease in input$region_tab_diseases_selected) {
-            df <- data[which(data$DISEASE == disease),]
+            df <- data[which(data$DISEASE == disease), ]
             p |>
               plotlyProxyInvoke(
                 "addTraces",
@@ -1460,7 +1490,7 @@ server <- function(input, output, session) {
         p <- plot_ly(source = "region_tab_bar_chart")
         
         for (disease in input$region_tab_diseases_selected) {
-          dummy_df <- dummyData[which(dummyData$DISEASE == disease), ]
+          dummy_df <- dummyData[which(dummyData$DISEASE == disease),]
           p <- p |>
             add_trace(
               x = dummy_df$DISEASE,
@@ -1530,7 +1560,7 @@ server <- function(input, output, session) {
         
         for (disease in seq_along(input$region_tab_diseases_selected)) {
           filtered_df <-
-            bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]),]
+            bar_chart_data[which(bar_chart_data$DISEASE == input$region_tab_diseases_selected[disease]), ]
           p |>
             plotlyProxyInvoke("restyle",
                               "y",
@@ -1616,8 +1646,10 @@ server <- function(input, output, session) {
                                        width = 2,
                                        color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
                                      )),
-                                     as.integer(match(disease, region_tab_traces()) -
-                                                  1))
+                                     as.integer(match(
+                                       disease, region_tab_traces()
+                                     ) -
+                                       1))
             
           }
           ppb |>  plotlyProxyInvoke(method = "restyle", list(opacity = 1))
@@ -1631,17 +1663,19 @@ server <- function(input, output, session) {
                                   width = 0.5,
                                   color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
                                 )),
-                                as.integer(match(disease, region_tab_traces()) - 1))
+                                as.integer(match(
+                                  disease, region_tab_traces()
+                                ) - 1))
           }
           
           ppl |>
             plotlyProxyInvoke(method = "restyle",
                               "line",
-                              list(width = 3,
-                                   list(
-                                     width = 3,
-                                     color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)]
-                                   )),
+                              list(
+                                width = 3,
+                                list(width = 3,
+                                     color = DISEASE_colors$Colors[match(event[["customdata"]], DISEASE_colors$DISEASE)])
+                              ),
                               as.integer(match(event[["customdata"]], region_tab_traces()) - 1))
           
           # And make the bar of the highlighted disease opaque and others transparent
@@ -1669,7 +1703,9 @@ server <- function(input, output, session) {
                                        width = 2,
                                        color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
                                      )),
-                                     as.integer(match(disease, region_tab_traces()) - 1))
+                                     as.integer(match(
+                                       disease, region_tab_traces()
+                                     ) - 1))
           }
           ppb |> plotlyProxyInvoke(method = "restyle", list(opacity = 1))
         } else{
@@ -1683,7 +1719,9 @@ server <- function(input, output, session) {
                                   width = 0.5,
                                   color = DISEASE_colors$Colors[match(disease, DISEASE_colors$DISEASE)]
                                 )),
-                                as.integer(match(disease, region_tab_traces()) - 1))
+                                as.integer(match(
+                                  disease, region_tab_traces()
+                                ) - 1))
           }
           ppl |>
             plotlyProxyInvoke(
@@ -1699,14 +1737,14 @@ server <- function(input, output, session) {
                               list(opacity = 0.2)) |>
             plotlyProxyInvoke(method = "restyle",
                               list(opacity = 1),
-                              as.integer(match(
-                                event[["x"]], input$region_tab_diseases_selected
-                              ) - 1))
+                              as.integer(
+                                match(event[["x"]], input$region_tab_diseases_selected) - 1
+                              ))
         }
       })
       
-    } # end observe navbarid
-  }) # end observe navbarid
+    } 
+  }) 
   
   
   #####################
@@ -1832,23 +1870,16 @@ server <- function(input, output, session) {
               (if ("All" %in% input$region_data)
                 TRUE
                else
-                 (HEALTH_BOUND_NAME %in% input$region_data)
-              ) &
-              (
-                if ("All" %in% input$disease_data)
-                  TRUE
-                else
-                  (DISEASE %in% input$disease_data)
-              ) &
-              (
-                YEAR %in% seq(
-                  from   =   min(input$year_range_data),
-                  to   =   max(input$year_range_data)
-                )
-              ) &
-              (
-                CLNT_GENDER_LABEL == substr(input$gender_data, 1, 1)
-              )
+                 (HEALTH_BOUND_NAME %in% input$region_data)) &
+              (if ("All" %in% input$disease_data)
+                TRUE
+               else
+                 (DISEASE %in% input$disease_data)) &
+              (YEAR %in% seq(
+                from   =   min(input$year_range_data),
+                to   =   max(input$year_range_data)
+              )) &
+              (CLNT_GENDER_LABEL == substr(input$gender_data, 1, 1))
           )  |>
           mutate(
             CRUDE_CI  =  paste0("(", CRUDE_LCL_95, ",", CRUDE_UCL_95, ")"),
@@ -1879,10 +1910,8 @@ server <- function(input, output, session) {
         names(data) <- snakecase::to_title_case(names(data))
         
         data |>
-          rename(
-            "Crude 95% CI" = "Crude Ci",
-            "Standardized 95% CI" = "Std Ci"
-          )
+          rename("Crude 95% CI" = "Crude Ci",
+                 "Standardized 95% CI" = "Std Ci")
         
       })
       
@@ -1899,7 +1928,7 @@ server <- function(input, output, session) {
       # Render data table
       output$data_table <- renderDT(
         filter_df_data() |>
-          select(-"Crude Variance", -"Std Variance"),
+          select(-"Crude Variance",-"Std Variance"),
         rownames = FALSE,
         options = list(
           scrollX = TRUE,
@@ -1912,8 +1941,8 @@ server <- function(input, output, session) {
           )
         )
       )
-    } # end observe navbarid
-  }) # end observe navbarid
+    } 
+  }) 
   
   
   ################################
