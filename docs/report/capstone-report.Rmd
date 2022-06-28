@@ -375,9 +375,9 @@ The model's limitations being that it is sensitive to missing values and disease
 
 While we attempted to perfect the deliverables based on constant partner feedback, 
 due to the short time frame of this capstone project,
-we acknowledge our limitations on and provide recommendations on future endeavors. 
+we acknowledge our limitations and provide recommendations on future endeavors. 
 For the dashboard, the main improvement lies in the speed. 
-The performance is acceptable for a single user per session, though varies greatly by laptops. 
+The performance is acceptable for a single user per session, though varies greatly by computers. 
 In the case that multiple users will be active simultaneously, 
 asynchronous programming can be applied to increase scalability. 
 More details on how to speed up the Shiny dashboard can be found in the project repository. 
