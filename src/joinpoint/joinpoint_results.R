@@ -22,21 +22,23 @@ library(modelr)
 library(purrr)
 library(fst)
 
+path <- here("data", "processed")
 opt <- docopt(doc)
 
-main <- function(input, output) {
+main <- function(opt) {
   
-  # ignore data with missing and Zero values: 
+  # defining factors and ignoring missing values and Zero values: 
   
-  CHSA_df <- read_csv(input) %>%
-    mutate( RATE = as.factor(RATE)) %>% 
-    mutate( DISEASE = as.factor(DISEASE)) %>%
-    mutate( HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES)) %>%
-    mutate(anyTRUE = !if_any(everything(), ~. %in% c(NA,"",0)))
+  CHSA_df <- read_csv(here(path, "joinpoint_df.csv")) |>
+    mutate( RATE = as.factor(RATE),
+            DISEASE = as.factor(DISEASE),
+            HEALTH_BOUNDARIES = as.factor(HEALTH_BOUNDARIES),
+            anyTRUE = !if_any(everything(), ~. %in% c(NA,"",0)))
+  
   
   # ignore data of particular region and disease, as the changepioints are not compatible for joinpoint regression
   
-  main_CHSA_df <- CHSA_df  %>%
+  main_CHSA_df <- CHSA_df  |>
     mutate(anyTRUE = ifelse((RATE == 'INCIDENCE' & (
         (DISEASE == 'JUVENILE ARTHRITIS') |
           (HEALTH_BOUNDARIES == 'Downtown Victoria/Vic West' &
@@ -82,17 +84,17 @@ main <- function(input, output) {
           (HEALTH_BOUNDARIES == "Fernie" &
               DISEASE == 'ALZHEIMER_DEMENTIA'))) |
       ((RATE == 'HSC' & (HEALTH_BOUNDARIES == 'Castlegar' &
-                           DISEASE == 'HOSP TIA EPI') |
+                           DISEASE == 'HOSP TIA_EPI') |
           (HEALTH_BOUNDARIES == 'Enderby' &
               DISEASE == 'SCHIZOPHRENIA EPI') |
           (HEALTH_BOUNDARIES == 'North Thompson' &
-              DISEASE == 'HOSP STROKE EPI') |
+              DISEASE == 'HOSP STROKE_EPI') |
           (HEALTH_BOUNDARIES == 'Brookswood/Murrayville' &
-              DISEASE == 'HAEMORR STROKE EPI') |
+              DISEASE == 'HAEMORR STROKE_EPI') |
           (HEALTH_BOUNDARIES == 'Snow Country' &
-              DISEASE == 'HAEMORR STROKE EPI') |
-          (EALTH_BOUNDARIES == 'Vanderhoof Rural' &
-              DISEASE == 'HAEMORR STROKE EPI'))) |
+              DISEASE == 'HAEMORR STROKE_EPI') |
+          (HEALTH_BOUNDARIES == 'Vanderhoof Rural' &
+              DISEASE == 'HAEMORR STROKE_EPI'))) |
       ((RATE == 'LIFE_PREV' & 
           (HEALTH_BOUNDARIES == 'West Cariboo' &
             DISEASE == 'JUVENILE ARTHRITIS') |
@@ -100,32 +102,32 @@ main <- function(input, output) {
               DISEASE == 'JUVENILE ARTHRITIS'))), FALSE, anyTRUE))
     
   # generate results (log-linear segmented model)
-  nested_df <- main_CHSA_df %>%
-    filter(anyTRUE==TRUE)%>%
-    group_by(RATE, HEALTH_BOUNDARIES, DISEASE) %>%
-    arrange(RATE, HEALTH_BOUNDARIES, DISEASE, YEAR) %>% 
-    nest() %>%
+  nested_df <- main_CHSA_df |>
+    filter(anyTRUE==TRUE)|>
+    group_by(RATE, HEALTH_BOUNDARIES, DISEASE) |>
+    arrange(RATE, HEALTH_BOUNDARIES, DISEASE, YEAR) |> 
+    nest() |>
     mutate(fit = map(data, ~segmented(lm(log(STD_RATE_PER_1000)~ YEAR,
                                          na.action= na.exclude,
                                          data=.), seg.Z = ~YEAR)),
-           results = map(fit, augment))%>%
+           results = map(fit, augment))|>
     unnest(results)
   
   # Create data for R shiny app
-  temp_df <- nested_df %>%
-    mutate(join_fitted = exp(.fitted)) %>%
+  temp_df <- nested_df |>
+    mutate(join_fitted = exp(.fitted)) |>
     dplyr::select(c(RATE,
                     DISEASE,
                     HEALTH_BOUNDARIES,
                     YEAR,
                     join_fitted))
   
-  joinpoint_for_shiny_df <- main_CHSA_df %>%
+  joinpoint_for_shiny_df <- main_CHSA_df |>
     full_join(temp_df, by = c("RATE", 
                               "DISEASE", 
                               "HEALTH_BOUNDARIES", 
-                              "YEAR")) %>%
-    rename(join_obs = STD_RATE_PER_1000) %>%
+                              "YEAR")) |>
+    rename(join_obs = STD_RATE_PER_1000) |>
     mutate(
       RATE = recode_factor(
         RATE,
@@ -133,7 +135,7 @@ main <- function(input, output) {
         'INCIDENCE' = "Incidence Rate",
         'LIFE_PREV' = "Lifetime Prevalence"
       ),
-    )%>%
+    )|>
     dplyr::select(c(RATE,
                     DISEASE,
                     HEALTH_BOUNDARIES,
@@ -150,10 +152,7 @@ main <- function(input, output) {
             here(opt$output, "joinpoint_results.csv"))
   write_fst(joinpoint_for_shiny_df,
             here(opt$output, "joinpoint_for_shiny_df.fst"))
-  
   print(paste("Files output to:", opt$output))
 }
-  
 
-  
-main(opt[["--input"]], opt[["--output"]])
+main(opt)

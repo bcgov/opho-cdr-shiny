@@ -1,7 +1,7 @@
 ---
 title: 'BC Chronic Diseases trends: A joinpoint regression analysis'
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-author: 'Mahmoodur Rahman'
+author: "[Mahmoodur Rahman](https://sites.google.com/view/rmahmood/)"
 output:
   html_document:
     df_print: paged
@@ -25,7 +25,7 @@ library(purrr)
 path <- here("data", "processed")
 ```
 
-# Rationale: 
+## Rationale
 
  Segmented or broken-line models are part of regression models where the
 associations between the outcome and independent variable are
@@ -43,27 +43,27 @@ in particular points in time, rather than smoothing it. The idea is to
 aid epidemiologists in drawing inferences by estimating these
 change-points.
  
-# Data Pre-processing:
+## Data Pre-processing
 
-## Data loading and wrangling:
+### Data loading and wrangling
 
  - Data from all diseases by regions from over the years are combined to make single dataframe
  - We excluded diseases with missing and Zero values
 
 ```{r data load}
-sample_df <- read_csv(here(path, "joinpoint_df.csv"))
-head(sample_df)
+joinpoint_df <- read_csv(here(path, "joinpoint_df.csv"))
+head(joinpoint_df)
 ```
  
 
-# Exploratory data analysis
+## Exploratory data analysis
 
- - The following graph plots Age-standardized Incidence Rates of Chronic Diseases in Kimberley CHSA in from 2001 to 2020 (Will label the graph)
+ - The following graph plots Age-standardized Incidence Rates of Chronic Diseases in Kimberley CHSA in from 2001 to 2020
 
 ```{r eda, fig.width=14, fig.height=12}
 
-sample_df %>%
-  filter(RATE == "INCIDENCE" & HEALTH_BOUNDARIES == "Kimberley") %>%
+joinpoint_df |>
+  filter(RATE == "INCIDENCE" & HEALTH_BOUNDARIES == "Kimberley") |>
   ggplot(aes(x=YEAR, y=STD_RATE_PER_1000)) +
   geom_line() +
   facet_wrap(~DISEASE) +
@@ -72,14 +72,14 @@ sample_df %>%
 
 ```
 
-### Observations: 
+#### Observations
 
  - "Changelings" can be seen, and not all lines are linear or smooth
  - Each "Piece" is considered a linear relation between Rates and Time (Year)
 
-# Building the Model on sample data:
+## Building the Model on sample data
 
-## Arguments :
+### Arguments 
 
  - Model : Segmented regression / Joinpoint regression / Piecewise regression
  - Response (y): Age-Standardized Incidence Rate
@@ -89,40 +89,46 @@ sample_df %>%
  
 ```{r linear regression}
 
-sample_df <- main_CHSA_df %>%
-  filter(RATE == "INCIDENCE"&
-    HEALTH_BOUNDARIES == "Fairview" &
-           DISEASE == "ALZHEIMER DEMENTIA")
+sample_df <- joinpoint_df |>
+  filter(
+      RATE == "INCIDENCE" &
+      HEALTH_BOUNDARIES == "Fairview" &
+      DISEASE == "ALZHEIMER DEMENTIA"
+  ) |> 
+  na_if(0) |> 
+  drop_na()
 
-lm_model <- lm(log(STD_RATE_PER_1000)~YEAR, data = sample_df)
+lm_model <- lm(log(STD_RATE_PER_1000)~YEAR, 
+               na.action= na.exclude,
+               data = sample_df)
 seg_obj<-segmented(lm_model,seg.Z=~YEAR)
 
 ```
 
-## Model daignostics:
+### Model daignostics
 
-### Regression coefficients:
+#### Regression coefficients
 
 ```{r}
 print(summary(seg_obj))
 ```
 
-#### Observations: 
+##### Observations
 
  - Breakpoint is in Year 2009
 
-### Average Annual Percent (AAPC) change:
+#### Average Annual Percent (AAPC) change
 
 To summarize piecewise linear relationships in segmented regression models.
 ```{r aapc}
 print(aapc(seg_obj, wrong.se = FALSE))
 
 ```
-#### Observations:
+##### Observations
 
  - Positive AAPC refers to a significant trend
 
-## Plotting:
+### Plot
 
 ```{r}
 plot(seg_obj, 
@@ -132,23 +138,23 @@ plot(seg_obj,
      res=TRUE, 
      res.col=1, 
      pch=19,
-     main = "Predicted Age-standardized Incidence Rates of ALZHEIMER_DEMENTIA in Fairview CHSA (2001 to 2020)",
+     main = "Predicted trend of Age-standardized Incidence Rates",
      xlab = "Time in Years",
      ylab = "log(Age-standardized Incidence Rate")
 
 ```
 
-#### Observations:
+#### Observations
 
  - Epidemiological emphasis: Possible causes can be explored looking at the "Breakpoint" of Year 2009. 
 
-# Implications:
+## Implications
 
  - We developed an R shiny dashboard where a tab contains an interactive plot 
  showing breakpoints in trends of diseases per CHSA
  - The results from the model is also saved in a dataframe for future use
  
-# References
+### References
  
  
  

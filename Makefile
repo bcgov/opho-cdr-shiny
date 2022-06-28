@@ -1,9 +1,9 @@
 # BC Chronic Disease Bayesian Temporal Smoothing Analysis and Joinpoint Analysis Pipeline 
 # Date: 2022-06-26
 
-all: src/eda/01_modeling_eda_loess.html src/eda/02_modeling_eda_inla.html src/eda/03_model_overview.html\
-	results/model results/model/HSCPrevalence results/model/IncidenceRate results/model/LifePrevalence\
-	src/joinpoint/joinpoint_method.html
+all: src/eda/01_modeling_eda_loess.html src/eda/02_modeling_eda_inla.html src/eda/03_model_overview.html src/joinpoint/joinpoint_method.html\
+results/model results/model/HSCPrevalence results/model/IncidenceRate results/model/LifePrevalence\
+	
 
 # Pre-process data for EDA (Temporal Smoothing Analysis)
 data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv : src/eda/00_eda_preprocess.R
@@ -20,7 +20,6 @@ src/eda/01_modeling_eda_loess.html : src/eda/01_modeling_eda_loess.Rmd data/proc
 src/eda/02_modeling_eda_inla.html : src/eda/02_modeling_eda_inla.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
 	Rscript -e "rmarkdown::render('src/eda/02_modeling_eda_inla.Rmd', output_format = 'html_document')"
 
-	
 # Fit model
 results/model/HSCPrevalence : src/model/01_analysis.R
 	Rscript src/model/01_analysis.R --input="data/Data_T_CHSA/HSCPrevalence" --output="results/model/HSCPrevalence"
@@ -31,11 +30,9 @@ results/model/IncidenceRate : src/model/01_analysis.R
 results/model/LifePrevalence : src/model/01_analysis.R
 	Rscript src/model/01_analysis.R --input="data/Data_T_CHSA/LifePrevalence" --output="results/model/LifePrevalence"
 
-
 # Generate joinpoint regression results and create data to feed R Shiny app
-results/model/joinpoint_for_shiny_df.fst results/model/joinpoint_results.csv: src/joinpoint/joinpoint_results.R
+results/model : src/joinpoint/joinpoint_results.R
 	Rscript src/joinpoint/joinpoint_results.R --input="data/processed" --output="results/model"
-
 
 # Generate model overview report
 src/eda/03_model_overview.html : src/eda/03_model_overview.Rmd data/processed/hsc_prevalence_combined.csv data/processed/incidence_rate_combined.csv data/processed/life_prevalence_combined.csv
