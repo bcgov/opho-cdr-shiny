@@ -196,18 +196,18 @@ be required, but were not further explored due to time constraints.
 
 ## Joinpoint Regression
 
-Often the relationship between the response and explanatory variables is
-non-linear, where it can be seen that the effect on the response changes
-abruptly. In case of describing effect of time upon disease rates,
+There are circumstances when the response and explanatory variables do not 
+maintain a linear relationship, as such when there are abrupt changes resulting from 
+effect on the response. In case of describing effect of time upon disease rates,
 epidemiologists are usually interested in the break-point location and
-the relevant regression parameters. The classical methods used to take
-into account non-linear effects, such as polynomial regression,
-regression splines and non-parametric smoothing, are not suitable
-because the change-points are fixed *a priori* (regression splines) or
-are not considered at all (smoothing splines and polynomial regression).
-Moreover, regression parameters obtained in regression splines or
-polynomial regression approach are not directly interpretable
-(@rj1990generalized). The `R` package, `segmented`
+the relevant regression parameters. Polynomial regression, regression splines 
+and non-parametric smoothing are some of the many conventional methods to deal 
+with such non-linear relationship. But here, they are not of help, as the 
+change-points are constant *a priori* (regression splines) or
+often, changepoints are ignored (smoothing splines and polynomial regression).
+Moreover, loss of interpretability is another concern, when regression parameters 
+are obtained in regression splines or polynomial regression approach
+(@rj1990generalized). Moreover, the `R` package, `segmented`
 (@muggeo2008segmented) is capable to account for the unknown
 breakpoints, and providing fitted values.
 
