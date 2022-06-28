@@ -83,8 +83,8 @@ To re-run the analysis and run the dashboard, please ensure that R (version 4.2.
 ├── src                                  
 │   ├── dashboard                         
 |   │   ├── data                              
-|   │   |   ├── model                         # Modeled Data from Temporal Modelling
-|   │   |   |   ├── HSCPrevalence 
+|   │   |   ├── model                         # Modeled Data from Modelling
+|   │   |   |    
 |   │   |   |   |   ├── AMI_EPI.csv 
 |   │   |   |   |   ├── ASTHMA_EPI.csv 
 |   │   |   |   |   └── ...
@@ -93,9 +93,11 @@ To re-run the analysis and run the dashboard, please ensure that R (version 4.2.
 |   │   |   |   |   ├── AMI.csv 
 |   │   |   |   |   └── ...
 |   │   |   |   └── LifePrevalence 
-|   │   |   |       ├── ALZHEIMER_DEMENTIA.csv 
-|   │   |   |       ├── AMI.csv 
-|   │   |   |       └── ...
+|   │   |   |   |   ├── ALZHEIMER_DEMENTIA.csv 
+|   │   |   |   |   ├── AMI.csv 
+|   │   |   |   |   └── ...
+|   │   |   |   └── joinpoint_for_shiny_df.fst
+|   │   |   |   └── joinpoint_results.csv
 |   │   |   └── raw                            # Original Data from "Data_MFT_HA_CHSA'
 |   │   |       ├── HSCPrevalence 
 |   │   |       |   ├── AMI_EPI.csv 
