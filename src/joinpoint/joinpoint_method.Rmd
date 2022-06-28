@@ -6,7 +6,7 @@ output:
   html_document:
     df_print: paged
     code_folding: hide
-bibliography: joinpoint_ref.bib
+bibliography: jp_ref.bib
 ---
 
 ```{r setup, include=FALSE}
