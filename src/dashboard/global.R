@@ -3,12 +3,18 @@
 #   going to be used in app.R
 ################################
 
-
 ################################
 # Load in helper functions
 # ################################
 source('helpers.R', local = T)
 
+################################
+# Define file paths
+# 
+# These file paths are relative paths to the dashboard folder
+# ################################
+chsa_shapefiles_path <- "/geo_data/chsa_2018"
+ha_shapefiles_path <- "/geo_data/ha_2018"
 
 ################################
 # Read geographic data from files and simplify polygons
@@ -16,7 +22,7 @@ source('helpers.R', local = T)
 
 # Read the shape files for the Community Health Service Areas (CHSA) level
 chsa_spdf <- readOGR(
-  dsn = paste0(getwd(), "/geo_data/chsa_2018"),
+  dsn = paste0(getwd(), chsa_shapefiles_path),
   layer = "CHSA_2018",
   verbose = FALSE
 ) |>
@@ -29,7 +35,7 @@ chsa_spdf <- SpatialPolygonsDataFrame(chsa_spdf, regions_df)
 
 # Read the shape files for the Health Authorities (HA) level
 ha_spdf <- readOGR(
-  dsn = paste0(getwd(), "/geo_data/ha_2018"),
+  dsn = paste0(getwd(), ha_shapefiles_path),
   layer = "HA_2018",
   verbose = FALSE
 ) |>
@@ -79,6 +85,7 @@ disease_dict <-
 # Define other global variables for the filters to speed up the server
 GEOGRAPHY_CHOICES <-
   c("Health Authorities", "Community Health Service Areas")
+
 HA_CHOICES <-
   c("Fraser",
     "Interior",
@@ -164,12 +171,11 @@ hsc_prev_df <- wrangle_data_frame(hsc_prev_df)
 life_prev_df <- wrangle_data_frame(life_prev_df)
 
 # Load, Read, Define fst file for joinpoint regression:
-
 data = reactiveVal(NULL)
 tmp_all = reactiveValues(fst = NULL,
                          cols_fst = NULL)
 
-tmp_fst = fst("data/model/joinpoint_for_shiny_df.fst")
+tmp_fst = fst("data/joinpoint/joinfast.fst")
 
 cols_fst = c("RATE",
              "DISEASE",

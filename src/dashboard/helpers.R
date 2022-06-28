@@ -46,7 +46,7 @@ wrangle_data_frame <- function(df) {
 }
 
 
-#helper function for choropleth animation
+# Function for choropleth animation
 setShapeStyle <- function(map,
                           data = getMapData(map),
                           layerId,
@@ -96,7 +96,7 @@ setShapeStyle <- function(map,
 }
 
 
-#helper function in JS for choropleth animation
+# Function in JS for choropleth animation
 leafletjs <-  tags$head(tags$script(
   HTML(
     '
@@ -135,7 +135,7 @@ window.LeafletWidget.methods.setLabel = function(category, layerId, label){
 ))
 
 
-# helper function in JS for changing tab backgrounds
+# Function in JS for changing tab backgrounds
 tab_colsjs <- tags$head(
   tags$script(
     "
@@ -147,8 +147,7 @@ tab_colsjs <- tags$head(
 )
 
 
-
-# To draw vertical lines on line graph
+# Function to draw vertical lines on line graph
 vline <- function(x = 0, color = "gray40") {
   list(
     type = "line",
@@ -161,12 +160,12 @@ vline <- function(x = 0, color = "gray40") {
   )
 }
 
-# To format and round all values to 2 decimals
+# Function to format and round all values to 2 decimals
 format_round <- function(x, dec = 2) {
   format(round(x, digits = dec), nsmall = dec)
 }
 
-# Dynamic Health Boundaries selection
+# Function for dynamic Health Boundaries selection
 health_bounds <- function(input) {
   (if (input == "Health Authorities")
     return(c(sort(
