@@ -70,6 +70,7 @@ To re-run the analysis and run the dashboard, please ensure that R (version 4.2.
   To veiw the method paper, run the following command in the R console:
     ```
     rmarkdown::run('src/joinpoint/joinpoint_method.rmd')
+    ```
 
 #### Dashboard
 

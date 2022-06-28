@@ -53,8 +53,8 @@ below.
     `rmarkdown::run('src/model/02_visualize.Rmd')`
 6.  To view the Joinpoint Regression results, check that results have
     been output to “results/model”. To veiw the method paper, run the
-    following command in the R console: \`\`\`
-    rmarkdown::run(‘src/joinpoint/joinpoint_method.rmd’)
+    following command in the R console:
+    `rmarkdown::run('src/joinpoint/joinpoint_method.rmd')`
 
 #### Dashboard
 
