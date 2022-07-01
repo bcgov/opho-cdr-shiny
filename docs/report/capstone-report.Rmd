@@ -93,21 +93,19 @@ disease rates and trends between different CHSA.
 
 ## Joinpoint Regression
 
-Segmented or broken-line models are regression models where the
-relationships between the response and explanatory variable are
-piece-wise linear, namely represented by two or more straight lines
-connected at unknown values: these values are usually referred as
-breakpoints, change-points or even join-points. Here the response
-variable are different standardized chronic disease rates, and time in
-years (2001 to 2020) being the explanatory variable. Broken-line
-relationships are common in many fields, including epidemiology,
-occupational medicine, toxicology, and ecology, where sometimes it is of
-interest to assess threshold value where the effect of the co-variate
-(time in years) changes [@ulm1991statistical; @betts2007thresholds]. In
-other words, this model is used here to estimate abrupt changes in rates
-in particular points in time, rather than smoothing it. The idea is to
-aid epidemiologists in drawing inferences by estimating these
-change-points.
+When the response is dependent on the explanatory variable in a
+piece-wise linear manner, such as when multiple linear pieces are
+connected at unknown points, segmented are used as regression models.
+They also termed as or broken-line models. Here the response variable
+are different standardized chronic disease rates, and time in years
+(2001 to 2020) being the explanatory variable. This type of model is
+particularly applied in the filed of epidemiology, occupational
+medicine, toxicology, and ecology, where often, the goal is to to
+estimate threshold value where the effect of the co-variate (time in
+years) changes [@ulm1991statistical; @betts2007thresholds]. In other
+words, this model is used here to estimate abrupt changes in rates in
+particular points in time, rather than smoothing it. The idea is to aid
+epidemiologists in drawing inferences by estimating these change-points.
 
 # Data Science Techniques
 
@@ -196,18 +194,19 @@ be required, but were not further explored due to time constraints.
 
 ## Joinpoint Regression
 
-There are circumstances when the response and explanatory variables do not 
-maintain a linear relationship, as such when there are abrupt changes resulting from 
-effect on the response. In case of describing effect of time upon disease rates,
-epidemiologists are usually interested in the break-point location and
-the relevant regression parameters. Polynomial regression, regression splines 
-and non-parametric smoothing are some of the many conventional methods to deal 
-with such non-linear relationship. But here, they are not of help, as the 
-change-points are constant *a priori* (regression splines) or
-often, changepoints are ignored (smoothing splines and polynomial regression).
-Moreover, loss of interpretability is another concern, when regression parameters 
-are obtained in regression splines or polynomial regression approach
-(@rj1990generalized). Moreover, the `R` package, `segmented`
+There are circumstances when the response and explanatory variables do
+not maintain a linear relationship, as such when there are abrupt
+changes resulting from effect on the response. In case of describing
+effect of time upon disease rates, epidemiologists are usually
+interested in the break-point location and the relevant regression
+parameters. Polynomial regression, regression splines and non-parametric
+smoothing are some of the many conventional methods to deal with such
+non-linear relationship. But here, they are not of help, as the
+change-points are constant *a priori* (regression splines) or often,
+changepoints are ignored (smoothing splines and polynomial regression).
+Moreover, loss of interpretability is another concern, when regression
+parameters are obtained in regression splines or polynomial regression
+approach (@rj1990generalized). Moreover, the `R` package, `segmented`
 (@muggeo2008segmented) is capable to account for the unknown
 breakpoints, and providing fitted values.
 
@@ -351,45 +350,49 @@ knitr::include_graphics("images/jp_shiny.png")
 
 # Conclusion and Recommendations
 
-Every year, the Office of British Columbia Provincial Health Officer 
-analyzes British Columbians' healthcare utilization pattern and 
-aggregates counts and rates of 25 chronic conditions by time, location, and sex. 
-For this project, they sought for two well-defined deliverables: 
-an interactive data visualization Shiny app and spatio-temporal analysis tools 
-to interpret trends in the data, which we successfully produced. 
+Every year, the Office of British Columbia Provincial Health Officer
+analyzes British Columbians' healthcare utilization pattern and
+aggregates counts and rates of 25 chronic conditions by time, location,
+and sex. For this project, they sought for two well-defined
+deliverables: an interactive data visualization Shiny app and
+spatio-temporal analysis tools to interpret trends in the data, which we
+successfully produced.
 
-First, we build an Shiny dashboard that allows health professionals 
-and non-experts alike to explore the distribution of diseases. 
-It is fully interactive, user-friendly, visually appealing, 
-and consistent with the BC government's color scheme. 
-Additional interactivity, such as hover information and linked highlighting effects, 
-enrich the user experience. Secondly, we generate models to interpret the temporal trends. 
-We use a Bayesian modelling approach to smoothen the large fluctuations 
-in estimates from smaller health communities. 
-We also apply the local polynomial regression (LOESS) model 
-as an alternative to fit the data for low rate diseases. 
-The smoothened temporal trends are incorporated into the dashboard for users to easily compare trends.
-Finally, we explore join-point regression, which provides epidemiologists 
-with information on abrupt rises and falls in temporal trends. 
-The model's limitations being that it is sensitive to missing values and diseases with stationary rates.
+First, we build an Shiny dashboard that allows health professionals and
+non-experts alike to explore the distribution of diseases. It is fully
+interactive, user-friendly, visually appealing, and consistent with the
+BC government's color scheme. Additional interactivity, such as hover
+information and linked highlighting effects, enrich the user experience.
+Secondly, we generate models to interpret the temporal trends. We use a
+Bayesian modelling approach to smoothen the large fluctuations in
+estimates from smaller health communities. We also apply the local
+polynomial regression (LOESS) model as an alternative to fit the data
+for low rate diseases. The smoothened temporal trends are incorporated
+into the dashboard for users to easily compare trends. Finally, we
+explore join-point regression, which provides epidemiologists with
+information on abrupt rises and falls in temporal trends. The model's
+limitations being that it is sensitive to missing values and diseases
+with stationary rates.
 
-While we attempted to perfect the deliverables based on constant partner feedback, 
-due to the short time frame of this capstone project,
-we acknowledge our limitations and provide recommendations on future endeavors. 
-For the dashboard, the main improvement lies in the speed. 
-The performance is acceptable for a single user per session, though varies greatly by computers. 
-In the case that multiple users will be active simultaneously, 
-asynchronous programming can be applied to increase scalability. 
-More details on how to speed up the Shiny dashboard can be found in the project repository. 
-To improve the Bayesian approach, additional fine-tuning of the model priors
-and scaling of the random walk model with the modified zero Gamma model is recommended.
-For the joinpoint analysis, its potential can be extended if 
-including other covariates such as sex, socioecnomic status, and other confounders. 
-Consideration of regional hierarchy and spatial components would also make the model more robust. 
+While we attempted to perfect the deliverables based on constant partner
+feedback, due to the short time frame of this capstone project, we
+acknowledge our limitations and provide recommendations on future
+endeavors. For the dashboard, the main improvement lies in the speed.
+The performance is acceptable for a single user per session, though
+varies greatly by computers. In the case that multiple users will be
+active simultaneously, asynchronous programming can be applied to
+increase scalability. More details on how to speed up the Shiny
+dashboard can be found in the project repository. To improve the
+Bayesian approach, additional fine-tuning of the model priors and
+scaling of the random walk model with the modified zero Gamma model is
+recommended. For the joinpoint analysis, its potential can be extended
+if including other covariates such as sex, socioecnomic status, and
+other confounders. Consideration of regional hierarchy and spatial
+components would also make the model more robust.
 
-Overall, we are confident that our data products fit the partner's initial needs 
-and will be useful to inform the Ministers and the general public 
-on chronic diseases and public health issues.
+Overall, we are confident that our data products fit the partner's
+initial needs and will be useful to inform the Ministers and the general
+public on chronic diseases and public health issues.
 
 \newpage
 
