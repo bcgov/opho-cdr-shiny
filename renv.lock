@@ -495,6 +495,27 @@
       "Hash": "7c89603d81793f0d5486d91ab1fc6f1d",
       "Requirements": []
     },
+    "fst": {
+      "Package": "fst",
+      "Version": "0.9.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "34637e000c63c3de8d8aafceb82fd082",
+      "Requirements": [
+        "Rcpp",
+        "fstcore"
+      ]
+    },
+    "fstcore": {
+      "Package": "fstcore",
+      "Version": "0.9.12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1c133b1d853bd4f67043a6e9c17051e2",
+      "Requirements": [
+        "Rcpp"
+      ]
+    },
     "gargle": {
       "Package": "gargle",
       "Version": "1.2.0",
@@ -1282,6 +1303,17 @@
         "viridisLite"
       ]
     },
+    "segmented": {
+      "Package": "segmented",
+      "Version": "1.6-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e5f687b87a4fe82dc0fb04b3f75278b9",
+      "Requirements": [
+        "MASS",
+        "nlme"
+      ]
+    },
     "selectr": {
       "Package": "selectr",
       "Version": "0.4-2",
@@ -1322,6 +1354,17 @@
         "xtable"
       ]
     },
+    "shinyBS": {
+      "Package": "shinyBS",
+      "Version": "0.61.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e44255f073ecdc26ba6bc2ce3fcf174d",
+      "Requirements": [
+        "htmltools",
+        "shiny"
+      ]
+    },
     "shinyWidgets": {
       "Package": "shinyWidgets",
       "Version": "0.7.0",
@@ -1358,16 +1401,6 @@
       "Requirements": [
         "digest",
         "jsonlite",
-        "shiny"
-      ]
-    },
-    "shinythemes": {
-      "Package": "shinythemes",
-      "Version": "1.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "30f0ebc41feba25691073626ff5e2cf4",
-      "Requirements": [
         "shiny"
       ]
     },
