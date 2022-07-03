@@ -97,7 +97,7 @@ When the response is dependent on the explanatory variable in a
 piece-wise linear manner, such as when multiple linear pieces are
 connected at unknown points, segmented are used as regression models.
 They also termed as or broken-line models. Here the response variable
-are different standardized chronic disease rates, and time in years
+are different age-standardized rates, and time in years
 (2001 to 2020) being the explanatory variable. This type of model is
 particularly applied in the filed of epidemiology, occupational
 medicine, toxicology, and ecology, where often, the goal is to to
