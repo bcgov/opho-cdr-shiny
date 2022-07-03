@@ -99,7 +99,7 @@ connected at unknown points, segmented regression models are used.
 They also termed as broken-line models. Here the response variable
 are different age-standardized rates, and time in years
 (2001 to 2020) is the explanatory variable. This type of model is
-particularly applied in the filed of epidemiology, occupational
+particularly applied in the fields of epidemiology, occupational
 medicine, toxicology, and ecology, where often, the goal is to to
 estimate threshold value where the effect of the co-variate (time in
 years) changes [@ulm1991statistical; @betts2007thresholds]. In other
