@@ -1,8 +1,7 @@
-<!-- Add a project state badge
-See https://github.com/BCDevExchange/Our-Project-Docs/blob/master/discussion/projectstates.md
-If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badge' Addin. -->
-
 # BC Chronic Disease Dashboard
+
+<!-- badges: start -->
+[![Lifecycle:Dormant](https://img.shields.io/badge/Lifecycle-Dormant-ff7f2a)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 
 The BC Chronic Disease Registry (CDR) is a data product that captures
 information about the rate of new and persistent cases of chronic
