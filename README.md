@@ -16,17 +16,6 @@ and temporal information of the disease rates in the data, and to
 develop an analysis pipeline that will describe the temporal trends in
 the data.
 
-### Report
-
-Our report is linked
-[here](https://github.com/bcgov/opho-cdr-shiny/blob/main/docs/report/capstone-report.pdf).
-
-To render our report locally, clone this GitHub repository, install R
-and the required dependencies, and run the following command at the
-command line/terminal from the root directory:
-
-    Rscript -e "rmarkdown::render('docs/report/capstone-report.Rmd')"
-
 ### Usage
 
 Our data product is currently available for internal use only. Please
